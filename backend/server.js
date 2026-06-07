@@ -12,6 +12,7 @@ const authRoutes = require('./routes/authRoutes');
 const subscriptionRoutes = require('./routes/subscriptionRoutes');
 const dealsRoutes = require('./routes/dealsRoutes');
 const hacksRoutes = require('./routes/hacksRoutes');
+const dealFiltersRoutes = require('./routes/dealFiltersRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const promoRoutes = require('./routes/promoRoutes');
 const contactRoutes = require('./routes/contactRoutes');
@@ -51,6 +52,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/deals', dealsRoutes);
 app.use('/api/hacks', hacksRoutes);
+app.use('/api/user/deal-filters', dealFiltersRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/promos', promoRoutes);
 
@@ -516,6 +518,19 @@ async function initializeApp() {
       );
 
       CREATE INDEX IF NOT EXISTS idx_hack_update_logs_started ON hack_update_logs(started_at);
+
+      -- User deal filters table (Elite tier feature for custom alert filtering)
+      CREATE TABLE IF NOT EXISTS user_deal_filters (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        trip_type VARCHAR(50) DEFAULT 'all',
+        min_savings_threshold INTEGER DEFAULT 100,
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_user_deal_filters_user ON user_deal_filters(user_id);
     `;
 
     try {

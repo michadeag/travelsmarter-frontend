@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSubscription();
     loadPaymentHistory();
     loadSavedHacks();
+    loadDealFilters();
 });
 
 // Show alert message
@@ -106,6 +107,11 @@ async function loadSubscription() {
 
         document.getElementById('subscription-loading').style.display = 'none';
         document.getElementById('subscription-content').style.display = 'block';
+
+        // Show deal filters card for Elite users
+        if (subscription.tier === 'elite') {
+            document.getElementById('deal-filters-card').style.display = 'block';
+        }
 
         // Store subscription for later use
         window.currentSubscription = subscription;
@@ -362,4 +368,99 @@ function formatDate(dateString) {
         month: 'short',
         day: 'numeric'
     });
+}
+
+// ============ Deal Filters Functions ============
+
+// Load user's deal filters
+async function loadDealFilters() {
+    try {
+        const response = await fetch(`${API_URL}/api/user/deal-filters`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+
+        if (!response.ok) {
+            // If not Elite or endpoint doesn't exist, just return
+            return;
+        }
+
+        const data = await response.json();
+        const filters = data.filters;
+
+        // Display filter values
+        const tripTypeNames = {
+            'all': 'All Travel Types',
+            'flights': 'Flights Only',
+            'hotels': 'Hotels Only'
+        };
+
+        document.getElementById('filter-trip-type').textContent = tripTypeNames[filters.trip_type] || filters.trip_type;
+        document.getElementById('filter-min-savings').textContent = filters.min_savings_threshold || '100';
+
+        // Store filters for modal
+        window.currentFilters = filters;
+
+        document.getElementById('filters-loading').style.display = 'none';
+        document.getElementById('filters-content').style.display = 'block';
+    } catch (error) {
+        console.error('Error loading deal filters:', error);
+        // Silent fail for non-Elite users
+        document.getElementById('filters-loading').style.display = 'none';
+    }
+}
+
+// Open edit filters modal
+function openEditFiltersModal() {
+    if (window.currentFilters) {
+        document.getElementById('modal-trip-type').value = window.currentFilters.trip_type || 'all';
+        document.getElementById('modal-min-savings').value = window.currentFilters.min_savings_threshold || 100;
+    } else {
+        document.getElementById('modal-trip-type').value = 'all';
+        document.getElementById('modal-min-savings').value = 100;
+    }
+    document.getElementById('edit-filters-modal').classList.add('active');
+}
+
+// Close edit filters modal
+function closeEditFiltersModal() {
+    document.getElementById('edit-filters-modal').classList.remove('active');
+}
+
+// Save filters changes
+async function saveFiltersChanges() {
+    const tripType = document.getElementById('modal-trip-type').value;
+    const minSavings = parseInt(document.getElementById('modal-min-savings').value) || 100;
+
+    // Validate minimum savings
+    if (minSavings < 0) {
+        showAlert('Minimum savings must be a positive number', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/api/user/deal-filters`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${getAuthToken()}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                trip_type: tripType,
+                min_savings_threshold: minSavings
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            showAlert('Deal preferences saved successfully', 'success');
+            closeEditFiltersModal();
+            loadDealFilters();
+        } else {
+            showAlert(data.message || 'Failed to save preferences', 'error');
+        }
+    } catch (error) {
+        console.error('Error saving filters:', error);
+        showAlert('Error saving deal preferences', 'error');
+    }
 }
