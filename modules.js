@@ -84,7 +84,10 @@ function displayModules(data) {
   const communityControls = document.getElementById('community-controls');
 
   if (communitySection) {
-    if (userTier === 'elite') {
+    // Case-insensitive tier check
+    const isElite = userTier && userTier.toLowerCase() === 'elite';
+
+    if (isElite) {
       communitySection.style.display = 'block';
       eliteBanner.style.display = 'none';
       communityControls.style.display = 'flex';
