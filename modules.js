@@ -3,12 +3,12 @@
  * Displays modules with access status and upgrade prompts
  */
 
-// Determine API URL based on environment
-let API_URL;
-if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    API_URL = 'http://localhost:5000';
-} else {
-    API_URL = 'https://api.travelsmarterapp.com';
+// API_URL is defined in community.js (loaded first)
+// If for some reason it's not, set it here
+if (typeof API_URL === 'undefined') {
+  window.API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000'
+    : 'https://api.travelsmarterapp.com';
 }
 
 // Get auth token
