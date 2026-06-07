@@ -13,6 +13,7 @@ const subscriptionRoutes = require('./routes/subscriptionRoutes');
 const dealsRoutes = require('./routes/dealsRoutes');
 const hacksRoutes = require('./routes/hacksRoutes');
 const dealFiltersRoutes = require('./routes/dealFiltersRoutes');
+const communityRoutes = require('./routes/communityRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const promoRoutes = require('./routes/promoRoutes');
 const contactRoutes = require('./routes/contactRoutes');
@@ -53,6 +54,7 @@ app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/deals', dealsRoutes);
 app.use('/api/hacks', hacksRoutes);
 app.use('/api/user/deal-filters', dealFiltersRoutes);
+app.use('/api/community', communityRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/promos', promoRoutes);
 
@@ -531,6 +533,54 @@ async function initializeApp() {
       );
 
       CREATE INDEX IF NOT EXISTS idx_user_deal_filters_user ON user_deal_filters(user_id);
+
+      -- Community discussion boards (Elite tier feature)
+      CREATE TABLE IF NOT EXISTS community_posts (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        module_id INTEGER NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        content TEXT NOT NULL,
+        upvote_count INTEGER DEFAULT 0,
+        reply_count INTEGER DEFAULT 0,
+        is_pinned BOOLEAN DEFAULT false,
+        is_featured BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_community_posts_module ON community_posts(module_id);
+      CREATE INDEX IF NOT EXISTS idx_community_posts_user ON community_posts(user_id);
+      CREATE INDEX IF NOT EXISTS idx_community_posts_created ON community_posts(created_at DESC);
+
+      -- Community post replies
+      CREATE TABLE IF NOT EXISTS community_replies (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        post_id UUID NOT NULL REFERENCES community_posts(id) ON DELETE CASCADE,
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        content TEXT NOT NULL,
+        upvote_count INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_community_replies_post ON community_replies(post_id);
+      CREATE INDEX IF NOT EXISTS idx_community_replies_user ON community_replies(user_id);
+
+      -- Community votes (for both posts and replies)
+      CREATE TABLE IF NOT EXISTS community_votes (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        post_id UUID REFERENCES community_posts(id) ON DELETE CASCADE,
+        reply_id UUID REFERENCES community_replies(id) ON DELETE CASCADE,
+        vote_type VARCHAR(20) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, post_id, reply_id)
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_community_votes_user ON community_votes(user_id);
+      CREATE INDEX IF NOT EXISTS idx_community_votes_post ON community_votes(post_id);
+      CREATE INDEX IF NOT EXISTS idx_community_votes_reply ON community_votes(reply_id);
     `;
 
     try {

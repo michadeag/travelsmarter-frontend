@@ -77,6 +77,28 @@ function displayModules(data) {
 
   container.innerHTML = '';
   container.appendChild(grid);
+
+  // Show community section if user is Elite
+  const communitySection = document.getElementById('community-section');
+  const eliteBanner = document.getElementById('elite-banner');
+  const communityControls = document.getElementById('community-controls');
+
+  if (communitySection) {
+    if (userTier === 'elite') {
+      communitySection.style.display = 'block';
+      eliteBanner.style.display = 'none';
+      communityControls.style.display = 'flex';
+
+      // Load community discussions for first module (module 8 - Community)
+      document.getElementById('current-module-id').value = '8';
+      loadCommunityPosts('8', 'recent');
+    } else {
+      communitySection.style.display = 'block';
+      eliteBanner.style.display = 'block';
+      communityControls.style.display = 'none';
+      document.getElementById('community-posts-container').innerHTML = '';
+    }
+  }
 }
 
 /**
@@ -172,6 +194,21 @@ function viewModule(moduleId) {
  */
 function goToPricing() {
   window.location.href = 'sales-page.html';
+}
+
+/**
+ * Change community discussion sort
+ */
+function changeCommunitySort(sortType) {
+  // Update active button
+  document.querySelectorAll('.sort-buttons button').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  event.target.classList.add('active');
+
+  // Load posts with new sort
+  const moduleId = document.getElementById('current-module-id').value;
+  loadCommunityPosts(moduleId, sortType);
 }
 
 // Load modules when page loads
