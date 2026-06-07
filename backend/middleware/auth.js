@@ -20,9 +20,9 @@ const protect = async (req, res, next) => {
 
     // Fetch user's current subscription tier from database
     const userResult = await pool.query(
-      `SELECT u.id, u.first_name, u.last_name, u.email, s.tier, s.is_active
+      `SELECT u.id, u.first_name, u.last_name, u.email, s.tier
        FROM users u
-       LEFT JOIN subscriptions s ON u.id = s.user_id AND s.is_active = true
+       LEFT JOIN subscriptions s ON u.id = s.user_id
        WHERE u.id = $1`,
       [decoded.id]
     );
@@ -65,9 +65,9 @@ const optionalAuth = async (req, res, next) => {
 
       // Fetch user's current subscription tier from database
       const userResult = await pool.query(
-        `SELECT u.id, u.first_name, u.last_name, u.email, s.tier, s.is_active
+        `SELECT u.id, u.first_name, u.last_name, u.email, s.tier
          FROM users u
-         LEFT JOIN subscriptions s ON u.id = s.user_id AND s.is_active = true
+         LEFT JOIN subscriptions s ON u.id = s.user_id
          WHERE u.id = $1`,
         [decoded.id]
       );
