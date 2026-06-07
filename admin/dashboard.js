@@ -1241,6 +1241,12 @@ function closeTemplateModal() {
     document.getElementById('modal-template-day').value = '';
     document.getElementById('modal-template-subject').value = '';
     document.getElementById('modal-template-content').value = '';
+    document.getElementById('modal-template-sequence').value = '';
+
+    // Reset editing state and restore button/modal title to original state
+    window.editingTemplateId = null;
+    document.querySelector('#template-modal .modal-header h2').textContent = 'Create Email Template';
+    document.querySelector('#template-modal button[onclick="saveEmailTemplate()"]').textContent = 'Create Template';
 }
 
 async function saveEmailSequence() {
@@ -1289,8 +1295,14 @@ async function saveEmailTemplate() {
     }
 
     try {
-        const response = await fetch(`${API_URL}/api/email-templates/templates`, {
-            method: 'POST',
+        const isEditing = window.editingTemplateId ? true : false;
+        const method = isEditing ? 'PUT' : 'POST';
+        const url = isEditing
+            ? `${API_URL}/api/email-templates/templates/${window.editingTemplateId}`
+            : `${API_URL}/api/email-templates/templates`;
+
+        const response = await fetch(url, {
+            method: method,
             headers: {
                 'Authorization': `Bearer ${getAuthToken()}`,
                 'Content-Type': 'application/json'
@@ -1305,17 +1317,19 @@ async function saveEmailTemplate() {
         });
 
         if (response.ok) {
-            showAlert('Template created successfully', 'success');
+            const successMessage = isEditing ? 'Template updated successfully' : 'Template created successfully';
+            showAlert(successMessage, 'success');
             closeTemplateModal();
+            window.editingTemplateId = null;
             loadEmailTemplates();
         } else {
             const error = await response.json();
-            showAlert(error.message || 'Failed to create template', 'error');
+            showAlert(error.message || 'Failed to save template', 'error');
             console.error('API error:', error);
         }
     } catch (error) {
-        console.error('Error creating template:', error);
-        showAlert('Error creating template: ' + error.message, 'error');
+        console.error('Error saving template:', error);
+        showAlert('Error saving template: ' + error.message, 'error');
     }
 }
 
@@ -1381,9 +1395,44 @@ async function deleteTemplate(templateId) {
     }
 }
 
-function editTemplate(templateId) {
-    // Placeholder - will implement template editor
-    alert('Template editor - to be implemented');
+async function editTemplate(templateId) {
+    try {
+        // Fetch template details
+        const response = await fetch(`${API_URL}/api/email-templates/templates?id=${templateId}`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const templates = data.data || [];
+            const template = templates.find(t => t.id === templateId);
+
+            if (template) {
+                // Store the template ID for update operation
+                window.editingTemplateId = templateId;
+
+                // Populate the modal with template data
+                document.getElementById('modal-template-day').value = template.day || '';
+                document.getElementById('modal-template-subject').value = template.subject || '';
+                document.getElementById('modal-template-content').value = template.html_content || template.content || '';
+                document.getElementById('modal-template-sequence').value = template.sequence_id || '';
+
+                // Change button text and modal title to indicate editing
+                document.querySelector('#template-modal .modal-header h2').textContent = 'Edit Email Template';
+                document.querySelector('#template-modal button[onclick="saveEmailTemplate()"]').textContent = 'Update Template';
+
+                // Open the modal
+                openTemplateModal();
+            } else {
+                showAlert('Template not found', 'error');
+            }
+        } else {
+            showAlert('Failed to load template', 'error');
+        }
+    } catch (error) {
+        console.error('Error loading template:', error);
+        showAlert('Error loading template: ' + error.message, 'error');
+    }
 }
 
 // ============================================
