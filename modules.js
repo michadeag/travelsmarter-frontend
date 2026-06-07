@@ -83,24 +83,36 @@ function displayModules(data) {
   const eliteBanner = document.getElementById('elite-banner');
   const communityControls = document.getElementById('community-controls');
 
+  console.log('=== COMMUNITY SECTION DEBUG ===');
+  console.log('userTier:', userTier);
+  console.log('communitySection exists:', !!communitySection);
+  console.log('eliteBanner exists:', !!eliteBanner);
+  console.log('communityControls exists:', !!communityControls);
+
   if (communitySection) {
     // Case-insensitive tier check
     const isElite = userTier && userTier.toLowerCase() === 'elite';
+    console.log('isElite:', isElite);
 
     if (isElite) {
+      console.log('Setting community section to VISIBLE for Elite user');
       communitySection.style.display = 'block';
       eliteBanner.style.display = 'none';
       communityControls.style.display = 'flex';
 
       // Load community discussions for first module (module 8 - Community)
       document.getElementById('current-module-id').value = '8';
+      console.log('Calling loadCommunityPosts...');
       loadCommunityPosts('8', 'recent');
     } else {
+      console.log('User is not Elite, showing upgrade banner');
       communitySection.style.display = 'block';
       eliteBanner.style.display = 'block';
       communityControls.style.display = 'none';
       document.getElementById('community-posts-container').innerHTML = '';
     }
+  } else {
+    console.log('ERROR: community-section element not found!');
   }
 }
 
