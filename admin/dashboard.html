@@ -1276,7 +1276,7 @@
     <div id="template-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Create Email Template</h3>
+                <h3 id="template-modal-title">Create Email Template</h3>
                 <button class="close-modal" onclick="closeTemplateModal()">✕</button>
             </div>
 
@@ -1301,7 +1301,7 @@
             </div>
 
             <div class="actions" style="margin-top: 30px;">
-                <button class="btn btn-primary" onclick="saveEmailTemplate()">Create Template</button>
+                <button class="btn btn-primary" id="template-save-btn" onclick="saveEmailTemplate()">Create Template</button>
                 <button class="btn btn-secondary" onclick="closeTemplateModal()">Cancel</button>
             </div>
         </div>

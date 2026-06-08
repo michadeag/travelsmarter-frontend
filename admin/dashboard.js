@@ -1245,8 +1245,8 @@ function closeTemplateModal() {
 
     // Reset editing state and restore button/modal title to original state
     window.editingTemplateId = null;
-    document.querySelector('#template-modal .modal-header h2').textContent = 'Create Email Template';
-    document.querySelector('#template-modal button[onclick="saveEmailTemplate()"]').textContent = 'Create Template';
+    document.getElementById('template-modal-title').textContent = 'Create Email Template';
+    document.getElementById('template-save-btn').textContent = 'Create Template';
 }
 
 async function saveEmailSequence() {
@@ -1397,15 +1397,14 @@ async function deleteTemplate(templateId) {
 
 async function editTemplate(templateId) {
     try {
-        // Fetch template details
-        const response = await fetch(`${API_URL}/api/email-templates/templates?id=${templateId}`, {
+        // Fetch template details - use the direct endpoint with ID
+        const response = await fetch(`${API_URL}/api/email-templates/templates/${templateId}`, {
             headers: { 'Authorization': `Bearer ${getAuthToken()}` }
         });
 
         if (response.ok) {
             const data = await response.json();
-            const templates = data.data || [];
-            const template = templates.find(t => t.id === templateId);
+            const template = data.data;
 
             if (template) {
                 // Store the template ID for update operation
@@ -1417,9 +1416,9 @@ async function editTemplate(templateId) {
                 document.getElementById('modal-template-content').value = template.html_content || template.content || '';
                 document.getElementById('modal-template-sequence').value = template.sequence_id || '';
 
-                // Change button text and modal title to indicate editing
-                document.querySelector('#template-modal .modal-header h2').textContent = 'Edit Email Template';
-                document.querySelector('#template-modal button[onclick="saveEmailTemplate()"]').textContent = 'Update Template';
+                // Change button text and modal title to indicate editing (use h3 not h2!)
+                document.getElementById('template-modal-title').textContent = 'Edit Email Template';
+                document.getElementById('template-save-btn').textContent = 'Update Template';
 
                 // Open the modal
                 openTemplateModal();
