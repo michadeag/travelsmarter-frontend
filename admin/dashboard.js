@@ -1144,6 +1144,11 @@ async function handleLogout() {
     }
 }
 
+// Wrapper function for logout button
+function logout() {
+    handleLogout();
+}
+
 function redirectToLogin() {
     window.location.href = 'login-secure.html';
 }
