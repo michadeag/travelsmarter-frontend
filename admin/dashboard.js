@@ -1,25 +1,29 @@
 // Admin Dashboard JavaScript
-// Connects to backend API for data management
+// Connects to backend API for data management with JWT authentication
 
 // Determine correct API URL based on current domain
 let API_URL;
 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    // Local development
-    API_URL = 'http://localhost:5000';
+    API_URL = localStorage.getItem('apiUrl') || 'http://localhost:5000';
 } else {
-    // Production - use your live backend API
-    API_URL = 'https://api.travelsmarterapp.com';
+    API_URL = localStorage.getItem('apiUrl') || window.location.origin;
 }
 
-console.log('Admin Dashboard using API:', API_URL);
+console.log('🔒 Admin Dashboard using API:', API_URL);
 
-// Helper function to get current auth token
-function getAuthToken() {
-    return localStorage.getItem('userToken') || localStorage.getItem('adminToken');
+// Helper function to get admin JWT token
+function getAdminToken() {
+    return localStorage.getItem('adminToken');
 }
 
-// Deprecated: Use getAuthToken() instead
-const API_TOKEN = null;
+// Helper function to get auth headers with JWT token
+function getAuthHeaders() {
+    const token = getAdminToken();
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : ''
+    };
+}
 
 // Initialize dashboard
 document.addEventListener('DOMContentLoaded', () => {
@@ -29,9 +33,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function initDashboard() {
     // Check if logged in
-    if (!getAuthToken()) {
+    if (!getAdminToken()) {
         redirectToLogin();
         return;
+    }
+
+    // Verify token is still valid
+    verifyAdminToken();
+
+    // Setup logout button
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
     }
 
     // Load dashboard data
@@ -1094,15 +1107,55 @@ async function saveSettings() {
 }
 
 // AUTHENTICATION
-function logout() {
-    localStorage.removeItem('adminToken');
-    localStorage.removeItem('adminName');
-    localStorage.removeItem('apiUrl');
-    redirectToLogin();
+// Verify admin token is valid
+async function verifyAdminToken() {
+    try {
+        const token = getAdminToken();
+        if (!token) {
+            redirectToLogin();
+            return;
+        }
+
+        const response = await fetch(`${API_URL}/api/admin-auth/verify-token`, {
+            method: 'POST',
+            headers: getAuthHeaders()
+        });
+
+        if (!response.ok) {
+            console.warn('Token verification failed');
+            redirectToLogin();
+        }
+    } catch (error) {
+        console.error('Token verification error:', error);
+        redirectToLogin();
+    }
+}
+
+// Handle logout
+async function handleLogout() {
+    try {
+        const token = getAdminToken();
+        await fetch(`${API_URL}/api/admin-auth/logout`, {
+            method: 'POST',
+            headers: getAuthHeaders()
+        }).catch(() => {}); // Ignore errors
+
+        // Clear local storage
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminName');
+        localStorage.removeItem('adminEmail');
+        localStorage.removeItem('adminRole');
+        localStorage.removeItem('rememberMe');
+
+        redirectToLogin();
+    } catch (error) {
+        console.error('Logout error:', error);
+        redirectToLogin();
+    }
 }
 
 function redirectToLogin() {
-    window.location.href = 'login.html';
+    window.location.href = 'login-secure.html';
 }
 
 // UTILITIES
@@ -1238,13 +1291,10 @@ function openTemplateModal() {
 
 function closeTemplateModal() {
     document.getElementById('template-modal').classList.remove('active');
+    document.getElementById('modal-template-id').value = '';
     document.getElementById('modal-template-day').value = '';
     document.getElementById('modal-template-subject').value = '';
     document.getElementById('modal-template-content').value = '';
-    document.getElementById('modal-template-sequence').value = '';
-
-    // Reset editing state and restore button/modal title to original state
-    window.editingTemplateId = null;
     document.getElementById('template-modal-title').textContent = 'Create Email Template';
     document.getElementById('template-save-btn').textContent = 'Create Template';
 }
@@ -1284,6 +1334,7 @@ async function saveEmailSequence() {
 }
 
 async function saveEmailTemplate() {
+    const templateId = document.getElementById('modal-template-id').value;
     const sequenceId = document.getElementById('modal-template-sequence').value;
     const day = document.getElementById('modal-template-day').value;
     const subject = document.getElementById('modal-template-subject').value;
@@ -1294,14 +1345,12 @@ async function saveEmailTemplate() {
         return;
     }
 
-    try {
-        const isEditing = window.editingTemplateId ? true : false;
-        const method = isEditing ? 'PUT' : 'POST';
-        const url = isEditing
-            ? `${API_URL}/api/email-templates/templates/${window.editingTemplateId}`
-            : `${API_URL}/api/email-templates/templates`;
+    const isEdit = !!templateId;
+    const method = isEdit ? 'PUT' : 'POST';
+    const endpoint = isEdit ? `${API_URL}/api/email-templates/templates/${templateId}` : `${API_URL}/api/email-templates/templates`;
 
-        const response = await fetch(url, {
+    try {
+        const response = await fetch(endpoint, {
             method: method,
             headers: {
                 'Authorization': `Bearer ${getAuthToken()}`,
@@ -1317,19 +1366,18 @@ async function saveEmailTemplate() {
         });
 
         if (response.ok) {
-            const successMessage = isEditing ? 'Template updated successfully' : 'Template created successfully';
-            showAlert(successMessage, 'success');
+            const action = isEdit ? 'updated' : 'created';
+            showAlert(`Template ${action} successfully`, 'success');
             closeTemplateModal();
-            window.editingTemplateId = null;
             loadEmailTemplates();
         } else {
             const error = await response.json();
-            showAlert(error.message || 'Failed to save template', 'error');
+            showAlert(error.message || `Failed to ${isEdit ? 'update' : 'create'} template`, 'error');
             console.error('API error:', error);
         }
     } catch (error) {
-        console.error('Error saving template:', error);
-        showAlert('Error saving template: ' + error.message, 'error');
+        console.error(`Error ${isEdit ? 'updating' : 'creating'} template:`, error);
+        showAlert(`Error ${isEdit ? 'updating' : 'creating'} template: ` + error.message, 'error');
     }
 }
 
@@ -1397,37 +1445,34 @@ async function deleteTemplate(templateId) {
 
 async function editTemplate(templateId) {
     try {
-        // Fetch template details - use the direct endpoint with ID
+        // Fetch the template data
         const response = await fetch(`${API_URL}/api/email-templates/templates/${templateId}`, {
             headers: { 'Authorization': `Bearer ${getAuthToken()}` }
         });
 
-        if (response.ok) {
-            const data = await response.json();
-            const template = data.data;
-
-            if (template) {
-                // Store the template ID for update operation
-                window.editingTemplateId = templateId;
-
-                // Populate the modal with template data
-                document.getElementById('modal-template-day').value = template.day || '';
-                document.getElementById('modal-template-subject').value = template.subject || '';
-                document.getElementById('modal-template-content').value = template.html_content || template.content || '';
-                document.getElementById('modal-template-sequence').value = template.sequence_id || '';
-
-                // Change button text and modal title to indicate editing (use h3 not h2!)
-                document.getElementById('template-modal-title').textContent = 'Edit Email Template';
-                document.getElementById('template-save-btn').textContent = 'Update Template';
-
-                // Open the modal
-                openTemplateModal();
-            } else {
-                showAlert('Template not found', 'error');
-            }
-        } else {
+        if (!response.ok) {
             showAlert('Failed to load template', 'error');
+            return;
         }
+
+        const data = await response.json();
+        const template = data.data;
+
+        // Populate form fields
+        document.getElementById('modal-template-day').value = template.day || 0;
+        document.getElementById('modal-template-subject').value = template.subject || '';
+        document.getElementById('modal-template-content').value = template.html_content || template.content || '';
+        document.getElementById('modal-template-sequence').value = template.sequence_id || '';
+
+        // Change modal title and button to Edit
+        document.getElementById('template-modal-title').textContent = 'Edit Email Template';
+        document.getElementById('template-save-btn').textContent = 'Update Template';
+
+        // Store the template ID for saving
+        document.getElementById('modal-template-id').value = templateId;
+
+        // Open the modal
+        document.getElementById('template-modal').classList.add('active');
     } catch (error) {
         console.error('Error loading template:', error);
         showAlert('Error loading template: ' + error.message, 'error');
