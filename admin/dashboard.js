@@ -2183,3 +2183,343 @@ function switchPlatformTab(platform) {
         activeTab.style.color = '#667eea';
     }
 }
+
+// SOCIAL MEDIA TAB SWITCHING
+function switchSocialTab(tabName) {
+    // Hide all sub-tabs
+    document.querySelectorAll('.social-sub-content').forEach(el => {
+        el.style.display = 'none';
+    });
+
+    // Remove active class from all tab buttons
+    document.querySelectorAll('.social-sub-tab').forEach(el => {
+        el.style.borderBottom = '3px solid transparent';
+        el.style.color = '#6b7280';
+        el.classList.remove('active');
+    });
+
+    // Show selected sub-tab
+    const contentElement = document.getElementById(`content-${tabName}`);
+    if (contentElement) {
+        contentElement.style.display = 'block';
+    }
+
+    // Highlight active tab button
+    const activeTab = document.querySelector(`[data-tab="${tabName}"]`);
+    if (activeTab) {
+        activeTab.style.borderBottom = '3px solid #667eea';
+        activeTab.style.color = '#667eea';
+        activeTab.classList.add('active');
+    }
+
+    // Load data for the selected tab
+    if (tabName === 'posts') {
+        loadRecentPosts();
+    } else if (tabName === 'analytics') {
+        loadAnalytics();
+    } else if (tabName === 'accounts') {
+        loadConnectedAccounts();
+    }
+}
+
+// PUBLISH POST TO MULTIPLE PLATFORMS
+async function publishPost() {
+    const postType = document.getElementById('post-type').value;
+    const title = document.getElementById('post-title').value;
+    const content = document.getElementById('post-content').value;
+    const imageUrl = document.getElementById('post-image').value;
+
+    const platforms = [];
+    document.querySelectorAll('input[name="platforms"]:checked').forEach(checkbox => {
+        platforms.push(checkbox.value);
+    });
+
+    if (!content.trim()) {
+        showAlert('Please enter post content', 'error');
+        return;
+    }
+
+    if (platforms.length === 0) {
+        showAlert('Please select at least one platform', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/api/social/posts`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                title: title || content.substring(0, 50),
+                content,
+                post_type: postType,
+                image_url: imageUrl || null,
+                platforms
+            })
+        });
+
+        if (response.ok) {
+            showAlert('Post published to ' + platforms.join(', '), 'success');
+
+            // Clear form
+            document.getElementById('post-type').value = 'travel_tip';
+            document.getElementById('post-title').value = '';
+            document.getElementById('post-content').value = '';
+            document.getElementById('post-image').value = '';
+            document.querySelectorAll('input[name="platforms"]').forEach(cb => cb.checked = false);
+            document.getElementById('char-count').textContent = '0/280 characters';
+
+            // Reload posts
+            loadRecentPosts();
+        } else {
+            const error = await response.json();
+            showAlert(error.message || 'Failed to publish post', 'error');
+        }
+    } catch (error) {
+        console.error('Error publishing post:', error);
+        showAlert('Error publishing post', 'error');
+    }
+}
+
+// LOAD CONNECTED ACCOUNTS
+async function loadConnectedAccounts() {
+    try {
+        const response = await fetch(`${API_URL}/api/social/accounts`, {
+            headers: getAuthHeaders()
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const accountsList = document.getElementById('accounts-list');
+
+            if (!data.accounts || data.accounts.length === 0) {
+                accountsList.innerHTML = '<p style="color: #9ca3af;">No connected accounts yet</p>';
+            } else {
+                accountsList.innerHTML = data.accounts.map(account => `
+                    <div style="padding: 15px; background: #f3f4f6; border-radius: 8px; margin-bottom: 10px; cursor: pointer;" onclick="selectAccount('${account.platform}', '${account.id}')">
+                        <div style="font-weight: 600;">${getPlatformEmoji(account.platform)} ${account.account_name}</div>
+                        <div style="font-size: 12px; color: #6b7280; margin-top: 5px;">
+                            ${account.platform} • ${account.is_active ? '✅ Active' : '⚠️ Inactive'}
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading accounts:', error);
+    }
+}
+
+// SELECT ACCOUNT AND SHOW DETAILS
+function selectAccount(platform, accountId) {
+    const detailsDiv = document.getElementById('account-details');
+    detailsDiv.innerHTML = `
+        <div style="text-align: left;">
+            <p><strong>Platform:</strong> ${platform}</p>
+            <p><strong>Account ID:</strong> ${accountId}</p>
+            <button onclick="disconnectAccount('${accountId}')" class="btn btn-danger" style="margin-top: 15px;">
+                🗑️ Disconnect Account
+            </button>
+        </div>
+    `;
+}
+
+// DISCONNECT ACCOUNT
+async function disconnectAccount(accountId) {
+    if (!confirm('Are you sure you want to disconnect this account?')) return;
+
+    try {
+        const response = await fetch(`${API_URL}/api/social/accounts/${accountId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+
+        if (response.ok) {
+            showAlert('Account disconnected', 'success');
+            loadConnectedAccounts();
+            document.getElementById('account-details').innerHTML = 'Select an account to view details';
+        } else {
+            const error = await response.json();
+            showAlert(error.message || 'Failed to disconnect account', 'error');
+        }
+    } catch (error) {
+        console.error('Error disconnecting account:', error);
+        showAlert('Error disconnecting account', 'error');
+    }
+}
+
+// OPEN CONNECT ACCOUNT MODAL
+function openConnectModal() {
+    const platforms = ['twitter', 'reddit', 'pinterest', 'instagram', 'linkedin'];
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;';
+    modal.innerHTML = `
+        <div style="background: white; padding: 30px; border-radius: 12px; max-width: 400px; width: 90%;">
+            <h3>🔗 Connect Social Media Account</h3>
+            <select id="platform-select" style="width: 100%; padding: 10px; margin: 15px 0; border: 1px solid #ddd; border-radius: 6px;">
+                <option value="">Select Platform...</option>
+                ${platforms.map(p => `<option value="${p}">${getPlatformName(p)}</option>`).join('')}
+            </select>
+            <input type="text" id="account-input" placeholder="Account Name/Token" style="width: 100%; padding: 10px; margin: 15px 0; border: 1px solid #ddd; border-radius: 6px;">
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button onclick="this.parentElement.parentElement.parentElement.remove()" class="btn btn-secondary" style="flex: 1;">Cancel</button>
+                <button onclick="addAccount()" class="btn btn-primary" style="flex: 1;">Connect</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// ADD NEW ACCOUNT
+async function addAccount() {
+    const platform = document.getElementById('platform-select').value;
+    const accountName = document.getElementById('account-input').value;
+
+    if (!platform || !accountName) {
+        showAlert('Please fill in all fields', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/api/social/accounts`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                platform,
+                account_name: accountName,
+                access_token: accountName
+            })
+        });
+
+        if (response.ok) {
+            showAlert('Account connected', 'success');
+            document.body.querySelector('div[style*="position: fixed"]').remove();
+            loadConnectedAccounts();
+        } else {
+            const error = await response.json();
+            showAlert(error.message || 'Failed to connect account', 'error');
+        }
+    } catch (error) {
+        console.error('Error adding account:', error);
+        showAlert('Error connecting account', 'error');
+    }
+}
+
+// LOAD RECENT POSTS
+async function loadRecentPosts() {
+    try {
+        const response = await fetch(`${API_URL}/api/social/posts`, {
+            headers: getAuthHeaders()
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const tbody = document.getElementById('posts-tbody');
+
+            if (!data.posts || data.posts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">No posts yet</td></tr>';
+            } else {
+                tbody.innerHTML = data.posts.map(post => `
+                    <tr>
+                        <td>${new Date(post.created_at).toLocaleDateString()}</td>
+                        <td>${getPlatformEmoji(post.platform)} ${post.platform}</td>
+                        <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis;">${post.content}</td>
+                        <td>${post.engagement || 0}</td>
+                        <td>${post.status === 'published' ? '✅ Published' : '⏳ Scheduled'}</td>
+                        <td>
+                            <button onclick="deletePost('${post.id}')" class="btn btn-sm btn-danger">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading posts:', error);
+    }
+}
+
+// DELETE POST
+async function deletePost(postId) {
+    if (!confirm('Are you sure you want to delete this post?')) return;
+
+    try {
+        const response = await fetch(`${API_URL}/api/social/posts/${postId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+
+        if (response.ok) {
+            showAlert('Post deleted', 'success');
+            loadRecentPosts();
+        } else {
+            const error = await response.json();
+            showAlert(error.message || 'Failed to delete post', 'error');
+        }
+    } catch (error) {
+        console.error('Error deleting post:', error);
+        showAlert('Error deleting post', 'error');
+    }
+}
+
+// LOAD ANALYTICS
+async function loadAnalytics() {
+    try {
+        const response = await fetch(`${API_URL}/api/social/analytics`, {
+            headers: getAuthHeaders()
+        });
+
+        if (response.ok) {
+            const data = response.json();
+
+            // Update summary cards
+            document.getElementById('analytics-total-posts').textContent = data.total_posts || 0;
+            document.getElementById('analytics-total-engagement').textContent = data.total_engagement || 0;
+            document.getElementById('analytics-avg-rate').textContent = (data.avg_rate || 0).toFixed(1) + '%';
+            document.getElementById('analytics-impressions').textContent = data.impressions || 0;
+
+            // Update per-platform stats
+            const platforms = ['twitter', 'reddit', 'pinterest', 'instagram', 'linkedin'];
+            platforms.forEach(platform => {
+                const platformData = data.by_platform?.[platform] || {};
+                document.getElementById(`analytics-${platform}-posts`).textContent = platformData.posts || 0;
+                document.getElementById(`analytics-${platform}-engagement`).textContent = platformData.engagement || 0;
+            });
+        }
+    } catch (error) {
+        console.error('Error loading analytics:', error);
+    }
+}
+
+// HELPER: GET PLATFORM EMOJI
+function getPlatformEmoji(platform) {
+    const emojis = {
+        twitter: '🐦',
+        reddit: '🤖',
+        pinterest: '📌',
+        instagram: '📸',
+        linkedin: '💼'
+    };
+    return emojis[platform] || '📱';
+}
+
+// HELPER: GET PLATFORM NAME
+function getPlatformName(platform) {
+    const names = {
+        twitter: '🐦 Twitter',
+        reddit: '🤖 Reddit',
+        pinterest: '📌 Pinterest',
+        instagram: '📸 Instagram',
+        linkedin: '💼 LinkedIn'
+    };
+    return names[platform] || platform;
+}
+
+// CHARACTER COUNT FOR POST CONTENT
+document.addEventListener('DOMContentLoaded', () => {
+    const contentInput = document.getElementById('post-content');
+    if (contentInput) {
+        contentInput.addEventListener('input', function() {
+            const charCount = this.value.length;
+            document.getElementById('char-count').textContent = `${charCount}/280 characters`;
+        });
+    }
+});
