@@ -1149,7 +1149,7 @@ async function saveSettings() {
             await fetch(`${API_URL}/api/admin/settings/batch/update`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${getAuthToken()}`,
+                    'Authorization': `Bearer ${getAdminToken()}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(settingsData)
