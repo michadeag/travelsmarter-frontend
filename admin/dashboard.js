@@ -1696,7 +1696,7 @@ async function loadTwitterStatus() {
 async function publishTwitterPost() {
     showAlert('Generating Twitter post...', 'success');
     try {
-        const res = await fetch(`${API_URL}/api/twitter/post`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const res = await fetch(`${API_URL}/api/twitter/post-random`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
         const data = await res.json();
         if (data.success) { showAlert('✅ Posted to Twitter!', 'success'); loadTwitterRecentPosts(); }
         else showAlert(`❌ ${data.error || data.message}`, 'error');
@@ -2244,7 +2244,7 @@ async function saveSocialSettings() {
         body: JSON.stringify(settings)
     });
     // Reload services with new credentials
-    for (const platform of ['pinterest', 'reddit', 'linkedin', 'instagram', 'wordpress', 'blogger']) {
+    for (const platform of ['twitter', 'pinterest', 'reddit', 'linkedin', 'instagram', 'wordpress', 'blogger']) {
         fetch(`${API_URL}/api/${platform}/reload-settings`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } }).catch(() => {});
     }
 }
