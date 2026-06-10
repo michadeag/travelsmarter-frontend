@@ -1860,7 +1860,7 @@ async function loadLinkedInStatus() {
 async function publishLinkedInPost() {
     showAlert('Generating LinkedIn post...', 'success');
     try {
-        const res = await fetch(`${API_URL}/api/linkedin/post`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const res = await fetch(`${API_URL}/api/linkedin/post-article`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
         const data = await res.json();
         if (data.success) { showAlert('✅ Posted to LinkedIn!', 'success'); loadLinkedInRecentPosts(); }
         else showAlert(`❌ ${data.error || data.message}`, 'error');
