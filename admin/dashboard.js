@@ -2260,6 +2260,7 @@ async function loadSocialSettings() {
         chk('instagram-auto', 'instagram_auto_posting');
         set('linkedin-access-token', 'linkedin_access_token');
         set('linkedin-org-id', 'linkedin_org_id');
+        set('linkedin-person-urn', 'linkedin_person_urn');
         set('linkedin-frequency', 'linkedin_frequency_hours');
         chk('linkedin-auto', 'linkedin_auto_posting');
         set('wordpress-client-id', 'wordpress_client_id');
@@ -2301,6 +2302,7 @@ async function saveSocialSettings() {
         instagram_auto_posting: chk('instagram-auto'),
         linkedin_access_token: val('linkedin-access-token'),
         linkedin_org_id: val('linkedin-org-id'),
+        linkedin_person_urn: val('linkedin-person-urn'),
         linkedin_frequency_hours: val('linkedin-frequency') || '12',
         linkedin_auto_posting: chk('linkedin-auto'),
         wordpress_client_id: val('wordpress-client-id'),
