@@ -3539,7 +3539,17 @@ async function reloadPinterestSettings() {
             method: 'POST', headers: getAuthHeaders()
         });
         const data = await response.json();
-        showAlert(data.configured ? '✅ Pinterest Settings geladen — konfiguriert!' : '⚠️ Settings geladen aber nicht vollständig konfiguriert. Bitte Access Token, Board ID und Ideogram Key prüfen.', data.configured ? 'success' : 'warning');
+        if (data.configured) {
+            showAlert('✅ Pinterest konfiguriert und bereit!', 'success');
+        } else {
+            const d = data.debug || {};
+            const missing = [];
+            if (!d.hasAccessToken) missing.push('Access Token');
+            if (!d.hasBoardId) missing.push('Board ID');
+            if (!d.hasIdeogramKey) missing.push('Ideogram Key');
+            showAlert(`⚠️ Fehlend in der Datenbank: ${missing.join(', ')}. Bitte Settings speichern und nochmal versuchen.`, 'warning');
+            console.log('Pinterest debug:', data.debug);
+        }
         loadPinterestStatus();
     } catch (err) {
         showAlert('Fehler: ' + err.message, 'error');
