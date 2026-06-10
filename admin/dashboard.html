@@ -600,6 +600,7 @@
                 <a class="nav-link" data-tab="reddit" onclick="loadRedditStatus(); loadRedditRecentPosts();">🤖 Reddit</a>
                 <a class="nav-link" data-tab="linkedin" onclick="loadLinkedInStatus(); loadLinkedInRecentPosts();">💼 LinkedIn</a>
                 <a class="nav-link" data-tab="pinterest" onclick="loadPinterestStatus(); loadPinterestRecentPosts();">📌 Pinterest</a>
+                <a class="nav-link" data-tab="instagram" onclick="loadInstagramStatus(); loadInstagramRecentPosts();">📸 Instagram</a>
                 <a class="nav-link" data-tab="social-media">📱 Social Media</a>
                 <a class="nav-link" data-tab="settings">⚙️ Settings</a>
             </nav>
@@ -1167,6 +1168,54 @@
                 </div>
             </div>
 
+            <!-- INSTAGRAM TAB -->
+            <div id="instagram" class="tab-content">
+                <h3>📸 Instagram Management</h3>
+
+                <div class="card" style="margin-top: 20px; background: linear-gradient(135deg, #e1306c 0%, #833ab4 50%, #f77737 100%); color: white;">
+                    <h4>Service Status</h4>
+                    <div id="instagram-status" style="margin-top: 15px;">
+                        <p style="opacity: 0.8;">Loading status...</p>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <h4>🎨 Generate & Post</h4>
+                    <p style="font-size: 13px; color: #666; margin-top: 8px;">Ideogram generiert das Infografik-Bild (gleiche Qualität wie Pinterest), Claude schreibt eine Instagram-Caption mit Emojis und Hashtags — dann direkt gepostet. Jeder 2. Post enthält einen CTA zu TravelSmarter.</p>
+                    <div style="margin-top: 15px;">
+                        <button id="instagram-post-btn" class="btn btn-primary" onclick="postInstagram()" style="padding: 10px 24px;">📸 Generate & Post</button>
+                    </div>
+                    <div id="instagram-post-result" style="margin-top: 15px;"></div>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <h4>⏰ Scheduler Controls</h4>
+                    <p style="font-size: 13px; color: #666; margin-top: 8px;">Frequenz konfigurierbar in <strong>Settings → Social Media → Instagram</strong>.</p>
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button class="btn btn-success" onclick="startInstagramScheduler()" style="flex: 1;">▶️ Start Scheduler</button>
+                        <button class="btn btn-danger" onclick="stopInstagramScheduler()" style="flex: 1;">⏹️ Stop Scheduler</button>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <h4>📋 Recent Posts</h4>
+                    <div id="instagram-recent-posts" style="margin-top: 15px; max-height: 500px; overflow-y: auto;">
+                        <p style="color: #999;">No posts yet.</p>
+                    </div>
+                </div>
+
+                <div style="background: #fef3f9; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #e1306c;">
+                    <strong>ℹ️ Instagram Strategy:</strong>
+                    <ul style="margin-top: 10px; margin-left: 20px; font-size: 14px; color: #555;">
+                        <li>Gleiche Ideogram-Infografiken wie Pinterest — kein extra Bildgenerierungs-Cost</li>
+                        <li>Caption: Instagram-Ton mit Emojis, Frage am Ende, 10–15 Hashtags</li>
+                        <li>Jeder 2. Post: <em>"Find more travel deals → travelsmarterapp.com (link in bio)"</em></li>
+                        <li>Benötigt: Instagram Business Account verbunden mit Facebook Page</li>
+                        <li>Access Token via <a href="https://developers.facebook.com/apps/" target="_blank" style="color: #e1306c;">Meta Developer Portal</a> → Instagram Graph API</li>
+                    </ul>
+                </div>
+            </div>
+
             <!-- PINTEREST TAB -->
             <div id="pinterest" class="tab-content">
                 <h3>📌 Pinterest Management</h3>
@@ -1665,12 +1714,15 @@
                     <div class="platform-settings" id="settings-instagram" style="display: none;">
                         <h5 style="margin-bottom: 15px; color: #2c3e50;">🔐 API Credentials</h5>
                         <div class="form-group">
-                            <label>Instagram Access Token</label>
-                            <input type="password" id="instagram-access-token" placeholder="Your Access Token" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                            <label>Instagram Access Token <small style="color:#999">(Facebook Page Token)</small></label>
+                            <input type="password" id="instagram-access-token" placeholder="Your long-lived Access Token" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                         </div>
                         <div class="form-group">
                             <label>Instagram Business Account ID</label>
-                            <input type="text" id="instagram-account-id" placeholder="Your Business Account ID" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                            <input type="text" id="instagram-account-id" placeholder="Your IG Business Account ID" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                        </div>
+                        <div style="background: #fef3f9; padding: 12px 15px; border-radius: 8px; border-left: 4px solid #e1306c; font-size: 13px; color: #555; margin-bottom: 10px;">
+                            🎨 Bilder werden über <strong>Ideogram</strong> generiert — gleicher Key wie bei Pinterest. Ideogram Key in <em>Pinterest</em>-Tab eintragen.
                         </div>
 
                         <hr style="margin: 20px 0; border: none; border-top: 1px solid #e5e7eb;">
@@ -1690,6 +1742,14 @@
                         <div class="form-group">
                             <label>Posting Hours (comma-separated, 24h format)</label>
                             <input type="text" id="instagram-hours" placeholder="11,18" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="instagram-auto-posting"> Enable Instagram Auto-Posting
+                            </label>
+                        </div>
+                        <div style="background: #fef3f9; padding: 12px 15px; border-radius: 8px; border-left: 4px solid #e1306c; font-size: 13px; color: #555;">
+                            Token bei <a href="https://developers.facebook.com/apps/" target="_blank" style="color: #e1306c;">developers.facebook.com</a> → App → Instagram Graph API → Long-lived Access Token generieren
                         </div>
                     </div>
 

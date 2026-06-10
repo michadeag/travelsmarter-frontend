@@ -1001,6 +1001,25 @@ async function loadSettings() {
                 if (el) el.value = settings.twitter_posting_time.value;
             }
 
+            // Load Instagram settings
+            const instagramFields = [
+                ['instagram_access_token', 'instagram-access-token'],
+                ['instagram_account_id', 'instagram-account-id'],
+                ['instagram_posting_frequency', 'instagram-frequency'],
+                ['instagram_max_posts_per_day', 'instagram-max-posts'],
+                ['instagram_posting_hours', 'instagram-hours']
+            ];
+            instagramFields.forEach(([key, id]) => {
+                if (settings[key]?.value) {
+                    const el = document.getElementById(id);
+                    if (el) el.value = settings[key].value;
+                }
+            });
+            if (settings.instagram_auto_posting?.value) {
+                const el = document.getElementById('instagram-auto-posting');
+                if (el) el.checked = settings.instagram_auto_posting.value === 'true';
+            }
+
             // Load Pinterest settings
             const pinterestFields = [
                 ['pinterest_access_token', 'pinterest-access-token'],
@@ -1146,6 +1165,14 @@ async function saveSettings() {
     const twitterPostingSchedule = document.getElementById('twitter-posting-schedule')?.value || 'recommended';
     const twitterPostingTime = document.getElementById('twitter-posting-time')?.value || '09:00';
 
+    // Instagram settings
+    const instagramAccessToken = document.getElementById('instagram-access-token')?.value || '';
+    const instagramAccountId = document.getElementById('instagram-account-id')?.value || '';
+    const instagramFrequency = document.getElementById('instagram-frequency')?.value || 'daily';
+    const instagramMaxPosts = document.getElementById('instagram-max-posts')?.value || '1';
+    const instagramHours = document.getElementById('instagram-hours')?.value || '11,18';
+    const instagramAutoPosting = document.getElementById('instagram-auto-posting')?.checked || false;
+
     // Pinterest settings
     const pinterestAccessToken = document.getElementById('pinterest-access-token')?.value || '';
     const pinterestBoardId = document.getElementById('pinterest-board-id')?.value || '';
@@ -1205,6 +1232,14 @@ async function saveSettings() {
         localStorage.setItem('admin_twitter_posting_schedule', twitterPostingSchedule);
         localStorage.setItem('admin_twitter_posting_time', twitterPostingTime);
 
+        // Save Instagram settings
+        if (instagramAccessToken) localStorage.setItem('admin_instagram_access_token', instagramAccessToken);
+        if (instagramAccountId) localStorage.setItem('admin_instagram_account_id', instagramAccountId);
+        localStorage.setItem('admin_instagram_frequency', instagramFrequency);
+        localStorage.setItem('admin_instagram_max_posts', instagramMaxPosts);
+        localStorage.setItem('admin_instagram_hours', instagramHours);
+        localStorage.setItem('admin_instagram_auto_posting', instagramAutoPosting.toString());
+
         // Save Pinterest settings
         if (pinterestAccessToken) localStorage.setItem('admin_pinterest_access_token', pinterestAccessToken);
         if (pinterestBoardId) localStorage.setItem('admin_pinterest_board_id', pinterestBoardId);
@@ -1260,6 +1295,16 @@ async function saveSettings() {
                 settingsData['twitter_posting_time'] = twitterPostingTime;
             }
 
+            // Add Instagram settings if provided
+            if (instagramAccessToken) {
+                settingsData['instagram_access_token'] = instagramAccessToken;
+                settingsData['instagram_account_id'] = instagramAccountId;
+                settingsData['instagram_posting_frequency'] = instagramFrequency;
+                settingsData['instagram_max_posts_per_day'] = instagramMaxPosts;
+                settingsData['instagram_posting_hours'] = instagramHours;
+                settingsData['instagram_auto_posting'] = instagramAutoPosting.toString();
+            }
+
             // Add Pinterest settings if provided
             if (pinterestAccessToken) {
                 settingsData['pinterest_access_token'] = pinterestAccessToken;
@@ -1304,6 +1349,18 @@ async function saveSettings() {
                 body: JSON.stringify(settingsData)
             });
             console.log('✅ Settings also synced to backend database');
+
+            // If Instagram credentials were saved, reload the Instagram service
+            if (instagramAccessToken && instagramAccountId) {
+                try {
+                    await fetch(`${API_URL}/api/instagram/reload-settings`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${getAdminToken()}`, 'Content-Type': 'application/json' }
+                    });
+                } catch (err) {
+                    console.warn('⚠️ Instagram reload failed (non-blocking):', err.message);
+                }
+            }
 
             // If Pinterest credentials were saved, reload the Pinterest service
             if (pinterestAccessToken && pinterestBoardId && ideogramApiKey) {
@@ -2713,6 +2770,126 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// ============================================================
+// INSTAGRAM MANAGEMENT
+// ============================================================
+
+async function loadInstagramStatus() {
+    try {
+        const response = await fetch(`${API_URL}/api/instagram/status`, { headers: getAuthHeaders() });
+        const data = await response.json();
+        const el = document.getElementById('instagram-status');
+        if (!el) return;
+
+        if (!data.success || !data.status.configured) {
+            el.innerHTML = `
+                <p style="color: #ffcccc;">❌ Instagram not configured</p>
+                <p style="font-size: 12px; opacity: 0.8;">Access Token + Account ID in Settings → Social Media → Instagram. Ideogram Key in Pinterest-Tab.</p>`;
+            return;
+        }
+        const s = data.status;
+        el.innerHTML = `
+            <p style="color: #ccffcc;">✅ Verbunden · Account ID: ${s.accountId} · Ideogram: ${s.ideogramConfigured ? '✅' : '❌'}</p>
+            <p style="font-size: 13px; margin-top: 8px;">
+                Scheduler: <strong>${s.schedulerRunning ? '▶️ Running' : '⏹️ Stopped'}</strong> &nbsp;|&nbsp;
+                Frequenz: <strong>${s.frequency}</strong> &nbsp;|&nbsp;
+                Nächstes Thema: <strong>${s.nextTopic || '—'}</strong>
+            </p>
+            <p style="font-size: 12px; opacity: 0.8; margin-top: 4px;">Posts gesamt: ${s.postCounter} (CTA jeden 2. Post)</p>`;
+    } catch {
+        const el = document.getElementById('instagram-status');
+        if (el) el.innerHTML = `<p style="color: #ffcccc;">⚠️ Server nicht erreichbar</p>`;
+    }
+}
+
+async function postInstagram() {
+    const btn = document.getElementById('instagram-post-btn');
+    const resultEl = document.getElementById('instagram-post-result');
+
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Generating & posting...'; }
+    if (resultEl) resultEl.innerHTML = '<p style="color: #999;">Ideogram generiert Bild, Claude schreibt Caption, dann Instagram-Post…</p>';
+
+    try {
+        const response = await fetch(`${API_URL}/api/instagram/post`, {
+            method: 'POST',
+            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            if (resultEl) resultEl.innerHTML = `
+                <div style="background: #f0fff4; padding: 12px; border-radius: 8px; border-left: 4px solid #38a169; display: flex; gap: 15px; align-items: flex-start;">
+                    ${data.imageUrl ? `<img src="${data.imageUrl}" style="width: 80px; border-radius: 6px; flex-shrink: 0;">` : ''}
+                    <div>
+                        <p>✅ <strong>${data.title}</strong></p>
+                        <p style="font-size: 13px; margin-top: 4px;">Kategorie: ${data.category} · CTA: ${data.includedCTA ? 'Ja ✅' : '—'}</p>
+                        <p style="font-size: 12px; color: #666; margin-top: 4px;">${data.captionPreview}</p>
+                    </div>
+                </div>`;
+            loadInstagramRecentPosts();
+            loadInstagramStatus();
+        } else {
+            if (resultEl) resultEl.innerHTML = `<p style="color: #e53e3e;">❌ ${data.error}</p>`;
+        }
+    } catch (err) {
+        if (resultEl) resultEl.innerHTML = `<p style="color: #e53e3e;">❌ ${err.message}</p>`;
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '📸 Generate & Post'; }
+    }
+}
+
+async function startInstagramScheduler() {
+    try {
+        const response = await fetch(`${API_URL}/api/instagram/scheduler/start`, {
+            method: 'POST', headers: getAuthHeaders()
+        });
+        const data = await response.json();
+        showAlert(data.started ? `Instagram Scheduler gestartet — alle ${data.intervalMinutes} Minuten` : (data.reason || 'Konnte nicht starten'), data.started ? 'success' : 'warning');
+        loadInstagramStatus();
+    } catch (err) {
+        showAlert('Server error: ' + err.message, 'error');
+    }
+}
+
+async function stopInstagramScheduler() {
+    try {
+        const response = await fetch(`${API_URL}/api/instagram/scheduler/stop`, {
+            method: 'POST', headers: getAuthHeaders()
+        });
+        const data = await response.json();
+        showAlert(data.stopped ? 'Instagram Scheduler gestoppt' : (data.reason || 'Nicht aktiv'), data.stopped ? 'success' : 'warning');
+        loadInstagramStatus();
+    } catch (err) {
+        showAlert('Server error: ' + err.message, 'error');
+    }
+}
+
+async function loadInstagramRecentPosts() {
+    const el = document.getElementById('instagram-recent-posts');
+    if (!el) return;
+    try {
+        const response = await fetch(`${API_URL}/api/instagram/recent-posts`, { headers: getAuthHeaders() });
+        const data = await response.json();
+        if (!data.posts || data.posts.length === 0) {
+            el.innerHTML = '<p style="color: #999;">Noch keine Posts.</p>';
+            return;
+        }
+        el.innerHTML = data.posts.map(p => `
+            <div style="padding: 12px; border-bottom: 1px solid #f0f0f0; display: flex; gap: 12px; align-items: flex-start;">
+                ${p.image_url ? `<img src="${p.image_url}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px; flex-shrink: 0;">` : ''}
+                <div>
+                    <p style="font-weight: 600; margin: 0;">${p.title}</p>
+                    <p style="font-size: 12px; color: #555; margin: 4px 0 0;">${(p.caption || '').substring(0, 100)}…</p>
+                    <p style="font-size: 12px; color: #999; margin: 2px 0 0;">
+                        ${p.category} · CTA: ${p.included_cta ? '✅' : '—'} · ${new Date(p.posted_at).toLocaleString()}
+                    </p>
+                </div>
+            </div>`).join('');
+    } catch {
+        el.innerHTML = '<p style="color: #999;">Konnte Posts nicht laden.</p>';
+    }
+}
 
 // ============================================================
 // PINTEREST MANAGEMENT
