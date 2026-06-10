@@ -72,36 +72,29 @@ function setupEventListeners() {
 
 // TAB SWITCHING
 function switchTab(tabName) {
-    // Hide all tabs
-    document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.remove('active');
-    });
-
-    // Remove active from all nav links
-    document.querySelectorAll('.nav-link').forEach(link => {
-        link.classList.remove('active');
-    });
-
-    // Show selected tab
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
     document.getElementById(tabName).classList.add('active');
-
-    // Add active to clicked nav link
     document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
 
-    // Update page title
     const titles = {
-        dashboard: 'Dashboard',
-        users: 'Users Management',
-        subscriptions: 'Subscriptions',
-        deals: 'Deals Management',
-        hacks: 'Hacks & Modules',
-        promos: 'Promo Codes',
-        'email-templates': 'Email Templates',
-        analytics: 'Analytics',
-        settings: 'Settings'
+        dashboard: 'Dashboard', users: 'Users Management', subscriptions: 'Subscriptions',
+        deals: 'Deals Management', hacks: 'Hacks & Modules', promos: 'Promo Codes',
+        'email-templates': 'Email Templates', analytics: 'Analytics', settings: 'Settings',
+        reddit: '🤖 Reddit', linkedin: '💼 LinkedIn', pinterest: '📌 Pinterest',
+        instagram: '📸 Instagram', wordpress: '📝 WordPress', quora: '❓ Quora', blogger: '📰 Blogger'
     };
+    document.getElementById('page-title').textContent = titles[tabName] || tabName;
 
-    document.getElementById('page-title').textContent = titles[tabName] || 'Dashboard';
+    // Auto-load data when switching to platform tabs
+    if (tabName === 'analytics') loadAnalytics();
+    if (tabName === 'reddit') { loadRedditStatus(); loadRedditRecentPosts(); }
+    if (tabName === 'linkedin') { loadLinkedInStatus(); loadLinkedInRecentPosts(); }
+    if (tabName === 'pinterest') { loadPinterestStatus(); loadPinterestRecentPosts(); }
+    if (tabName === 'instagram') { loadInstagramStatus(); loadInstagramRecentPosts(); }
+    if (tabName === 'wordpress') { loadWordPressStatus(); loadWordPressRecentPosts(); }
+    if (tabName === 'quora') { loadQuoraStatus(); loadQuoraRecentAnswers(); }
+    if (tabName === 'blogger') { loadBloggerStatus(); loadBloggerRecentPosts(); }
 }
 
 // ALERTS
@@ -993,7 +986,8 @@ async function loadSettings() {
             }
 
             console.log('✅ Settings loaded successfully from backend database');
-            return; // Success, don't need localStorage fallback
+            loadSocialSettings();
+            return;
         } else {
             console.warn('⚠️ Settings API returned status:', response.status, response.statusText);
             const errorData = await response.json().catch(() => ({}));
@@ -1079,7 +1073,8 @@ async function saveSettings() {
         localStorage.setItem('admin_send_digest', sendDigest.toString());
 
         console.log('✅ Settings saved to localStorage');
-        showAlert('Settings saved successfully! Stripe key is ready for checkout.', 'success');
+        await saveSocialSettings();
+        showAlert('Settings saved successfully!', 'success');
 
         // Optional: Try to sync to backend (non-blocking)
         try {
@@ -1635,4 +1630,558 @@ async function deleteHack(hackId) {
 function closeHackManagementModal() {
     document.getElementById('hack-management-modal').classList.remove('active');
     currentEditingHackId = null;
+}
+
+// ─── SETTINGS: Platform Tab Switcher ────────────────────────────────────────
+function switchPlatformTab(platform) {
+    document.querySelectorAll('.platform-settings').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.platform-tab').forEach(btn => {
+        btn.style.background = '#e5e7eb';
+        btn.style.color = '#374151';
+    });
+    const el = document.getElementById(`settings-${platform}`);
+    if (el) el.style.display = 'block';
+    const btn = document.querySelector(`.platform-tab[data-platform="${platform}"]`);
+    if (btn) { btn.style.background = '#667eea'; btn.style.color = 'white'; }
+}
+
+// ─── ANALYTICS ───────────────────────────────────────────────────────────────
+async function loadAnalytics() {
+    try {
+        const res = await fetch(`${API_URL}/api/admin/analytics/summary`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Failed');
+
+        const u = data.users;
+        document.getElementById('an-total-users').textContent = u.total.toLocaleString();
+        document.getElementById('an-signups-month').textContent = u.signupsThisMonth;
+        document.getElementById('an-signups-last').textContent = `Last month: ${u.signupsLastMonth}`;
+        document.getElementById('an-signup-change').textContent = u.signupChange !== null ? `${u.signupChange > 0 ? '+' : ''}${u.signupChange}% vs last month` : 'First month';
+        document.getElementById('an-paid').textContent = u.paid;
+        document.getElementById('an-elite').textContent = `Elite: ${u.elite}`;
+        document.getElementById('an-total-posts').textContent = data.social.totalPosts.toLocaleString();
+        document.getElementById('an-cta-posts').textContent = `with CTA: ${data.social.totalCTA}`;
+
+        const icons = { reddit:'🤖', linkedin:'💼', pinterest:'📌', instagram:'📸', wordpress:'📝', blogger:'📰', quora:'❓' };
+        const tbody = document.getElementById('analytics-platforms');
+        tbody.innerHTML = Object.entries(data.social.platforms).map(([key, p]) => `
+            <tr>
+                <td>${icons[key] || ''} ${key.charAt(0).toUpperCase() + key.slice(1)}</td>
+                <td>${p.total}</td>
+                <td>${p.thisMonth}</td>
+                <td>${p.withCTA}</td>
+            </tr>`).join('');
+    } catch (err) {
+        console.error('Analytics error:', err);
+    }
+}
+
+// ─── REDDIT ──────────────────────────────────────────────────────────────────
+async function loadRedditStatus() {
+    const card = document.getElementById('reddit-status-card');
+    try {
+        const res = await fetch(`${API_URL}/api/reddit/status`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const s = data.status || {};
+        card.innerHTML = `<p><strong>Status:</strong> ${s.configured ? '✅ Configured' : '❌ Not configured — add credentials in Settings'}</p>
+            ${s.configured ? `<p><strong>Scheduler:</strong> ${s.schedulerRunning ? '▶ Running' : '⏹ Stopped'}</p><p><strong>Total Posts:</strong> ${s.totalPosts || 0}</p>` : ''}`;
+    } catch { card.innerHTML = '<p>❌ Could not reach backend</p>'; }
+}
+async function publishRedditPost() {
+    showAlert('Generating Reddit post...', 'success');
+    try {
+        const res = await fetch(`${API_URL}/api/reddit/post`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (data.success) { showAlert(`✅ Posted to r/${data.subreddit}`, 'success'); loadRedditRecentPosts(); }
+        else showAlert(`❌ ${data.error || data.message}`, 'error');
+    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+}
+async function startRedditScheduler() {
+    const res = await fetch(`${API_URL}/api/reddit/scheduler/start`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+    const data = await res.json();
+    showAlert(data.success ? '▶ Reddit scheduler started' : `❌ ${data.error}`, data.success ? 'success' : 'error');
+    loadRedditStatus();
+}
+async function stopRedditScheduler() {
+    const res = await fetch(`${API_URL}/api/reddit/scheduler/stop`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+    const data = await res.json();
+    showAlert(data.success ? '⏹ Reddit scheduler stopped' : `❌ ${data.error}`, data.success ? 'success' : 'error');
+    loadRedditStatus();
+}
+async function loadRedditRecentPosts() {
+    const el = document.getElementById('reddit-recent-posts');
+    try {
+        const res = await fetch(`${API_URL}/api/reddit/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.posts?.length) { el.innerHTML = '<p style="color:#6b7280">No posts yet.</p>'; return; }
+        el.innerHTML = data.posts.map(p => `<div style="padding:10px;border-bottom:1px solid #e5e7eb">
+            <strong>r/${p.subreddit}</strong> — ${p.title?.substring(0,80)}...<br>
+            <small style="color:#6b7280">${new Date(p.posted_at).toLocaleString()} ${p.reddit_url ? `| <a href="${p.reddit_url}" target="_blank">View</a>` : ''}</small>
+        </div>`).join('');
+    } catch { el.innerHTML = '<p style="color:#ef4444">Error loading posts</p>'; }
+}
+
+// ─── LINKEDIN ─────────────────────────────────────────────────────────────────
+async function loadLinkedInStatus() {
+    const card = document.getElementById('linkedin-status-card');
+    try {
+        const res = await fetch(`${API_URL}/api/linkedin/status`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const s = data.status || {};
+        card.innerHTML = `<p><strong>Status:</strong> ${s.configured ? '✅ Configured' : '❌ Not configured — add credentials in Settings'}</p>
+            ${s.configured ? `<p><strong>Scheduler:</strong> ${s.schedulerRunning ? '▶ Running' : '⏹ Stopped'}</p><p><strong>Total Posts:</strong> ${s.totalPosts || 0}</p>` : ''}`;
+    } catch { card.innerHTML = '<p>❌ Could not reach backend</p>'; }
+}
+async function publishLinkedInPost() {
+    showAlert('Generating LinkedIn post...', 'success');
+    try {
+        const res = await fetch(`${API_URL}/api/linkedin/post`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (data.success) { showAlert('✅ Posted to LinkedIn!', 'success'); loadLinkedInRecentPosts(); }
+        else showAlert(`❌ ${data.error || data.message}`, 'error');
+    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+}
+async function startLinkedInScheduler() {
+    const res = await fetch(`${API_URL}/api/linkedin/scheduler/start`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+    const data = await res.json();
+    showAlert(data.success ? '▶ LinkedIn scheduler started' : `❌ ${data.error}`, data.success ? 'success' : 'error');
+    loadLinkedInStatus();
+}
+async function stopLinkedInScheduler() {
+    const res = await fetch(`${API_URL}/api/linkedin/scheduler/stop`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+    const data = await res.json();
+    showAlert(data.success ? '⏹ LinkedIn scheduler stopped' : `❌ ${data.error}`, data.success ? 'success' : 'error');
+    loadLinkedInStatus();
+}
+async function loadLinkedInRecentPosts() {
+    const el = document.getElementById('linkedin-recent-posts');
+    try {
+        const res = await fetch(`${API_URL}/api/linkedin/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.posts?.length) { el.innerHTML = '<p style="color:#6b7280">No posts yet.</p>'; return; }
+        el.innerHTML = data.posts.map(p => `<div style="padding:10px;border-bottom:1px solid #e5e7eb">
+            <strong>LinkedIn</strong> — ${p.content?.substring(0,100)}...<br>
+            <small style="color:#6b7280">${new Date(p.posted_at).toLocaleString()} ${p.post_url ? `| <a href="${p.post_url}" target="_blank">View</a>` : ''}</small>
+        </div>`).join('');
+    } catch { el.innerHTML = '<p style="color:#ef4444">Error loading posts</p>'; }
+}
+
+// ─── PINTEREST ───────────────────────────────────────────────────────────────
+async function loadPinterestStatus() {
+    const card = document.getElementById('pinterest-status-card');
+    try {
+        const res = await fetch(`${API_URL}/api/pinterest/status`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const s = data.status || {};
+        card.innerHTML = `<p><strong>Status:</strong> ${s.configured ? '✅ Configured' : '❌ Not configured — add credentials in Settings'}</p>
+            ${s.configured ? `<p><strong>Scheduler:</strong> ${s.schedulerRunning ? '▶ Running' : '⏹ Stopped'}</p><p><strong>Total Pins:</strong> ${s.totalPosts || 0}</p>` : ''}
+            <button onclick="reloadPinterestSettings()" style="margin-top:8px;padding:6px 12px;background:#e5e7eb;border:none;border-radius:4px;cursor:pointer;">🔄 Reload Settings</button>`;
+    } catch { card.innerHTML = '<p>❌ Could not reach backend</p>'; }
+}
+async function reloadPinterestSettings() {
+    try {
+        const res = await fetch(`${API_URL}/api/pinterest/reload-settings`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (data.configured) { showAlert('✅ Pinterest configured!', 'success'); }
+        else {
+            const d = data.debug || {};
+            const missing = [];
+            if (!d.hasAccessToken) missing.push('Access Token');
+            if (!d.hasBoardId) missing.push('Board ID');
+            if (!d.hasIdeogramKey) missing.push('Ideogram API Key');
+            showAlert(`❌ Missing: ${missing.join(', ') || 'credentials'}`, 'error');
+        }
+        loadPinterestStatus();
+    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+}
+async function publishPinterestPin() {
+    showAlert('Generating Pinterest pin...', 'success');
+    try {
+        const res = await fetch(`${API_URL}/api/pinterest/post-pin`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (data.success) { showAlert('✅ Pin posted to Pinterest!', 'success'); loadPinterestRecentPosts(); }
+        else showAlert(`❌ ${data.error || data.message}`, 'error');
+    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+}
+async function startPinterestScheduler() {
+    const res = await fetch(`${API_URL}/api/pinterest/scheduler/start`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+    const data = await res.json();
+    showAlert(data.success ? '▶ Pinterest scheduler started' : `❌ ${data.error}`, data.success ? 'success' : 'error');
+    loadPinterestStatus();
+}
+async function stopPinterestScheduler() {
+    const res = await fetch(`${API_URL}/api/pinterest/scheduler/stop`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+    const data = await res.json();
+    showAlert(data.success ? '⏹ Pinterest scheduler stopped' : `❌ ${data.error}`, data.success ? 'success' : 'error');
+    loadPinterestStatus();
+}
+async function loadPinterestRecentPosts() {
+    const el = document.getElementById('pinterest-recent-posts');
+    try {
+        const res = await fetch(`${API_URL}/api/pinterest/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.posts?.length) { el.innerHTML = '<p style="color:#6b7280">No pins yet.</p>'; return; }
+        el.innerHTML = data.posts.map(p => `<div style="padding:10px;border-bottom:1px solid #e5e7eb">
+            <strong>📌 ${p.title?.substring(0,80)}</strong><br>
+            <small style="color:#6b7280">${new Date(p.posted_at).toLocaleString()} ${p.pin_url ? `| <a href="${p.pin_url}" target="_blank">View</a>` : ''}</small>
+        </div>`).join('');
+    } catch { el.innerHTML = '<p style="color:#ef4444">Error loading pins</p>'; }
+}
+
+// ─── INSTAGRAM ────────────────────────────────────────────────────────────────
+async function loadInstagramStatus() {
+    const card = document.getElementById('instagram-status-card');
+    try {
+        const res = await fetch(`${API_URL}/api/instagram/status`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const s = data.status || {};
+        card.innerHTML = `<p><strong>Status:</strong> ${s.configured ? '✅ Configured' : '❌ Not configured — add credentials in Settings'}</p>
+            ${s.configured ? `<p><strong>Scheduler:</strong> ${s.schedulerRunning ? '▶ Running' : '⏹ Stopped'}</p><p><strong>Total Posts:</strong> ${s.totalPosts || 0}</p>` : ''}`;
+    } catch { card.innerHTML = '<p>❌ Could not reach backend</p>'; }
+}
+async function publishInstagramPost() {
+    showAlert('Generating Instagram post...', 'success');
+    try {
+        const res = await fetch(`${API_URL}/api/instagram/post`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (data.success) { showAlert('✅ Posted to Instagram!', 'success'); loadInstagramRecentPosts(); }
+        else showAlert(`❌ ${data.error || data.message}`, 'error');
+    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+}
+async function startInstagramScheduler() {
+    const res = await fetch(`${API_URL}/api/instagram/scheduler/start`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+    const data = await res.json();
+    showAlert(data.success ? '▶ Instagram scheduler started' : `❌ ${data.error}`, data.success ? 'success' : 'error');
+    loadInstagramStatus();
+}
+async function stopInstagramScheduler() {
+    const res = await fetch(`${API_URL}/api/instagram/scheduler/stop`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+    const data = await res.json();
+    showAlert(data.success ? '⏹ Instagram scheduler stopped' : `❌ ${data.error}`, data.success ? 'success' : 'error');
+    loadInstagramStatus();
+}
+async function loadInstagramRecentPosts() {
+    const el = document.getElementById('instagram-recent-posts');
+    try {
+        const res = await fetch(`${API_URL}/api/instagram/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.posts?.length) { el.innerHTML = '<p style="color:#6b7280">No posts yet.</p>'; return; }
+        el.innerHTML = data.posts.map(p => `<div style="padding:10px;border-bottom:1px solid #e5e7eb">
+            <strong>📸 Instagram</strong> — ${p.caption?.substring(0,100)}...<br>
+            <small style="color:#6b7280">${new Date(p.posted_at).toLocaleString()} ${p.post_url ? `| <a href="${p.post_url}" target="_blank">View</a>` : ''}</small>
+        </div>`).join('');
+    } catch { el.innerHTML = '<p style="color:#ef4444">Error loading posts</p>'; }
+}
+
+// ─── WORDPRESS ────────────────────────────────────────────────────────────────
+async function loadWordPressStatus() {
+    const card = document.getElementById('wordpress-status-card');
+    try {
+        const res = await fetch(`${API_URL}/api/wordpress/status`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const s = data.status || {};
+        card.innerHTML = `<p><strong>Status:</strong> ${s.configured ? '✅ Connected' : '❌ Not connected — authorize below'}</p>
+            ${s.configured ? `<p><strong>Site ID:</strong> ${s.siteId || 'Set'}</p><p><strong>Scheduler:</strong> ${s.schedulerRunning ? '▶ Running' : '⏹ Stopped'}</p><p><strong>Total Posts:</strong> ${s.totalPosts || 0}</p>` : ''}`;
+    } catch { card.innerHTML = '<p>❌ Could not reach backend</p>'; }
+}
+async function getWordPressAuthUrl() {
+    try {
+        const res = await fetch(`${API_URL}/api/wordpress/auth-url`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (data.authUrl) {
+            document.getElementById('wordpress-auth-url').innerHTML = `<p>Open this URL in your browser, authorize, then copy the code:<br><a href="${data.authUrl}" target="_blank" style="word-break:break-all">${data.authUrl}</a></p>`;
+        } else showAlert(`❌ ${data.error || 'Could not get URL'}`, 'error');
+    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+}
+async function exchangeWordPressToken() {
+    const code = document.getElementById('wordpress-auth-code').value.trim();
+    if (!code) { showAlert('Please enter the authorization code', 'error'); return; }
+    try {
+        const res = await fetch(`${API_URL}/api/wordpress/exchange-token`, {
+            method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code })
+        });
+        const data = await res.json();
+        if (data.success) { showAlert('✅ WordPress.com connected!', 'success'); loadWordPressStatus(); }
+        else showAlert(`❌ ${data.error}`, 'error');
+    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+}
+async function loadWordPressSites() {
+    try {
+        const res = await fetch(`${API_URL}/api/wordpress/sites`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.sites?.length) { document.getElementById('wordpress-sites').innerHTML = '<p style="color:#6b7280">No sites found. Make sure you are connected.</p>'; return; }
+        document.getElementById('wordpress-sites').innerHTML = data.sites.map(s =>
+            `<button onclick="selectWordPressSite('${s.ID}','${s.name}')" style="margin:4px;padding:8px 14px;background:#e5e7eb;border:none;border-radius:6px;cursor:pointer;">${s.name}</button>`
+        ).join('');
+    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+}
+async function selectWordPressSite(siteId, siteName) {
+    try {
+        const res = await fetch(`${API_URL}/api/wordpress/select-site`, {
+            method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ siteId, siteName })
+        });
+        const data = await res.json();
+        if (data.success) { showAlert(`✅ Site selected: ${siteName}`, 'success'); loadWordPressStatus(); }
+        else showAlert(`❌ ${data.error}`, 'error');
+    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+}
+async function publishWordPressPost() {
+    showAlert('Generating WordPress article...', 'success');
+    try {
+        const res = await fetch(`${API_URL}/api/wordpress/publish`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (data.success) { showAlert('✅ Article published on WordPress!', 'success'); loadWordPressRecentPosts(); }
+        else showAlert(`❌ ${data.error || data.message}`, 'error');
+    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+}
+async function startWordPressScheduler() {
+    const res = await fetch(`${API_URL}/api/wordpress/scheduler/start`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+    const data = await res.json();
+    showAlert(data.success ? '▶ WordPress scheduler started' : `❌ ${data.error}`, data.success ? 'success' : 'error');
+    loadWordPressStatus();
+}
+async function stopWordPressScheduler() {
+    const res = await fetch(`${API_URL}/api/wordpress/scheduler/stop`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+    const data = await res.json();
+    showAlert(data.success ? '⏹ WordPress scheduler stopped' : `❌ ${data.error}`, data.success ? 'success' : 'error');
+    loadWordPressStatus();
+}
+async function loadWordPressRecentPosts() {
+    const el = document.getElementById('wordpress-recent-posts');
+    try {
+        const res = await fetch(`${API_URL}/api/wordpress/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.posts?.length) { el.innerHTML = '<p style="color:#6b7280">No posts yet.</p>'; return; }
+        el.innerHTML = data.posts.map(p => `<div style="padding:10px;border-bottom:1px solid #e5e7eb">
+            <strong>📝 ${p.title?.substring(0,80)}</strong><br>
+            <small style="color:#6b7280">${new Date(p.posted_at).toLocaleString()} ${p.post_url ? `| <a href="${p.post_url}" target="_blank">View</a>` : ''}</small>
+        </div>`).join('');
+    } catch { el.innerHTML = '<p style="color:#ef4444">Error loading posts</p>'; }
+}
+
+// ─── QUORA ────────────────────────────────────────────────────────────────────
+async function loadQuoraStatus() {
+    const card = document.getElementById('quora-status-card');
+    try {
+        const res = await fetch(`${API_URL}/api/quora/status`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const s = data.status || {};
+        card.innerHTML = `<p><strong>Status:</strong> ${s.configured ? '✅ Claude API ready' : '❌ No Claude API key — add in Settings'}</p>
+            <p><strong>Generated Answers:</strong> ${s.totalAnswers || 0}</p>`;
+    } catch { card.innerHTML = '<p>❌ Could not reach backend</p>'; }
+}
+async function generateQuoraAnswer() {
+    showAlert('Generating Quora answer...', 'success');
+    try {
+        const res = await fetch(`${API_URL}/api/quora/generate`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (data.success) { showAlert('✅ Answer generated!', 'success'); loadQuoraRecentAnswers(); }
+        else showAlert(`❌ ${data.error || data.message}`, 'error');
+    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+}
+async function generateQuoraBatch() {
+    showAlert('Generating 5 Quora answers...', 'success');
+    try {
+        const res = await fetch(`${API_URL}/api/quora/generate-batch`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (data.success) { showAlert(`✅ ${data.count || 5} answers generated!`, 'success'); loadQuoraRecentAnswers(); }
+        else showAlert(`❌ ${data.error || data.message}`, 'error');
+    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+}
+async function loadQuoraRecentAnswers() {
+    const el = document.getElementById('quora-answers-list');
+    try {
+        const res = await fetch(`${API_URL}/api/quora/recent-answers`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.answers?.length) { el.innerHTML = '<p style="color:#6b7280">No answers yet. Click Generate above.</p>'; return; }
+        el.innerHTML = data.answers.map(a => `
+            <div style="padding:15px;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:10px;">
+                <strong style="color:#667eea">Q: ${a.question}</strong>
+                <p style="margin:8px 0;font-size:0.9em;color:#374151;max-height:120px;overflow:hidden">${a.answer?.substring(0,300)}...</p>
+                <button onclick="copyQuoraAnswer('${a.id}')" style="padding:6px 12px;background:#667eea;color:white;border:none;border-radius:4px;cursor:pointer;">📋 Copy Full Answer</button>
+                <small style="color:#9ca3af;margin-left:10px">${new Date(a.created_at || a.posted_at).toLocaleString()}</small>
+            </div>`).join('');
+        // Store answers for copying
+        window._quoraAnswers = data.answers;
+    } catch { el.innerHTML = '<p style="color:#ef4444">Error loading answers</p>'; }
+}
+function copyQuoraAnswer(id) {
+    const a = (window._quoraAnswers || []).find(x => String(x.id) === String(id));
+    if (!a) { showAlert('Answer not found', 'error'); return; }
+    const text = `Q: ${a.question}\n\n${a.answer}`;
+    navigator.clipboard.writeText(text).then(() => showAlert('✅ Copied to clipboard!', 'success')).catch(() => showAlert('❌ Copy failed', 'error'));
+}
+
+// ─── BLOGGER ──────────────────────────────────────────────────────────────────
+async function loadBloggerStatus() {
+    const card = document.getElementById('blogger-status-card');
+    try {
+        const res = await fetch(`${API_URL}/api/blogger/status`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const s = data.status || {};
+        card.innerHTML = `<p><strong>Status:</strong> ${s.configured ? '✅ Connected' : '❌ Not connected — authorize below'}</p>
+            ${s.configured ? `<p><strong>Scheduler:</strong> ${s.schedulerRunning ? '▶ Running' : '⏹ Stopped'}</p><p><strong>Total Posts:</strong> ${s.totalPosts || 0}</p>` : ''}`;
+    } catch { card.innerHTML = '<p>❌ Could not reach backend</p>'; }
+}
+async function getBloggerAuthUrl() {
+    try {
+        const res = await fetch(`${API_URL}/api/blogger/auth-url`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (data.authUrl) {
+            document.getElementById('blogger-auth-url').innerHTML = `<p>Open this URL, authorize Google, then copy the code shown:<br><a href="${data.authUrl}" target="_blank" style="word-break:break-all">${data.authUrl}</a></p>`;
+        } else showAlert(`❌ ${data.error || 'Could not get URL'}`, 'error');
+    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+}
+async function exchangeBloggerToken() {
+    const code = document.getElementById('blogger-auth-code').value.trim();
+    if (!code) { showAlert('Please enter the authorization code', 'error'); return; }
+    try {
+        const res = await fetch(`${API_URL}/api/blogger/exchange-token`, {
+            method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code })
+        });
+        const data = await res.json();
+        if (data.success) { showAlert('✅ Google Blogger connected!', 'success'); loadBloggerStatus(); }
+        else showAlert(`❌ ${data.error}`, 'error');
+    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+}
+async function loadBloggerBlogs() {
+    try {
+        const res = await fetch(`${API_URL}/api/blogger/blogs`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.blogs?.length) { document.getElementById('blogger-blogs').innerHTML = '<p style="color:#6b7280">No blogs found. Make sure you are connected.</p>'; return; }
+        document.getElementById('blogger-blogs').innerHTML = data.blogs.map(b =>
+            `<button onclick="selectBloggerBlog('${b.id}','${b.name}')" style="margin:4px;padding:8px 14px;background:#e5e7eb;border:none;border-radius:6px;cursor:pointer;">${b.name}</button>`
+        ).join('');
+    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+}
+async function selectBloggerBlog(blogId, blogName) {
+    try {
+        const res = await fetch(`${API_URL}/api/blogger/select-blog`, {
+            method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ blogId, blogName })
+        });
+        const data = await res.json();
+        if (data.success) { showAlert(`✅ Blog selected: ${blogName}`, 'success'); loadBloggerStatus(); }
+        else showAlert(`❌ ${data.error}`, 'error');
+    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+}
+async function publishBloggerPost() {
+    showAlert('Generating Blogger article...', 'success');
+    try {
+        const res = await fetch(`${API_URL}/api/blogger/publish`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (data.success) { showAlert('✅ Article published on Blogger!', 'success'); loadBloggerRecentPosts(); }
+        else showAlert(`❌ ${data.error || data.message}`, 'error');
+    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+}
+async function startBloggerScheduler() {
+    const res = await fetch(`${API_URL}/api/blogger/scheduler/start`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+    const data = await res.json();
+    showAlert(data.success ? '▶ Blogger scheduler started' : `❌ ${data.error}`, data.success ? 'success' : 'error');
+    loadBloggerStatus();
+}
+async function stopBloggerScheduler() {
+    const res = await fetch(`${API_URL}/api/blogger/scheduler/stop`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+    const data = await res.json();
+    showAlert(data.success ? '⏹ Blogger scheduler stopped' : `❌ ${data.error}`, data.success ? 'success' : 'error');
+    loadBloggerStatus();
+}
+async function loadBloggerRecentPosts() {
+    const el = document.getElementById('blogger-recent-posts');
+    try {
+        const res = await fetch(`${API_URL}/api/blogger/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.posts?.length) { el.innerHTML = '<p style="color:#6b7280">No posts yet.</p>'; return; }
+        el.innerHTML = data.posts.map(p => `<div style="padding:10px;border-bottom:1px solid #e5e7eb">
+            <strong>📰 ${p.title?.substring(0,80)}</strong><br>
+            <small style="color:#6b7280">${new Date(p.posted_at).toLocaleString()} ${p.post_url ? `| <a href="${p.post_url}" target="_blank">View</a>` : ''}</small>
+        </div>`).join('');
+    } catch { el.innerHTML = '<p style="color:#ef4444">Error loading posts</p>'; }
+}
+
+// ─── SETTINGS: Load & Save Social Media Credentials ──────────────────────────
+async function loadSocialSettings() {
+    try {
+        const res = await fetch(`${API_URL}/api/admin/settings`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        if (!res.ok) return;
+        const data = await res.json();
+        const s = data.data || {};
+        const set = (id, key) => { const el = document.getElementById(id); if (el && s[key]?.value) el.value = s[key].value; };
+        const chk = (id, key) => { const el = document.getElementById(id); if (el) el.checked = s[key]?.value === 'true'; };
+        set('reddit-client-id', 'reddit_client_id');
+        set('reddit-client-secret', 'reddit_client_secret');
+        set('reddit-username', 'reddit_username');
+        set('reddit-password', 'reddit_password');
+        set('reddit-frequency', 'reddit_frequency_hours');
+        chk('reddit-auto', 'reddit_auto_posting');
+        set('pinterest-access-token', 'pinterest_access_token');
+        set('pinterest-board-id', 'pinterest_board_id');
+        set('ideogram-api-key', 'ideogram_api_key');
+        set('pinterest-frequency', 'pinterest_frequency_hours');
+        chk('pinterest-auto', 'pinterest_auto_posting');
+        set('instagram-access-token', 'instagram_access_token');
+        set('instagram-account-id', 'instagram_account_id');
+        set('instagram-frequency', 'instagram_frequency_hours');
+        chk('instagram-auto', 'instagram_auto_posting');
+        set('linkedin-access-token', 'linkedin_access_token');
+        set('linkedin-org-id', 'linkedin_org_id');
+        set('linkedin-frequency', 'linkedin_frequency_hours');
+        chk('linkedin-auto', 'linkedin_auto_posting');
+        set('wordpress-client-id', 'wordpress_client_id');
+        set('wordpress-client-secret', 'wordpress_client_secret');
+        set('wordpress-frequency', 'wordpress_frequency_hours');
+        chk('wordpress-auto', 'wordpress_auto_posting');
+        set('google-client-id', 'google_client_id');
+        set('google-client-secret', 'google_client_secret');
+        set('blogger-frequency', 'blogger_frequency_hours');
+        chk('blogger-auto', 'blogger_auto_posting');
+    } catch (err) { console.warn('Could not load social settings:', err.message); }
+}
+
+async function saveSocialSettings() {
+    const val = id => document.getElementById(id)?.value?.trim() || '';
+    const chk = id => document.getElementById(id)?.checked ? 'true' : 'false';
+    const settings = {
+        reddit_client_id: val('reddit-client-id'),
+        reddit_client_secret: val('reddit-client-secret'),
+        reddit_username: val('reddit-username'),
+        reddit_password: val('reddit-password'),
+        reddit_frequency_hours: val('reddit-frequency') || '6',
+        reddit_auto_posting: chk('reddit-auto'),
+        pinterest_access_token: val('pinterest-access-token'),
+        pinterest_board_id: val('pinterest-board-id'),
+        ideogram_api_key: val('ideogram-api-key'),
+        pinterest_frequency_hours: val('pinterest-frequency') || '4',
+        pinterest_auto_posting: chk('pinterest-auto'),
+        instagram_access_token: val('instagram-access-token'),
+        instagram_account_id: val('instagram-account-id'),
+        instagram_frequency_hours: val('instagram-frequency') || '8',
+        instagram_auto_posting: chk('instagram-auto'),
+        linkedin_access_token: val('linkedin-access-token'),
+        linkedin_org_id: val('linkedin-org-id'),
+        linkedin_frequency_hours: val('linkedin-frequency') || '12',
+        linkedin_auto_posting: chk('linkedin-auto'),
+        wordpress_client_id: val('wordpress-client-id'),
+        wordpress_client_secret: val('wordpress-client-secret'),
+        wordpress_frequency_hours: val('wordpress-frequency') || '24',
+        wordpress_auto_posting: chk('wordpress-auto'),
+        google_client_id: val('google-client-id'),
+        google_client_secret: val('google-client-secret'),
+        blogger_frequency_hours: val('blogger-frequency') || '24',
+        blogger_auto_posting: chk('blogger-auto'),
+    };
+    await fetch(`${API_URL}/api/admin/settings/batch/update`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings)
+    });
+    // Reload services with new credentials
+    for (const platform of ['pinterest', 'reddit', 'linkedin', 'instagram', 'wordpress', 'blogger']) {
+        fetch(`${API_URL}/api/${platform}/reload-settings`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } }).catch(() => {});
+    }
 }
