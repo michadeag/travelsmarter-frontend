@@ -1001,6 +1001,24 @@ async function loadSettings() {
                 if (el) el.value = settings.twitter_posting_time.value;
             }
 
+            // Load Blogger settings
+            const bloggerFields = [
+                ['google_client_id', 'google-client-id'],
+                ['google_client_secret', 'google-client-secret'],
+                ['blogger_blog_id', 'blogger-blog-id'],
+                ['blogger_frequency_hours', 'blogger-frequency-hours']
+            ];
+            bloggerFields.forEach(([key, id]) => {
+                if (settings[key]?.value) {
+                    const el = document.getElementById(id);
+                    if (el) el.value = settings[key].value;
+                }
+            });
+            if (settings.blogger_auto_posting?.value) {
+                const el = document.getElementById('blogger-auto-posting');
+                if (el) el.checked = settings.blogger_auto_posting.value === 'true';
+            }
+
             // Load Medium settings
             const mediumFields = [
                 ['medium_integration_token', 'medium-integration-token'],
@@ -1182,6 +1200,13 @@ async function saveSettings() {
     const twitterPostingSchedule = document.getElementById('twitter-posting-schedule')?.value || 'recommended';
     const twitterPostingTime = document.getElementById('twitter-posting-time')?.value || '09:00';
 
+    // Blogger settings
+    const googleClientId = document.getElementById('google-client-id')?.value || '';
+    const googleClientSecret = document.getElementById('google-client-secret')?.value || '';
+    const bloggerBlogId = document.getElementById('blogger-blog-id')?.value || '';
+    const bloggerFrequencyHours = document.getElementById('blogger-frequency-hours')?.value || '48';
+    const bloggerAutoPosting = document.getElementById('blogger-auto-posting')?.checked || false;
+
     // Medium settings
     const mediumToken = document.getElementById('medium-integration-token')?.value || '';
     const mediumPubId = document.getElementById('medium-publication-id')?.value || '';
@@ -1324,6 +1349,15 @@ async function saveSettings() {
                 settingsData['twitter_posting_time'] = twitterPostingTime;
             }
 
+            // Add Blogger settings if provided
+            if (googleClientId) {
+                settingsData['google_client_id'] = googleClientId;
+                settingsData['google_client_secret'] = googleClientSecret;
+                settingsData['blogger_blog_id'] = bloggerBlogId;
+                settingsData['blogger_frequency_hours'] = bloggerFrequencyHours;
+                settingsData['blogger_auto_posting'] = bloggerAutoPosting.toString();
+            }
+
             // Add Medium settings if provided
             if (mediumToken) {
                 settingsData['medium_integration_token'] = mediumToken;
@@ -1386,6 +1420,18 @@ async function saveSettings() {
                 body: JSON.stringify(settingsData)
             });
             console.log('✅ Settings also synced to backend database');
+
+            // If Blogger credentials were saved, reload the Blogger service
+            if (googleClientId) {
+                try {
+                    await fetch(`${API_URL}/api/blogger/reload-settings`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${getAdminToken()}`, 'Content-Type': 'application/json' }
+                    });
+                } catch (err) {
+                    console.warn('⚠️ Blogger reload failed (non-blocking):', err.message);
+                }
+            }
 
             // If Medium token was saved, reload the Medium service
             if (mediumToken) {
@@ -2527,6 +2573,8 @@ function switchSocialTab(tabName) {
         loadMediumStatus(); loadMediumRecentPosts();
     } else if (tabName === 'quora') {
         loadQuoraStatus(); loadQuoraRecentAnswers();
+    } else if (tabName === 'blogger') {
+        loadBloggerStatus(); loadBloggerRecentPosts();
     }
 }
 
@@ -2981,6 +3029,216 @@ async function loadQuoraRecentAnswers() {
         data.answers.forEach(a => _renderQuoraAnswer(a));
         const countEl = document.getElementById('quora-answer-count');
         if (countEl) countEl.textContent = `${data.answers.length} generiert`;
+    } catch { /* non-blocking */ }
+}
+
+// ============================================================
+// BLOGGER MANAGEMENT
+// ============================================================
+
+async function loadBloggerStatus() {
+    try {
+        const response = await fetch(`${API_URL}/api/blogger/status`, { headers: getAuthHeaders() });
+        const data = await response.json();
+        if (!data.success) return;
+        const s = data.status;
+
+        const connEl = document.getElementById('blogger-connection-status');
+        if (connEl) {
+            if (s.connected) {
+                connEl.innerHTML = `<span style="color: #38a169;">✅ Google-Konto verbunden</span>${s.blogId ? ` · Blog ID: <code>${s.blogId}</code>` : ' · <em style="color:#e67e22;">Blog ID noch nicht gesetzt</em>'}`;
+            } else {
+                connEl.innerHTML = `<span style="color: #e53e3e;">❌ Nicht verbunden — Google-Konto verknüpfen</span>`;
+            }
+        }
+        const schedEl = document.getElementById('blogger-scheduler-status');
+        if (schedEl) schedEl.textContent = s.schedulerRunning ? '▶️' : '⏸️';
+        const freqEl = document.getElementById('blogger-frequency');
+        if (freqEl) freqEl.textContent = `${s.frequencyHours}h`;
+        const countEl = document.getElementById('blogger-post-count');
+        if (countEl) countEl.textContent = s.postCounter;
+    } catch { /* non-blocking */ }
+
+    // Populate topic dropdown
+    try {
+        const response = await fetch(`${API_URL}/api/blogger/topics`, { headers: getAuthHeaders() });
+        const data = await response.json();
+        const select = document.getElementById('blogger-topic-select');
+        if (select && data.topics && select.options.length <= 1) {
+            data.topics.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.index;
+                opt.textContent = `#${t.index + 1} ${t.title}`;
+                select.appendChild(opt);
+            });
+        }
+    } catch { /* non-blocking */ }
+}
+
+async function getBloggerAuthUrl() {
+    try {
+        const response = await fetch(`${API_URL}/api/blogger/auth-url`, { headers: getAuthHeaders() });
+        const data = await response.json();
+        if (!data.success) { showAlert(data.error, 'error'); return; }
+
+        const section = document.getElementById('blogger-auth-section');
+        if (section) section.style.display = 'block';
+
+        // Open auth URL in new tab
+        window.open(data.url, '_blank');
+        showAlert('Google-Authentifizierungsseite geöffnet. Nach der Anmeldung den Code hier einfügen.', 'info');
+    } catch (err) {
+        showAlert('Fehler: ' + err.message, 'error');
+    }
+}
+
+async function exchangeBloggerToken() {
+    const code = document.getElementById('blogger-auth-code')?.value?.trim();
+    if (!code) { showAlert('Bitte Autorisierungscode einfügen', 'error'); return; }
+
+    try {
+        const response = await fetch(`${API_URL}/api/blogger/exchange-token`, {
+            method: 'POST',
+            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code })
+        });
+        const data = await response.json();
+        if (data.success) {
+            showAlert('✅ Google-Konto erfolgreich verbunden!', 'success');
+            document.getElementById('blogger-auth-section').style.display = 'none';
+            document.getElementById('blogger-auth-code').value = '';
+            loadBloggerStatus();
+        } else {
+            showAlert('❌ ' + data.error, 'error');
+        }
+    } catch (err) {
+        showAlert('Fehler: ' + err.message, 'error');
+    }
+}
+
+async function loadBloggerBlogs() {
+    try {
+        const response = await fetch(`${API_URL}/api/blogger/blogs`, { headers: getAuthHeaders() });
+        const data = await response.json();
+        const container = document.getElementById('blogger-blogs-list');
+        const section = document.getElementById('blogger-blogs-section');
+        if (!container || !section) return;
+
+        if (!data.success) { showAlert(data.error, 'error'); return; }
+
+        section.style.display = 'block';
+        container.innerHTML = '';
+        data.blogs.forEach(blog => {
+            const div = document.createElement('div');
+            div.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 8px;';
+            div.innerHTML = `
+                <div>
+                    <strong style="font-size: 14px;">${blog.name}</strong>
+                    <a href="${blog.url}" target="_blank" style="font-size: 12px; color: #999; display: block;">${blog.url}</a>
+                </div>
+                <button onclick="selectBloggerBlog('${blog.id}', '${blog.name}')" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">✅ Auswählen</button>`;
+            container.appendChild(div);
+        });
+    } catch (err) {
+        showAlert('Fehler: ' + err.message, 'error');
+    }
+}
+
+async function selectBloggerBlog(blogId, blogName) {
+    try {
+        const response = await fetch(`${API_URL}/api/settings`, {
+            method: 'POST',
+            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ settings: { blogger_blog_id: blogId } })
+        });
+        const el = document.getElementById('blogger-blog-id');
+        if (el) el.value = blogId;
+        document.getElementById('blogger-blogs-section').style.display = 'none';
+        showAlert(`Blog "${blogName}" ausgewählt (ID: ${blogId})`, 'success');
+        await fetch(`${API_URL}/api/blogger/reload-settings`, { method: 'POST', headers: getAuthHeaders() });
+        loadBloggerStatus();
+    } catch (err) {
+        showAlert('Fehler: ' + err.message, 'error');
+    }
+}
+
+async function publishBloggerPost() {
+    const btn = document.getElementById('blogger-publish-btn');
+    const resultEl = document.getElementById('blogger-publish-result');
+    const select = document.getElementById('blogger-topic-select');
+    const topicIndex = select?.value !== '' ? parseInt(select.value) : undefined;
+
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Generiere & veröffentliche…'; }
+    if (resultEl) resultEl.innerHTML = '<p style="color:#999;">Claude Sonnet schreibt den Artikel… (~15–20 Sek.)</p>';
+
+    try {
+        const response = await fetch(`${API_URL}/api/blogger/publish`, {
+            method: 'POST',
+            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topicIndex })
+        });
+        const data = await response.json();
+        if (data.success) {
+            resultEl.innerHTML = `
+                <div style="background: #f0fff4; border: 1px solid #9ae6b4; border-radius: 8px; padding: 14px; margin-top: 10px;">
+                    <p style="font-weight: 700; margin: 0 0 6px;">${data.title}</p>
+                    <p style="font-size: 13px; color: #666; margin: 0 0 10px;">Kategorie: ${data.category} · CTA: ${data.includedCTA ? '✅' : '—'}</p>
+                    ${data.bloggerUrl ? `<a href="${data.bloggerUrl}" target="_blank" style="color: #4285f4; font-size: 13px;">📰 Auf Blogger lesen →</a>` : ''}
+                </div>`;
+            loadBloggerRecentPosts();
+            loadBloggerStatus();
+        } else {
+            resultEl.innerHTML = `<p style="color: #e53e3e;">❌ ${data.error}</p>`;
+        }
+    } catch (err) {
+        resultEl.innerHTML = `<p style="color: #e53e3e;">❌ ${err.message}</p>`;
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '🚀 Artikel veröffentlichen'; }
+    }
+}
+
+async function startBloggerScheduler() {
+    try {
+        const response = await fetch(`${API_URL}/api/blogger/scheduler/start`, {
+            method: 'POST', headers: getAuthHeaders()
+        });
+        const data = await response.json();
+        showAlert(data.started ? `Blogger Scheduler gestartet — alle ${data.intervalHours}h` : (data.reason || 'Konnte nicht starten'), data.started ? 'success' : 'warning');
+        loadBloggerStatus();
+    } catch (err) { showAlert('Server error: ' + err.message, 'error'); }
+}
+
+async function stopBloggerScheduler() {
+    try {
+        const response = await fetch(`${API_URL}/api/blogger/scheduler/stop`, {
+            method: 'POST', headers: getAuthHeaders()
+        });
+        const data = await response.json();
+        showAlert(data.stopped ? 'Blogger Scheduler gestoppt' : (data.reason || 'Nicht aktiv'), data.stopped ? 'success' : 'warning');
+        loadBloggerStatus();
+    } catch (err) { showAlert('Server error: ' + err.message, 'error'); }
+}
+
+async function loadBloggerRecentPosts() {
+    try {
+        const response = await fetch(`${API_URL}/api/blogger/recent-posts`, { headers: getAuthHeaders() });
+        const data = await response.json();
+        const container = document.getElementById('blogger-posts-list');
+        if (!container) return;
+        if (!data.posts || data.posts.length === 0) {
+            container.innerHTML = '<p style="color: #999;">Noch keine Artikel veröffentlicht.</p>';
+            return;
+        }
+        container.innerHTML = data.posts.map(p => `
+            <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                <div>
+                    <p style="font-weight: 700; font-size: 14px; margin: 0 0 4px;">${p.title}</p>
+                    <p style="font-size: 12px; color: #999; margin: 0;">
+                        ${p.category} · CTA: ${p.included_cta ? '✅' : '—'} · ${new Date(p.posted_at).toLocaleString()}
+                    </p>
+                </div>
+                ${p.blogger_url ? `<a href="${p.blogger_url}" target="_blank" style="font-size: 12px; color: #4285f4; white-space: nowrap; flex-shrink: 0;">Lesen →</a>` : ''}
+            </div>`).join('');
     } catch { /* non-blocking */ }
 }
 

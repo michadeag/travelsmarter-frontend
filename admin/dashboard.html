@@ -603,6 +603,7 @@
                 <a class="nav-link" data-tab="instagram" onclick="loadInstagramStatus(); loadInstagramRecentPosts();">📸 Instagram</a>
                 <a class="nav-link" data-tab="medium" onclick="loadMediumStatus(); loadMediumRecentPosts();">📝 Medium</a>
                 <a class="nav-link" data-tab="quora" onclick="loadQuoraStatus(); loadQuoraRecentAnswers();">❓ Quora</a>
+                <a class="nav-link" data-tab="blogger" onclick="loadBloggerStatus(); loadBloggerRecentPosts();">📰 Blogger</a>
                 <a class="nav-link" data-tab="settings">⚙️ Settings</a>
             </nav>
         </div>
@@ -1603,6 +1604,95 @@
                 </div>
             </div>
 
+            <!-- BLOGGER TAB -->
+            <div id="blogger" class="tab-content">
+                <h3>📰 Google Blogger</h3>
+
+                <!-- Connection Status -->
+                <div class="card" style="margin-bottom: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                        <div>
+                            <h4>Google Account</h4>
+                            <p id="blogger-connection-status" style="font-size: 14px; color: #999; margin-top: 4px;">Wird geladen…</p>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn btn-secondary" onclick="getBloggerAuthUrl()" style="font-size: 13px;">🔗 Google verbinden</button>
+                            <button class="btn btn-secondary" onclick="loadBloggerBlogs()" style="font-size: 13px;">📋 Blogs abrufen</button>
+                        </div>
+                    </div>
+
+                    <!-- OAuth Code Exchange -->
+                    <div id="blogger-auth-section" style="display:none; margin-top: 16px; padding: 16px; background: #f0f4ff; border-radius: 8px; border-left: 4px solid #667eea;">
+                        <p style="font-size: 13px; margin-bottom: 10px;"><strong>Schritt 2:</strong> Besuche die URL oben, melde dich an, und füge den angezeigten Code hier ein:</p>
+                        <div style="display: flex; gap: 8px;">
+                            <input id="blogger-auth-code" type="text" placeholder="Autorisierungscode einfügen…" style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px;">
+                            <button class="btn btn-success" onclick="exchangeBloggerToken()" style="font-size: 13px;">✅ Verbinden</button>
+                        </div>
+                    </div>
+
+                    <!-- Blog selector -->
+                    <div id="blogger-blogs-section" style="display:none; margin-top: 16px;">
+                        <p style="font-size: 13px; color: #555; margin-bottom: 8px;">Wähle dein Blog:</p>
+                        <div id="blogger-blogs-list"></div>
+                    </div>
+                </div>
+
+                <!-- Status Card -->
+                <div class="card" style="margin-bottom: 24px;">
+                    <h4>📊 Status</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-top: 14px;">
+                        <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; text-align: center;">
+                            <div id="blogger-scheduler-status" style="font-size: 22px;">⏸️</div>
+                            <div style="font-size: 12px; color: #666; margin-top: 4px;">Scheduler</div>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; text-align: center;">
+                            <div id="blogger-post-count" style="font-size: 22px; font-weight: 700;">—</div>
+                            <div style="font-size: 12px; color: #666; margin-top: 4px;">Veröffentlicht</div>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; text-align: center;">
+                            <div id="blogger-frequency" style="font-size: 22px; font-weight: 700;">—</div>
+                            <div style="font-size: 12px; color: #666; margin-top: 4px;">Frequenz (h)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Manual Post -->
+                <div class="card" style="margin-bottom: 24px;">
+                    <h4>✍️ Artikel manuell veröffentlichen</h4>
+                    <div style="display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; align-items: flex-end;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="font-size: 13px; color: #555; display: block; margin-bottom: 6px;">Thema wählen (optional)</label>
+                            <select id="blogger-topic-select" style="width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px;">
+                                <option value="">🎲 Zufälliges Thema</option>
+                            </select>
+                        </div>
+                        <button id="blogger-publish-btn" class="btn btn-primary" onclick="publishBloggerPost()" style="padding: 9px 20px;">🚀 Artikel veröffentlichen</button>
+                    </div>
+                    <div id="blogger-publish-result" style="margin-top: 14px;"></div>
+                </div>
+
+                <!-- Scheduler -->
+                <div class="card" style="margin-bottom: 24px;">
+                    <h4>⏰ Scheduler</h4>
+                    <p style="font-size: 13px; color: #666; margin-top: 6px;">Frequenz wird in den Settings konfiguriert.</p>
+                    <div style="display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap;">
+                        <button class="btn btn-success" onclick="startBloggerScheduler()" style="flex: 1;">▶️ Start</button>
+                        <button class="btn btn-danger" onclick="stopBloggerScheduler()" style="flex: 1;">⏹️ Stop</button>
+                    </div>
+                </div>
+
+                <!-- Recent Posts -->
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4>📄 Letzte Artikel</h4>
+                        <button class="btn btn-secondary" onclick="loadBloggerRecentPosts()" style="font-size: 12px; padding: 6px 12px;">🔄 Aktualisieren</button>
+                    </div>
+                    <div id="blogger-posts-list" style="margin-top: 16px;">
+                        <p style="color: #999;">Noch keine Artikel veröffentlicht.</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- SETTINGS TAB -->
             <div id="settings" class="tab-content">
                 <h3>Platform Settings</h3>
@@ -1935,6 +2025,38 @@
                         </div>
                         <div style="background: #f5f5f5; padding: 12px 15px; border-radius: 8px; border-left: 4px solid #000; font-size: 13px; color: #555;">
                             Integration Token bei <a href="https://medium.com/me/settings" target="_blank" style="color: #000;">medium.com/me/settings</a> → Integration Tokens → neuen Token generieren
+                        </div>
+                    </div>
+
+                    <!-- Blogger Settings -->
+                    <h4 style="margin-top: 30px; margin-bottom: 20px;">📰 Blogger Configuration</h4>
+                    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 20px; margin-bottom: 20px;">
+                        <div class="form-group">
+                            <label>Google OAuth2 Client ID</label>
+                            <input type="text" id="google-client-id" placeholder="xxxxxxxx.apps.googleusercontent.com" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                        </div>
+                        <div class="form-group">
+                            <label>Google OAuth2 Client Secret</label>
+                            <input type="password" id="google-client-secret" placeholder="GOCSPX-…" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                        </div>
+                        <div class="form-group">
+                            <label>Blogger Blog ID <small style="color: #999;">(nach Google-Verbindung automatisch wählbar im Blogger-Tab)</small></label>
+                            <input type="text" id="blogger-blog-id" placeholder="z.B. 1234567890123456789" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                        </div>
+                        <div class="form-group">
+                            <label>Posting-Frequenz (Stunden)</label>
+                            <select id="blogger-frequency-hours" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                                <option value="24">Alle 24 Stunden (täglich)</option>
+                                <option value="48" selected>Alle 48 Stunden</option>
+                                <option value="72">Alle 72 Stunden</option>
+                                <option value="168">Wöchentlich</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label><input type="checkbox" id="blogger-auto-posting"> Blogger Auto-Publishing aktivieren</label>
+                        </div>
+                        <div style="background: #f5f5f5; padding: 12px 15px; border-radius: 8px; border-left: 4px solid #4285f4; font-size: 13px; color: #555;">
+                            <strong>Setup:</strong> Google Cloud Console → APIs &amp; Services → Credentials → OAuth 2.0 Client ID (Desktop App) → Blogger API aktivieren. Redirect URI: <code>urn:ietf:wg:oauth:2.0:oob</code>
                         </div>
                     </div>
 
