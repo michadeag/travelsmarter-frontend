@@ -1728,16 +1728,16 @@ function renderTwitterUpcoming(jobs, isRunning) {
     }
     const now = new Date();
     const upcoming = [];
+    // Deduplicate times from jobs
+    const uniqueTimes = [...new Set(jobs.filter(j => j.time && j.time !== 'N/A').map(j => j.time))];
     for (let d = 0; d < 3; d++) {
         const date = new Date(now);
         date.setDate(date.getDate() + d);
-        jobs.forEach(job => {
-            if (job.time && job.time !== 'N/A') {
-                const [h, m] = job.time.split(':');
-                const postTime = new Date(date);
-                postTime.setHours(parseInt(h), parseInt(m), 0, 0);
-                if (postTime > now) upcoming.push(postTime);
-            }
+        uniqueTimes.forEach(time => {
+            const [h, m] = time.split(':');
+            const postTime = new Date(date);
+            postTime.setHours(parseInt(h), parseInt(m), 0, 0);
+            if (postTime > now) upcoming.push(postTime);
         });
     }
     upcoming.sort((a, b) => a - b);
@@ -1770,6 +1770,8 @@ async function publishTwitterPost() {
 async function startTwitterScheduler() {
     const times = getTwitterTimes();
     try {
+        // Always stop first to avoid duplicate jobs
+        await fetch(`${API_URL}/api/twitter/scheduler/stop`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
         const res = await fetch(`${API_URL}/api/twitter/scheduler/start`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
