@@ -2116,6 +2116,13 @@ async function loadSocialSettings() {
         const s = data.data || {};
         const set = (id, key) => { const el = document.getElementById(id); if (el && s[key]?.value) el.value = s[key].value; };
         const chk = (id, key) => { const el = document.getElementById(id); if (el) el.checked = s[key]?.value === 'true'; };
+        set('twitter-api-key', 'twitter_api_key');
+        set('twitter-api-secret', 'twitter_api_secret');
+        set('twitter-bearer-token', 'twitter_bearer_token');
+        set('twitter-access-token', 'twitter_access_token');
+        set('twitter-access-secret', 'twitter_access_secret');
+        set('twitter-frequency', 'twitter_frequency_hours');
+        chk('twitter-auto', 'twitter_auto_posting');
         set('reddit-client-id', 'reddit_client_id');
         set('reddit-client-secret', 'reddit_client_secret');
         set('reddit-username', 'reddit_username');
@@ -2150,6 +2157,13 @@ async function saveSocialSettings() {
     const val = id => document.getElementById(id)?.value?.trim() || '';
     const chk = id => document.getElementById(id)?.checked ? 'true' : 'false';
     const settings = {
+        twitter_api_key: val('twitter-api-key'),
+        twitter_api_secret: val('twitter-api-secret'),
+        twitter_bearer_token: val('twitter-bearer-token'),
+        twitter_access_token: val('twitter-access-token'),
+        twitter_access_secret: val('twitter-access-secret'),
+        twitter_frequency_hours: val('twitter-frequency') || '4',
+        twitter_auto_posting: chk('twitter-auto'),
         reddit_client_id: val('reddit-client-id'),
         reddit_client_secret: val('reddit-client-secret'),
         reddit_username: val('reddit-username'),

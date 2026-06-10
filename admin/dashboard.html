@@ -1236,12 +1236,24 @@
                 <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
                     <h4 style="margin-bottom:15px;">Social Media Credentials</h4>
                     <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:20px;border-bottom:1px solid #e5e7eb;padding-bottom:10px;">
+                        <button class="platform-tab" data-platform="twitter" onclick="switchPlatformTab('twitter')" style="padding:8px 14px;border:none;background:#e5e7eb;color:#374151;border-radius:6px;cursor:pointer;font-weight:600;">🐦 Twitter</button>
                         <button class="platform-tab active" data-platform="reddit" onclick="switchPlatformTab('reddit')" style="padding:8px 14px;border:none;background:#667eea;color:white;border-radius:6px;cursor:pointer;font-weight:600;">🤖 Reddit</button>
                         <button class="platform-tab" data-platform="pinterest" onclick="switchPlatformTab('pinterest')" style="padding:8px 14px;border:none;background:#e5e7eb;color:#374151;border-radius:6px;cursor:pointer;font-weight:600;">📌 Pinterest</button>
                         <button class="platform-tab" data-platform="instagram" onclick="switchPlatformTab('instagram')" style="padding:8px 14px;border:none;background:#e5e7eb;color:#374151;border-radius:6px;cursor:pointer;font-weight:600;">📸 Instagram</button>
                         <button class="platform-tab" data-platform="linkedin" onclick="switchPlatformTab('linkedin')" style="padding:8px 14px;border:none;background:#e5e7eb;color:#374151;border-radius:6px;cursor:pointer;font-weight:600;">💼 LinkedIn</button>
                         <button class="platform-tab" data-platform="wordpress" onclick="switchPlatformTab('wordpress')" style="padding:8px 14px;border:none;background:#e5e7eb;color:#374151;border-radius:6px;cursor:pointer;font-weight:600;">📝 WordPress</button>
                         <button class="platform-tab" data-platform="blogger" onclick="switchPlatformTab('blogger')" style="padding:8px 14px;border:none;background:#e5e7eb;color:#374151;border-radius:6px;cursor:pointer;font-weight:600;">📰 Blogger</button>
+                    </div>
+
+                    <!-- Twitter Settings -->
+                    <div class="platform-settings" id="settings-twitter" style="display:none;">
+                        <div class="form-group"><label>API Key (Consumer Key)</label><input type="text" id="twitter-api-key" placeholder="gKa5kcg..."></div>
+                        <div class="form-group"><label>API Secret (Consumer Key Secret)</label><input type="password" id="twitter-api-secret" placeholder="KZH7Oic..."></div>
+                        <div class="form-group"><label>Bearer Token</label><input type="password" id="twitter-bearer-token" placeholder="AAAAAAA..."></div>
+                        <div class="form-group"><label>Access Token</label><input type="text" id="twitter-access-token" placeholder="From developer.twitter.com → Keys and Tokens → Generate"></div>
+                        <div class="form-group"><label>Access Token Secret</label><input type="password" id="twitter-access-secret" placeholder="Access Token Secret"></div>
+                        <div class="form-group"><label>Posting Frequency (hours)</label><input type="number" id="twitter-frequency" value="4" min="1"></div>
+                        <div class="form-group"><label><input type="checkbox" id="twitter-auto"> Enable Auto-Posting</label></div>
                     </div>
 
                     <!-- Reddit Settings -->
