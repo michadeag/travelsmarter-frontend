@@ -2515,6 +2515,18 @@ function switchSocialTab(tabName) {
         loadAnalytics();
     } else if (tabName === 'accounts') {
         loadConnectedAccounts();
+    } else if (tabName === 'reddit') {
+        loadRedditStatus(); loadRedditRecentPosts();
+    } else if (tabName === 'linkedin') {
+        loadLinkedInStatus(); loadLinkedInRecentPosts();
+    } else if (tabName === 'pinterest') {
+        loadPinterestStatus(); loadPinterestRecentPosts();
+    } else if (tabName === 'instagram') {
+        loadInstagramStatus(); loadInstagramRecentPosts();
+    } else if (tabName === 'medium') {
+        loadMediumStatus(); loadMediumRecentPosts();
+    } else if (tabName === 'quora') {
+        loadQuoraStatus(); loadQuoraRecentAnswers();
     }
 }
 
@@ -2819,6 +2831,158 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// ============================================================
+// QUORA CONTENT GENERATOR
+// ============================================================
+
+async function loadQuoraStatus() {
+    try {
+        const response = await fetch(`${API_URL}/api/quora/status`, { headers: getAuthHeaders() });
+        const data = await response.json();
+        if (!data.success) return;
+        const s = data.status;
+        const countEl = document.getElementById('quora-answer-count');
+        if (countEl) countEl.textContent = `${s.answerCounter} generiert`;
+    } catch { /* non-blocking */ }
+
+    // Also load questions into select
+    try {
+        const response = await fetch(`${API_URL}/api/quora/questions`, { headers: getAuthHeaders() });
+        const data = await response.json();
+        const select = document.getElementById('quora-question-select');
+        if (select && data.questions) {
+            data.questions.forEach(q => {
+                const opt = document.createElement('option');
+                opt.value = q.index;
+                opt.textContent = `#${q.index + 1} ${q.question}`;
+                select.appendChild(opt);
+            });
+        }
+    } catch { /* non-blocking */ }
+}
+
+function _renderQuoraAnswer(item, prepend = false) {
+    const container = document.getElementById('quora-answers-list');
+    if (!container) return;
+
+    if (container.querySelector('p[style*="color: #999"]')) {
+        container.innerHTML = '';
+    }
+
+    const div = document.createElement('div');
+    div.style.cssText = 'border: 1px solid #e5e7eb; border-radius: 10px; padding: 18px; margin-bottom: 16px;';
+    div.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 12px;">
+            <div>
+                <p style="font-weight: 700; font-size: 14px; color: #2c3e50; margin: 0;">${item.question}</p>
+                <p style="font-size: 12px; color: #999; margin: 4px 0 0;">
+                    ${item.category} · CTA: ${item.includedCTA ? '✅' : '—'}
+                    ${item.posted_at ? ' · ' + new Date(item.posted_at).toLocaleString() : ''}
+                </p>
+            </div>
+            <button onclick="copyQuoraAnswer(this)" data-answer="${encodeURIComponent(item.answer)}"
+                style="padding: 7px 14px; background: #7c3aed; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; white-space: nowrap; flex-shrink: 0;">
+                📋 Kopieren
+            </button>
+        </div>
+        <div style="font-size: 13px; color: #444; line-height: 1.6; white-space: pre-wrap; max-height: 180px; overflow-y: auto; background: #fafafa; padding: 12px; border-radius: 6px;">${item.answer}</div>`;
+
+    if (prepend && container.firstChild) {
+        container.insertBefore(div, container.firstChild);
+    } else {
+        container.appendChild(div);
+    }
+}
+
+function copyQuoraAnswer(btn) {
+    const answer = decodeURIComponent(btn.dataset.answer);
+    navigator.clipboard.writeText(answer).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = '✅ Kopiert!';
+        btn.style.background = '#38a169';
+        setTimeout(() => { btn.textContent = orig; btn.style.background = '#7c3aed'; }, 2000);
+    });
+}
+
+async function generateQuoraAnswer() {
+    const btn = document.getElementById('quora-generate-btn');
+    const resultEl = document.getElementById('quora-generate-result');
+    const select = document.getElementById('quora-question-select');
+    const questionIndex = select?.value !== '' ? parseInt(select.value) : undefined;
+
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Generiere…'; }
+    if (resultEl) resultEl.innerHTML = '';
+
+    try {
+        const response = await fetch(`${API_URL}/api/quora/generate`, {
+            method: 'POST',
+            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ questionIndex })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            _renderQuoraAnswer(data, true);
+            loadQuoraStatus();
+        } else {
+            if (resultEl) resultEl.innerHTML = `<p style="color: #e53e3e;">❌ ${data.error}</p>`;
+        }
+    } catch (err) {
+        if (resultEl) resultEl.innerHTML = `<p style="color: #e53e3e;">❌ ${err.message}</p>`;
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '🤖 Antwort generieren'; }
+    }
+}
+
+async function generateQuoraBatch() {
+    const btn = document.getElementById('quora-batch-btn');
+    const resultEl = document.getElementById('quora-generate-result');
+    const count = parseInt(document.getElementById('quora-batch-count')?.value || '5');
+
+    if (btn) { btn.disabled = true; btn.textContent = `⏳ Generiere ${count} Antworten…`; }
+    if (resultEl) resultEl.innerHTML = `<p style="color: #999;">Generiere ${count} Antworten mit Claude Sonnet… Das dauert ca. ${count * 5}–${count * 8} Sekunden.</p>`;
+
+    try {
+        const response = await fetch(`${API_URL}/api/quora/generate-batch`, {
+            method: 'POST',
+            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ count })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            if (resultEl) resultEl.innerHTML = `<p style="color: #38a169;">✅ ${data.count} Antworten generiert und bereit zum Kopieren.</p>`;
+            // render all answers (prepend in reverse so newest appears first)
+            data.answers.reverse().forEach(a => _renderQuoraAnswer(a, true));
+            loadQuoraStatus();
+        } else {
+            if (resultEl) resultEl.innerHTML = `<p style="color: #e53e3e;">❌ ${data.error}</p>`;
+        }
+    } catch (err) {
+        if (resultEl) resultEl.innerHTML = `<p style="color: #e53e3e;">❌ ${err.message}</p>`;
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '📦 Batch generieren'; }
+    }
+}
+
+async function loadQuoraRecentAnswers() {
+    try {
+        const response = await fetch(`${API_URL}/api/quora/recent-answers`, { headers: getAuthHeaders() });
+        const data = await response.json();
+        const container = document.getElementById('quora-answers-list');
+        if (!container) return;
+
+        if (!data.answers || data.answers.length === 0) {
+            container.innerHTML = '<p style="color: #999;">Noch keine Antworten generiert.</p>';
+            return;
+        }
+        container.innerHTML = '';
+        data.answers.forEach(a => _renderQuoraAnswer(a));
+        const countEl = document.getElementById('quora-answer-count');
+        if (countEl) countEl.textContent = `${data.answers.length} generiert`;
+    } catch { /* non-blocking */ }
+}
 
 // ============================================================
 // MEDIUM MANAGEMENT

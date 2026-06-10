@@ -602,6 +602,7 @@
                 <a class="nav-link" data-tab="pinterest" onclick="loadPinterestStatus(); loadPinterestRecentPosts();">📌 Pinterest</a>
                 <a class="nav-link" data-tab="instagram" onclick="loadInstagramStatus(); loadInstagramRecentPosts();">📸 Instagram</a>
                 <a class="nav-link" data-tab="medium" onclick="loadMediumStatus(); loadMediumRecentPosts();">📝 Medium</a>
+                <a class="nav-link" data-tab="quora" onclick="loadQuoraStatus(); loadQuoraRecentAnswers();">❓ Quora</a>
                 <a class="nav-link" data-tab="social-media">📱 Social Media</a>
                 <a class="nav-link" data-tab="settings">⚙️ Settings</a>
             </nav>
@@ -1165,6 +1166,67 @@
                         <li>Topics: business travel, productivity, points/miles, remote work, travel hacks</li>
                         <li>Every 2nd post includes a subtle footnote linking to TravelSmarter</li>
                         <li>Credentials: Access Token from <a href="https://www.linkedin.com/developers/apps" target="_blank" style="color: #0077b5;">LinkedIn Developer Portal</a> — create an app and generate a token with <code>w_member_social</code> or <code>w_organization_social</code> scope</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- QUORA TAB -->
+            <div id="quora" class="tab-content">
+                <h3>❓ Quora Content Generator</h3>
+
+                <div style="background: #fff3cd; padding: 14px 18px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #e8a000; font-size: 14px; color: #555;">
+                    ℹ️ <strong>Kein Auto-Posting</strong> — Quora hat keine öffentliche API. Claude generiert fertige Antworten, die du mit einem Klick kopierst und manuell auf Quora einfügst. ~30 Sekunden pro Antwort.
+                </div>
+
+                <!-- Generate Controls -->
+                <div class="card" style="margin-top: 20px;">
+                    <h4>🤖 Antworten generieren</h4>
+                    <p style="font-size: 13px; color: #666; margin-top: 8px;">Claude Sonnet schreibt fertige Quora-Antworten (300–500 Wörter) im echten Quora-Stil — direkte Eröffnung, persönliche Erfahrung, konkreter Mehrwert. Jede 2. Antwort enthält einen TravelSmarter-Hinweis.</p>
+
+                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-top: 15px; align-items: end;">
+                        <div>
+                            <label style="font-size: 13px; color: #555; display: block; margin-bottom: 6px;">Frage auswählen (oder "Nächste" für automatische Rotation)</label>
+                            <select id="quora-question-select" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px;">
+                                <option value="">— Nächste Frage in Rotation —</option>
+                            </select>
+                        </div>
+                        <button id="quora-generate-btn" class="btn btn-primary" onclick="generateQuoraAnswer()" style="padding: 10px 20px; white-space: nowrap;">🤖 Antwort generieren</button>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-top: 12px; align-items: center; flex-wrap: wrap;">
+                        <label style="font-size: 13px; color: #555;">Batch generieren:</label>
+                        <select id="quora-batch-count" style="padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px;">
+                            <option value="3">3 Antworten</option>
+                            <option value="5" selected>5 Antworten</option>
+                            <option value="10">10 Antworten</option>
+                        </select>
+                        <button id="quora-batch-btn" class="btn" onclick="generateQuoraBatch()" style="padding: 8px 16px; background: #f5f5f5; border: 1px solid #ddd; font-size: 13px;">📦 Batch generieren</button>
+                    </div>
+
+                    <div id="quora-generate-result" style="margin-top: 20px;"></div>
+                </div>
+
+                <!-- Generated Answers Library -->
+                <div class="card" style="margin-top: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4>📋 Generierte Antworten</h4>
+                        <span id="quora-answer-count" style="font-size: 13px; color: #999;"></span>
+                    </div>
+                    <p style="font-size: 13px; color: #666; margin-top: 6px;">Klicke "Kopieren" → öffne die passende Frage auf Quora → füge die Antwort ein.</p>
+                    <div id="quora-answers-list" style="margin-top: 15px;">
+                        <p style="color: #999;">Noch keine Antworten generiert.</p>
+                    </div>
+                </div>
+
+                <!-- Info -->
+                <div style="background: #f9f0ff; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #7c3aed;">
+                    <strong>ℹ️ Quora-Strategie:</strong>
+                    <ul style="margin-top: 10px; margin-left: 20px; font-size: 14px; color: #555;">
+                        <li>15 Fragen in Rotation: Budget Travel, Points/Miles, Nomad, Flights, Insurance, Destinations, Packing, Hacks, Hotels, Solo Travel, Lounges, Credit Cards, Timing, Local Tips, Backpacking</li>
+                        <li>Antworten erscheinen in Google-Suchergebnissen — hoher organischer Traffic</li>
+                        <li>Quora-Regeln: max. 1–2 Antworten pro Tag für natürliches Wachstum</li>
+                        <li>Jede 2. Antwort enthält einen subtilen TravelSmarter-Link</li>
+                        <li>Empfehlung: morgens 1–2 Antworten kopieren und posten — 2 Minuten Aufwand</li>
                     </ul>
                 </div>
             </div>
