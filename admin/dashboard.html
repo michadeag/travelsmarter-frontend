@@ -997,18 +997,50 @@
             <!-- TWITTER TAB -->
             <div id="twitter" class="tab-content">
                 <h3>🐦 Twitter / X Auto-Posting</h3>
+
+                <!-- Status -->
                 <div id="twitter-status-card" style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
                     <p>Loading...</p>
                 </div>
+
+                <!-- Manual Post -->
                 <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
                     <h4>Manual Post</h4>
-                    <button class="btn btn-primary" onclick="publishTwitterPost()" style="margin-top:10px;">🐦 Generate & Post to Twitter</button>
+                    <button class="btn btn-primary" onclick="publishTwitterPost()" style="margin-top:10px;">🐦 Post Travel Tip Now</button>
                 </div>
+
+                <!-- Scheduler Config -->
                 <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
                     <h4>Auto-Scheduler</h4>
-                    <button class="btn btn-primary" onclick="startTwitterScheduler()">▶ Start Scheduler</button>
-                    <button class="btn btn-danger" onclick="stopTwitterScheduler()" style="margin-left:10px;">⏹ Stop Scheduler</button>
+                    <div style="margin-top:15px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+                        <div>
+                            <label style="font-weight:600;display:block;margin-bottom:6px;">Posts per day</label>
+                            <select id="twitter-posts-per-day" onchange="updateTwitterTimes()" style="padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:1em;">
+                                <option value="1">1 post/day</option>
+                                <option value="2">2 posts/day</option>
+                                <option value="3" selected>3 posts/day</option>
+                                <option value="4">4 posts/day</option>
+                                <option value="5">5 posts/day</option>
+                            </select>
+                        </div>
+                        <div style="flex:1;min-width:200px;">
+                            <label style="font-weight:600;display:block;margin-bottom:6px;">Posting times <span style="color:#6b7280;font-weight:400;font-size:0.85em">(auto-optimized for travel content)</span></label>
+                            <div id="twitter-times-display" style="font-size:0.95em;color:#374151;padding:8px 12px;background:#f9fafb;border-radius:6px;border:1px solid #e5e7eb;">09:00 · 13:00 · 18:00</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:15px;display:flex;gap:10px;">
+                        <button class="btn btn-primary" onclick="startTwitterScheduler()">▶ Start Scheduler</button>
+                        <button class="btn btn-danger" onclick="stopTwitterScheduler()">⏹ Stop Scheduler</button>
+                    </div>
+
+                    <!-- Upcoming posts -->
+                    <div style="margin-top:20px;">
+                        <h4 style="margin-bottom:10px;">📅 Upcoming Scheduled Posts</h4>
+                        <div id="twitter-upcoming" style="color:#6b7280;font-size:0.9em;">Start the scheduler to see upcoming posts.</div>
+                    </div>
                 </div>
+
+                <!-- Recent Posts -->
                 <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
                     <h4>Recent Posts</h4>
                     <div id="twitter-recent-posts"><p>Loading...</p></div>

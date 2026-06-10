@@ -1683,18 +1683,82 @@ async function loadAnalytics() {
 }
 
 // ─── TWITTER ─────────────────────────────────────────────────────────────────
+
+// Best posting times for travel content based on engagement research
+const TWITTER_BEST_TIMES = {
+    1: ['09:00'],
+    2: ['09:00', '18:00'],
+    3: ['09:00', '13:00', '18:00'],
+    4: ['08:00', '12:00', '15:00', '19:00'],
+    5: ['08:00', '11:00', '13:00', '17:00', '20:00']
+};
+
+function updateTwitterTimes() {
+    const count = parseInt(document.getElementById('twitter-posts-per-day')?.value || 3);
+    const times = TWITTER_BEST_TIMES[count];
+    const el = document.getElementById('twitter-times-display');
+    if (el) el.textContent = times.join(' · ');
+}
+
+function getTwitterTimes() {
+    const count = parseInt(document.getElementById('twitter-posts-per-day')?.value || 3);
+    return TWITTER_BEST_TIMES[count];
+}
+
 async function loadTwitterStatus() {
     const card = document.getElementById('twitter-status-card');
     try {
         const res = await fetch(`${API_URL}/api/twitter/status`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
         const data = await res.json();
-        const s = data.status || data;
-        card.innerHTML = `<p><strong>Status:</strong> ${s.configured ? '✅ Configured' : '❌ Not configured — add credentials in Settings'}</p>
-            ${s.configured ? `<p><strong>Scheduler:</strong> ${s.schedulerRunning ? '▶ Running' : '⏹ Stopped'}</p>` : ''}`;
+        const jobs = data.jobs || [];
+        const isRunning = (data.scheduledJobs || 0) > 0;
+        card.innerHTML = `
+            <p><strong>Status:</strong> ${data.configured ? '✅ Configured' : '❌ Not configured — add credentials in Settings'}</p>
+            ${data.configured ? `<p><strong>Scheduler:</strong> ${isRunning ? `▶ Running (${data.scheduledJobs} job${data.scheduledJobs > 1 ? 's' : ''})` : '⏹ Stopped'}</p>` : ''}`;
+        renderTwitterUpcoming(jobs, isRunning);
     } catch { card.innerHTML = '<p>❌ Could not reach backend</p>'; }
 }
+
+function renderTwitterUpcoming(jobs, isRunning) {
+    const el = document.getElementById('twitter-upcoming');
+    if (!el) return;
+    if (!isRunning || !jobs.length) {
+        el.innerHTML = '<p style="color:#6b7280">Scheduler is stopped. Start it to see upcoming posts.</p>';
+        return;
+    }
+    const now = new Date();
+    const upcoming = [];
+    for (let d = 0; d < 3; d++) {
+        const date = new Date(now);
+        date.setDate(date.getDate() + d);
+        jobs.forEach(job => {
+            if (job.time && job.time !== 'N/A') {
+                const [h, m] = job.time.split(':');
+                const postTime = new Date(date);
+                postTime.setHours(parseInt(h), parseInt(m), 0, 0);
+                if (postTime > now) upcoming.push(postTime);
+            }
+        });
+    }
+    upcoming.sort((a, b) => a - b);
+    const next5 = upcoming.slice(0, 5);
+    if (!next5.length) {
+        el.innerHTML = '<p style="color:#6b7280">No upcoming times available.</p>';
+        return;
+    }
+    el.innerHTML = next5.map(t => `
+        <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #f3f4f6;">
+            <span style="font-size:1.2em">🐦</span>
+            <div>
+                <strong>${t.toLocaleDateString('de-DE', {weekday:'short', day:'numeric', month:'short'})}</strong>
+                <span style="color:#667eea;margin-left:8px;font-weight:600">${t.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'})}</span>
+                <span style="color:#6b7280;margin-left:8px;font-size:0.85em">Travel tip (auto-generated)</span>
+            </div>
+        </div>`).join('');
+}
+
 async function publishTwitterPost() {
-    showAlert('Generating Twitter post...', 'success');
+    showAlert('Posting travel tip...', 'success');
     try {
         const res = await fetch(`${API_URL}/api/twitter/post-random`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
         const data = await res.json();
@@ -1702,29 +1766,37 @@ async function publishTwitterPost() {
         else showAlert(`❌ ${data.error || data.message}`, 'error');
     } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
 }
+
 async function startTwitterScheduler() {
-    const res = await fetch(`${API_URL}/api/twitter/scheduler/start`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
-    const data = await res.json();
-    showAlert(data.success ? '▶ Twitter scheduler started' : `❌ ${data.error}`, data.success ? 'success' : 'error');
-    loadTwitterStatus();
+    const times = getTwitterTimes();
+    try {
+        const res = await fetch(`${API_URL}/api/twitter/scheduler/start`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ schedule: 'multiple', times })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showAlert(`▶ Scheduler started — ${times.length} post${times.length > 1 ? 's' : ''}/day at ${times.join(', ')}`, 'success');
+            loadTwitterStatus();
+        } else showAlert(`❌ ${data.error || data.message}`, 'error');
+    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
 }
+
 async function stopTwitterScheduler() {
     const res = await fetch(`${API_URL}/api/twitter/scheduler/stop`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
     const data = await res.json();
-    showAlert(data.success ? '⏹ Twitter scheduler stopped' : `❌ ${data.error}`, data.success ? 'success' : 'error');
+    showAlert(data.success ? '⏹ Twitter scheduler stopped' : `❌ ${data.error || data.message}`, data.success ? 'success' : 'error');
     loadTwitterStatus();
 }
+
 async function loadTwitterRecentPosts() {
     const el = document.getElementById('twitter-recent-posts');
     try {
-        const res = await fetch(`${API_URL}/api/twitter/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
-        const data = await res.json();
-        if (!data.posts?.length) { el.innerHTML = '<p style="color:#6b7280">No posts yet.</p>'; return; }
-        el.innerHTML = data.posts.map(p => `<div style="padding:10px;border-bottom:1px solid #e5e7eb">
-            <strong>🐦</strong> ${p.content?.substring(0,100) || p.text?.substring(0,100)}...<br>
-            <small style="color:#6b7280">${new Date(p.posted_at || p.created_at).toLocaleString()} ${p.tweet_url ? `| <a href="${p.tweet_url}" target="_blank">View</a>` : ''}</small>
-        </div>`).join('');
-    } catch { el.innerHTML = '<p style="color:#ef4444">Error loading posts</p>'; }
+        const res = await fetch(`${API_URL}/api/twitter/tips/random`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        // Twitter has no DB log — show last scheduled jobs info instead
+        el.innerHTML = '<p style="color:#6b7280">Twitter posts are not stored locally. Check your <a href="https://twitter.com" target="_blank">Twitter profile</a> to see recent posts.</p>';
+    } catch { el.innerHTML = '<p style="color:#ef4444">Error</p>'; }
 }
 
 // ─── REDDIT ──────────────────────────────────────────────────────────────────
