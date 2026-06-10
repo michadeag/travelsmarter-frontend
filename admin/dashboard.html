@@ -1756,6 +1756,8 @@
                         <button class="platform-tab" data-platform="pinterest" onclick="switchPlatformTab('pinterest')" style="padding: 10px 15px; border: none; background: none; cursor: pointer; border-bottom: 3px solid transparent; color: #6b7280; font-weight: 600;">📌 Pinterest</button>
                         <button class="platform-tab" data-platform="instagram" onclick="switchPlatformTab('instagram')" style="padding: 10px 15px; border: none; background: none; cursor: pointer; border-bottom: 3px solid transparent; color: #6b7280; font-weight: 600;">📸 Instagram</button>
                         <button class="platform-tab" data-platform="linkedin" onclick="switchPlatformTab('linkedin')" style="padding: 10px 15px; border: none; background: none; cursor: pointer; border-bottom: 3px solid transparent; color: #6b7280; font-weight: 600;">💼 LinkedIn</button>
+                        <button class="platform-tab" data-platform="medium" onclick="switchPlatformTab('medium')" style="padding: 10px 15px; border: none; background: none; cursor: pointer; border-bottom: 3px solid transparent; color: #6b7280; font-weight: 600;">📝 Medium</button>
+                        <button class="platform-tab" data-platform="blogger" onclick="switchPlatformTab('blogger')" style="padding: 10px 15px; border: none; background: none; cursor: pointer; border-bottom: 3px solid transparent; color: #6b7280; font-weight: 600;">📰 Blogger</button>
                     </div>
 
                     <!-- Twitter Settings -->
@@ -2000,8 +2002,7 @@
                     </div>
 
                     <!-- Medium Settings -->
-                    <h4 style="margin-top: 30px; margin-bottom: 20px;">📝 Medium Configuration</h4>
-                    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 20px; margin-bottom: 20px;">
+                    <div class="platform-settings" id="settings-medium">
                         <div class="form-group">
                             <label>Medium Integration Token</label>
                             <input type="password" id="medium-integration-token" placeholder="Your Medium Integration Token" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
@@ -2019,9 +2020,7 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>
-                                <input type="checkbox" id="medium-auto-posting"> Enable Medium Auto-Publishing
-                            </label>
+                            <label><input type="checkbox" id="medium-auto-posting"> Enable Medium Auto-Publishing</label>
                         </div>
                         <div style="background: #f5f5f5; padding: 12px 15px; border-radius: 8px; border-left: 4px solid #000; font-size: 13px; color: #555;">
                             Integration Token bei <a href="https://medium.com/me/settings" target="_blank" style="color: #000;">medium.com/me/settings</a> → Integration Tokens → neuen Token generieren
@@ -2029,8 +2028,7 @@
                     </div>
 
                     <!-- Blogger Settings -->
-                    <h4 style="margin-top: 30px; margin-bottom: 20px;">📰 Blogger Configuration</h4>
-                    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 20px; margin-bottom: 20px;">
+                    <div class="platform-settings" id="settings-blogger">
                         <div class="form-group">
                             <label>Google OAuth2 Client ID</label>
                             <input type="text" id="google-client-id" placeholder="xxxxxxxx.apps.googleusercontent.com" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
