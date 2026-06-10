@@ -601,7 +601,7 @@
                 <a class="nav-link" data-tab="linkedin" onclick="loadLinkedInStatus(); loadLinkedInRecentPosts();">💼 LinkedIn</a>
                 <a class="nav-link" data-tab="pinterest" onclick="loadPinterestStatus(); loadPinterestRecentPosts();">📌 Pinterest</a>
                 <a class="nav-link" data-tab="instagram" onclick="loadInstagramStatus(); loadInstagramRecentPosts();">📸 Instagram</a>
-                <a class="nav-link" data-tab="medium" onclick="loadMediumStatus(); loadMediumRecentPosts();">📝 Medium</a>
+                <a class="nav-link" data-tab="wordpress" onclick="loadWordPressStatus(); loadWordPressRecentPosts();">📝 WordPress</a>
                 <a class="nav-link" data-tab="quora" onclick="loadQuoraStatus(); loadQuoraRecentAnswers();">❓ Quora</a>
                 <a class="nav-link" data-tab="blogger" onclick="loadBloggerStatus(); loadBloggerRecentPosts();">📰 Blogger</a>
                 <a class="nav-link" data-tab="settings">⚙️ Settings</a>
@@ -1219,57 +1219,88 @@
                 </div>
             </div>
 
-            <!-- MEDIUM TAB -->
-            <div id="medium" class="tab-content">
-                <h3>📝 Medium Management</h3>
+            <!-- WORDPRESS TAB -->
+            <div id="wordpress" class="tab-content">
+                <h3>📝 WordPress Management</h3>
 
-                <div class="card" style="margin-top: 20px; background: linear-gradient(135deg, #000 0%, #333 100%); color: white;">
-                    <h4>Service Status</h4>
-                    <div id="medium-status" style="margin-top: 15px;">
-                        <p style="opacity: 0.8;">Loading status...</p>
+                <!-- Connection Status -->
+                <div class="card" style="margin-bottom: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                        <div>
+                            <h4>WordPress.com Konto</h4>
+                            <p id="wp-connection-status" style="font-size: 14px; color: #999; margin-top: 4px;">Wird geladen…</p>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn btn-secondary" onclick="getWordPressAuthUrl()" style="font-size: 13px;">🔗 WordPress verbinden</button>
+                            <button class="btn btn-secondary" onclick="loadWordPressSites()" style="font-size: 13px;">📋 Sites abrufen</button>
+                        </div>
+                    </div>
+                    <div id="wp-auth-section" style="display:none; margin-top: 16px; padding: 16px; background: #f0f4ff; border-radius: 8px; border-left: 4px solid #21759b;">
+                        <p style="font-size: 13px; margin-bottom: 10px;"><strong>Schritt 2:</strong> Nach der Anmeldung wirst du zu <code>https://localhost/?code=…</code> weitergeleitet. Kopiere den <strong>code=…</strong> Wert und füge ihn hier ein:</p>
+                        <div style="display: flex; gap: 8px;">
+                            <input id="wp-auth-code" type="text" placeholder="Code aus der URL einfügen…" style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px;">
+                            <button class="btn btn-success" onclick="exchangeWordPressToken()" style="font-size: 13px;">✅ Verbinden</button>
+                        </div>
+                    </div>
+                    <div id="wp-sites-section" style="display:none; margin-top: 16px;">
+                        <p style="font-size: 13px; color: #555; margin-bottom: 8px;">Wähle deine WordPress-Site:</p>
+                        <div id="wp-sites-list"></div>
                     </div>
                 </div>
 
-                <div class="card" style="margin-top: 20px;">
-                    <h4>✍️ Generate & Publish Article</h4>
-                    <p style="font-size: 13px; color: #666; margin-top: 8px;">Claude Sonnet schreibt einen vollständigen, SEO-optimierten Reiseartikel (900–1300 Wörter) mit Überschriften und Markdown-Formatierung — direkt auf Medium veröffentlicht. Jeder 2. Artikel enthält einen sanften TravelSmarter-Hinweis.</p>
-                    <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                        <button id="medium-post-btn" class="btn btn-primary" onclick="publishMediumArticle()" style="padding: 10px 24px;">✍️ Generate & Publish</button>
-                        <button class="btn" onclick="loadMediumTopics()" style="padding: 10px 16px; background: #f5f5f5; border: 1px solid #ddd;">📋 Topic Queue</button>
-                    </div>
-                    <div id="medium-post-result" style="margin-top: 15px;"></div>
-                    <div id="medium-topics" style="margin-top: 15px; display: none;">
-                        <h5 style="margin-bottom: 10px; color: #555;">Topic Rotation (10 Artikel)</h5>
-                        <div id="medium-topics-list"></div>
-                    </div>
-                </div>
-
-                <div class="card" style="margin-top: 20px;">
-                    <h4>⏰ Scheduler Controls</h4>
-                    <p style="font-size: 13px; color: #666; margin-top: 8px;">Frequenz in <strong>Settings → Medium Configuration</strong>. Empfehlung: 1× täglich — Medium belohnt konsistente Qualität über Quantität.</p>
-                    <div style="display: flex; gap: 10px; margin-top: 15px;">
-                        <button class="btn btn-success" onclick="startMediumScheduler()" style="flex: 1;">▶️ Start Scheduler</button>
-                        <button class="btn btn-danger" onclick="stopMediumScheduler()" style="flex: 1;">⏹️ Stop Scheduler</button>
+                <!-- Status -->
+                <div class="card" style="margin-bottom: 24px;">
+                    <h4>📊 Status</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-top: 14px;">
+                        <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; text-align: center;">
+                            <div id="wp-scheduler-status" style="font-size: 22px;">⏸️</div>
+                            <div style="font-size: 12px; color: #666; margin-top: 4px;">Scheduler</div>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; text-align: center;">
+                            <div id="wp-post-count" style="font-size: 22px; font-weight: 700;">—</div>
+                            <div style="font-size: 12px; color: #666; margin-top: 4px;">Veröffentlicht</div>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; text-align: center;">
+                            <div id="wp-frequency" style="font-size: 22px; font-weight: 700;">—</div>
+                            <div style="font-size: 12px; color: #666; margin-top: 4px;">Frequenz (h)</div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="card" style="margin-top: 20px;">
-                    <h4>📋 Published Articles</h4>
-                    <div id="medium-recent-posts" style="margin-top: 15px; max-height: 500px; overflow-y: auto;">
-                        <p style="color: #999;">No articles yet.</p>
+                <!-- Manual Publish -->
+                <div class="card" style="margin-bottom: 24px;">
+                    <h4>✍️ Artikel manuell veröffentlichen</h4>
+                    <div style="display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; align-items: flex-end;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="font-size: 13px; color: #555; display: block; margin-bottom: 6px;">Thema wählen (optional)</label>
+                            <select id="wp-topic-select" style="width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px;">
+                                <option value="">🎲 Zufälliges Thema</option>
+                            </select>
+                        </div>
+                        <button id="wp-publish-btn" class="btn btn-primary" onclick="publishWordPressPost()" style="padding: 9px 20px;">🚀 Artikel veröffentlichen</button>
+                    </div>
+                    <div id="wp-publish-result" style="margin-top: 14px;"></div>
+                </div>
+
+                <!-- Scheduler -->
+                <div class="card" style="margin-bottom: 24px;">
+                    <h4>⏰ Scheduler</h4>
+                    <p style="font-size: 13px; color: #666; margin-top: 6px;">Frequenz wird in den Settings konfiguriert.</p>
+                    <div style="display: flex; gap: 10px; margin-top: 14px;">
+                        <button class="btn btn-success" onclick="startWordPressScheduler()" style="flex: 1;">▶️ Start</button>
+                        <button class="btn btn-danger" onclick="stopWordPressScheduler()" style="flex: 1;">⏹️ Stop</button>
                     </div>
                 </div>
 
-                <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #000;">
-                    <strong>ℹ️ Medium Strategy:</strong>
-                    <ul style="margin-top: 10px; margin-left: 20px; font-size: 14px; color: #555;">
-                        <li>10 rotierende Themen: Businessclass-Hacks, Budget-Travel, Packing, Flights, Nomad, Destinations, Lounges, Insurance, Hotels, Visas</li>
-                        <li>Artikellänge 900–1300 Wörter — lang genug für SEO, kurz genug für Lesbarkeit</li>
-                        <li>Claude Sonnet (stärkstes Modell) für maximale Textqualität</li>
-                        <li>Jeder 2. Artikel: subtiler Fußnoten-Hinweis auf TravelSmarter</li>
-                        <li>Artikel werden von Google indexiert → langfristiger organischer Traffic</li>
-                        <li>Optional: Publication ID um in einer Medium-Publikation zu posten</li>
-                    </ul>
+                <!-- Recent Posts -->
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4>📄 Letzte Artikel</h4>
+                        <button class="btn btn-secondary" onclick="loadWordPressRecentPosts()" style="font-size: 12px; padding: 6px 12px;">🔄 Aktualisieren</button>
+                    </div>
+                    <div id="wp-posts-list" style="margin-top: 16px;">
+                        <p style="color: #999;">Noch keine Artikel veröffentlicht.</p>
+                    </div>
                 </div>
             </div>
 
@@ -1744,7 +1775,7 @@
                         <button class="platform-tab" data-platform="pinterest" onclick="switchPlatformTab('pinterest')" style="padding: 10px 15px; border: none; background: none; cursor: pointer; border-bottom: 3px solid transparent; color: #6b7280; font-weight: 600;">📌 Pinterest</button>
                         <button class="platform-tab" data-platform="instagram" onclick="switchPlatformTab('instagram')" style="padding: 10px 15px; border: none; background: none; cursor: pointer; border-bottom: 3px solid transparent; color: #6b7280; font-weight: 600;">📸 Instagram</button>
                         <button class="platform-tab" data-platform="linkedin" onclick="switchPlatformTab('linkedin')" style="padding: 10px 15px; border: none; background: none; cursor: pointer; border-bottom: 3px solid transparent; color: #6b7280; font-weight: 600;">💼 LinkedIn</button>
-                        <button class="platform-tab" data-platform="medium" onclick="switchPlatformTab('medium')" style="padding: 10px 15px; border: none; background: none; cursor: pointer; border-bottom: 3px solid transparent; color: #6b7280; font-weight: 600;">📝 Medium</button>
+                        <button class="platform-tab" data-platform="wordpress" onclick="switchPlatformTab('wordpress')" style="padding: 10px 15px; border: none; background: none; cursor: pointer; border-bottom: 3px solid transparent; color: #6b7280; font-weight: 600;">📝 WordPress</button>
                         <button class="platform-tab" data-platform="blogger" onclick="switchPlatformTab('blogger')" style="padding: 10px 15px; border: none; background: none; cursor: pointer; border-bottom: 3px solid transparent; color: #6b7280; font-weight: 600;">📰 Blogger</button>
                     </div>
 
@@ -1989,29 +2020,30 @@
                         </div>
                     </div>
 
-                    <!-- Medium Settings -->
-                    <div class="platform-settings" id="settings-medium">
+                    <!-- WordPress Settings -->
+                    <div class="platform-settings" id="settings-wordpress">
                         <div class="form-group">
-                            <label>Medium Integration Token</label>
-                            <input type="password" id="medium-integration-token" placeholder="Your Medium Integration Token" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                            <label>WordPress.com Client ID</label>
+                            <input type="text" id="wordpress-client-id" placeholder="z.B. 123456" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                         </div>
                         <div class="form-group">
-                            <label>Publication ID <small style="color: #999;">(optional — leave empty to post to your profile)</small></label>
-                            <input type="text" id="medium-publication-id" placeholder="e.g. abc123def456" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                            <label>WordPress.com Client Secret</label>
+                            <input type="password" id="wordpress-client-secret" placeholder="dein Client Secret" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                         </div>
                         <div class="form-group">
-                            <label>Posting Frequency</label>
-                            <select id="medium-frequency" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
-                                <option value="daily" selected>Once Daily</option>
-                                <option value="twice_daily">Twice Daily</option>
-                                <option value="weekly">Weekly</option>
+                            <label>Posting-Frequenz (Stunden)</label>
+                            <select id="wordpress-frequency-hours" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                                <option value="24">Alle 24 Stunden (täglich)</option>
+                                <option value="48" selected>Alle 48 Stunden</option>
+                                <option value="72">Alle 72 Stunden</option>
+                                <option value="168">Wöchentlich</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label><input type="checkbox" id="medium-auto-posting"> Enable Medium Auto-Publishing</label>
+                            <label><input type="checkbox" id="wordpress-auto-posting"> WordPress Auto-Publishing aktivieren</label>
                         </div>
-                        <div style="background: #f5f5f5; padding: 12px 15px; border-radius: 8px; border-left: 4px solid #000; font-size: 13px; color: #555;">
-                            Integration Token bei <a href="https://medium.com/me/settings" target="_blank" style="color: #000;">medium.com/me/settings</a> → Integration Tokens → neuen Token generieren
+                        <div style="background: #f0f7ff; padding: 12px 15px; border-radius: 8px; border-left: 4px solid #21759b; font-size: 13px; color: #555;">
+                            <strong>Setup:</strong> App registrieren bei <a href="https://developer.wordpress.com/apps/" target="_blank" style="color: #21759b;">developer.wordpress.com/apps</a> → Redirect URL: <code>https://localhost</code> → Client ID + Secret hier eintragen → im WordPress-Tab verbinden
                         </div>
                     </div>
 

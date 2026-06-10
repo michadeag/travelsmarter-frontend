@@ -1019,21 +1019,21 @@ async function loadSettings() {
                 if (el) el.checked = settings.blogger_auto_posting.value === 'true';
             }
 
-            // Load Medium settings
-            const mediumFields = [
-                ['medium_integration_token', 'medium-integration-token'],
-                ['medium_publication_id', 'medium-publication-id'],
-                ['medium_posting_frequency', 'medium-frequency']
+            // Load WordPress settings
+            const wordpressFields = [
+                ['wordpress_client_id', 'wordpress-client-id'],
+                ['wordpress_client_secret', 'wordpress-client-secret'],
+                ['wordpress_frequency_hours', 'wordpress-frequency-hours']
             ];
-            mediumFields.forEach(([key, id]) => {
+            wordpressFields.forEach(([key, id]) => {
                 if (settings[key]?.value) {
                     const el = document.getElementById(id);
                     if (el) el.value = settings[key].value;
                 }
             });
-            if (settings.medium_auto_posting?.value) {
-                const el = document.getElementById('medium-auto-posting');
-                if (el) el.checked = settings.medium_auto_posting.value === 'true';
+            if (settings.wordpress_auto_posting?.value) {
+                const el = document.getElementById('wordpress-auto-posting');
+                if (el) el.checked = settings.wordpress_auto_posting.value === 'true';
             }
 
             // Load Instagram settings
@@ -1207,11 +1207,11 @@ async function saveSettings() {
     const bloggerFrequencyHours = document.getElementById('blogger-frequency-hours')?.value || '48';
     const bloggerAutoPosting = document.getElementById('blogger-auto-posting')?.checked || false;
 
-    // Medium settings
-    const mediumToken = document.getElementById('medium-integration-token')?.value || '';
-    const mediumPubId = document.getElementById('medium-publication-id')?.value || '';
-    const mediumFrequency = document.getElementById('medium-frequency')?.value || 'daily';
-    const mediumAutoPosting = document.getElementById('medium-auto-posting')?.checked || false;
+    // WordPress settings
+    const wordpressClientId = document.getElementById('wordpress-client-id')?.value || '';
+    const wordpressClientSecret = document.getElementById('wordpress-client-secret')?.value || '';
+    const wordpressFrequencyHours = document.getElementById('wordpress-frequency-hours')?.value || '48';
+    const wordpressAutoPosting = document.getElementById('wordpress-auto-posting')?.checked || false;
 
     // Instagram settings
     const instagramAccessToken = document.getElementById('instagram-access-token')?.value || '';
@@ -1358,12 +1358,12 @@ async function saveSettings() {
                 settingsData['blogger_auto_posting'] = bloggerAutoPosting.toString();
             }
 
-            // Add Medium settings if provided
-            if (mediumToken) {
-                settingsData['medium_integration_token'] = mediumToken;
-                settingsData['medium_publication_id'] = mediumPubId;
-                settingsData['medium_posting_frequency'] = mediumFrequency;
-                settingsData['medium_auto_posting'] = mediumAutoPosting.toString();
+            // Add WordPress settings if provided
+            if (wordpressClientId) {
+                settingsData['wordpress_client_id'] = wordpressClientId;
+                settingsData['wordpress_client_secret'] = wordpressClientSecret;
+                settingsData['wordpress_frequency_hours'] = wordpressFrequencyHours;
+                settingsData['wordpress_auto_posting'] = wordpressAutoPosting.toString();
             }
 
             // Add Instagram settings if provided
@@ -1433,10 +1433,10 @@ async function saveSettings() {
                 }
             }
 
-            // If Medium token was saved, reload the Medium service
-            if (mediumToken) {
+            // If WordPress credentials were saved, reload the WordPress service
+            if (wordpressClientId) {
                 try {
-                    await fetch(`${API_URL}/api/medium/reload-settings`, {
+                    await fetch(`${API_URL}/api/wordpress/reload-settings`, {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${getAdminToken()}`, 'Content-Type': 'application/json' }
                     });
@@ -1645,7 +1645,7 @@ async function loadAnalytics() {
             { key: 'linkedin',  label: '💼 LinkedIn' },
             { key: 'pinterest', label: '📌 Pinterest' },
             { key: 'instagram', label: '📸 Instagram' },
-            { key: 'medium',    label: '📝 Medium' },
+            { key: 'wordpress', label: '📝 WordPress' },
             { key: 'blogger',   label: '📰 Blogger' },
             { key: 'quora',     label: '❓ Quora' }
         ];
@@ -2580,8 +2580,8 @@ function switchSocialTab(tabName) {
         loadPinterestStatus(); loadPinterestRecentPosts();
     } else if (tabName === 'instagram') {
         loadInstagramStatus(); loadInstagramRecentPosts();
-    } else if (tabName === 'medium') {
-        loadMediumStatus(); loadMediumRecentPosts();
+    } else if (tabName === 'wordpress') {
+        loadWordPressStatus(); loadWordPressRecentPosts();
     } else if (tabName === 'quora') {
         loadQuoraStatus(); loadQuoraRecentAnswers();
     } else if (tabName === 'blogger') {
@@ -3226,143 +3226,187 @@ async function loadBloggerRecentPosts() {
 }
 
 // ============================================================
-// MEDIUM MANAGEMENT
+// WORDPRESS MANAGEMENT
 // ============================================================
 
-async function loadMediumStatus() {
+async function loadWordPressStatus() {
     try {
-        const response = await fetch(`${API_URL}/api/medium/status`, { headers: getAuthHeaders() });
+        const response = await fetch(`${API_URL}/api/wordpress/status`, { headers: getAuthHeaders() });
         const data = await response.json();
-        const el = document.getElementById('medium-status');
-        if (!el) return;
-
-        if (!data.success || !data.status.configured) {
-            el.innerHTML = `
-                <p style="color: #ffcccc;">❌ Medium not configured</p>
-                <p style="font-size: 12px; opacity: 0.8;">Integration Token in Settings → Medium Configuration eintragen</p>`;
-            return;
-        }
+        if (!data.success) return;
         const s = data.status;
-        el.innerHTML = `
-            <p style="color: #ccffcc;">✅ Verbunden · User ID: ${s.userId || 'resolving…'}${s.publicationId ? ' · Publication: ' + s.publicationId : ' · Profil-Posts'}</p>
-            <p style="font-size: 13px; margin-top: 8px;">
-                Scheduler: <strong>${s.schedulerRunning ? '▶️ Running' : '⏹️ Stopped'}</strong> &nbsp;|&nbsp;
-                Frequenz: <strong>${s.frequency}</strong> &nbsp;|&nbsp;
-                Artikel publiziert: <strong>${s.postCounter}</strong>
-            </p>
-            <p style="font-size: 12px; opacity: 0.8; margin-top: 4px;">Nächstes Thema: ${s.nextTopic || '—'}</p>`;
-    } catch {
-        const el = document.getElementById('medium-status');
-        if (el) el.innerHTML = `<p style="color: #ffcccc;">⚠️ Server nicht erreichbar</p>`;
-    }
+
+        const connEl = document.getElementById('wp-connection-status');
+        if (connEl) {
+            connEl.innerHTML = s.connected
+                ? `<span style="color:#38a169;">✅ Verbunden</span>${s.siteId ? ` · Site ID: <code>${s.siteId}</code>` : ' · <em style="color:#e67e22;">Site ID noch nicht gesetzt</em>'}`
+                : `<span style="color:#e53e3e;">❌ Nicht verbunden — WordPress-Konto verknüpfen</span>`;
+        }
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+        set('wp-scheduler-status', s.schedulerRunning ? '▶️' : '⏸️');
+        set('wp-post-count', s.postCounter);
+        set('wp-frequency', `${s.frequencyHours}h`);
+    } catch { /* non-blocking */ }
+
+    // Populate topic dropdown
+    try {
+        const response = await fetch(`${API_URL}/api/wordpress/topics`, { headers: getAuthHeaders() });
+        const data = await response.json();
+        const select = document.getElementById('wp-topic-select');
+        if (select && data.topics && select.options.length <= 1) {
+            data.topics.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.index;
+                opt.textContent = `#${t.index + 1} ${t.title}`;
+                select.appendChild(opt);
+            });
+        }
+    } catch { /* non-blocking */ }
 }
 
-async function publishMediumArticle() {
-    const btn = document.getElementById('medium-post-btn');
-    const resultEl = document.getElementById('medium-post-result');
-
-    if (btn) { btn.disabled = true; btn.textContent = '⏳ Writing & publishing…'; }
-    if (resultEl) resultEl.innerHTML = '<p style="color: #999;">Claude Sonnet schreibt den Artikel (900–1300 Wörter), dann auf Medium veröffentlichen…</p>';
-
+async function getWordPressAuthUrl() {
     try {
-        const response = await fetch(`${API_URL}/api/medium/publish`, {
+        const response = await fetch(`${API_URL}/api/wordpress/auth-url`, { headers: getAuthHeaders() });
+        const data = await response.json();
+        if (!data.success) { showAlert(data.error, 'error'); return; }
+        const section = document.getElementById('wp-auth-section');
+        if (section) section.style.display = 'block';
+        window.open(data.url, '_blank');
+        showAlert('WordPress-Anmeldeseite geöffnet. Nach der Anmeldung den Code aus der URL kopieren.', 'info');
+    } catch (err) { showAlert('Fehler: ' + err.message, 'error'); }
+}
+
+async function exchangeWordPressToken() {
+    const code = document.getElementById('wp-auth-code')?.value?.trim();
+    if (!code) { showAlert('Bitte Code einfügen', 'error'); return; }
+    try {
+        const response = await fetch(`${API_URL}/api/wordpress/exchange-token`, {
             method: 'POST',
-            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' }
+            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code })
         });
         const data = await response.json();
-
         if (data.success) {
-            if (resultEl) resultEl.innerHTML = `
-                <div style="background: #f0fff4; padding: 12px; border-radius: 8px; border-left: 4px solid #38a169;">
-                    <p>✅ <strong>${data.title}</strong></p>
-                    <p style="font-size: 13px; margin-top: 4px;">~${data.wordCount} Wörter · Kategorie: ${data.category} · CTA: ${data.includedCTA ? 'Ja ✅' : '—'}</p>
-                    ${data.url ? `<a href="${data.url}" target="_blank" style="color: #000; font-size: 13px; margin-top: 6px; display: inline-block;">Artikel auf Medium lesen →</a>` : ''}
-                </div>`;
-            loadMediumRecentPosts();
-            loadMediumStatus();
+            showAlert('✅ WordPress-Konto erfolgreich verbunden!', 'success');
+            document.getElementById('wp-auth-section').style.display = 'none';
+            document.getElementById('wp-auth-code').value = '';
+            loadWordPressStatus();
         } else {
-            if (resultEl) resultEl.innerHTML = `<p style="color: #e53e3e;">❌ ${data.error}</p>`;
+            showAlert('❌ ' + data.error, 'error');
+        }
+    } catch (err) { showAlert('Fehler: ' + err.message, 'error'); }
+}
+
+async function loadWordPressSites() {
+    try {
+        const response = await fetch(`${API_URL}/api/wordpress/sites`, { headers: getAuthHeaders() });
+        const data = await response.json();
+        const container = document.getElementById('wp-sites-list');
+        const section = document.getElementById('wp-sites-section');
+        if (!container || !section) return;
+        if (!data.success) { showAlert(data.error, 'error'); return; }
+        section.style.display = 'block';
+        container.innerHTML = '';
+        data.sites.forEach(site => {
+            const div = document.createElement('div');
+            div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:8px;';
+            div.innerHTML = `
+                <div>
+                    <strong style="font-size:14px;">${site.name}</strong>
+                    <a href="${site.url}" target="_blank" style="font-size:12px;color:#999;display:block;">${site.url}</a>
+                </div>
+                <button onclick="selectWordPressSite('${site.id}','${site.name}')" class="btn btn-secondary" style="font-size:12px;padding:6px 12px;">✅ Auswählen</button>`;
+            container.appendChild(div);
+        });
+    } catch (err) { showAlert('Fehler: ' + err.message, 'error'); }
+}
+
+async function selectWordPressSite(siteId, siteName) {
+    try {
+        await fetch(`${API_URL}/api/settings`, {
+            method: 'POST',
+            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ settings: { wordpress_site_id: siteId } })
+        });
+        document.getElementById('wp-sites-section').style.display = 'none';
+        showAlert(`Site "${siteName}" ausgewählt`, 'success');
+        await fetch(`${API_URL}/api/wordpress/reload-settings`, { method: 'POST', headers: getAuthHeaders() });
+        loadWordPressStatus();
+    } catch (err) { showAlert('Fehler: ' + err.message, 'error'); }
+}
+
+async function publishWordPressPost() {
+    const btn = document.getElementById('wp-publish-btn');
+    const resultEl = document.getElementById('wp-publish-result');
+    const select = document.getElementById('wp-topic-select');
+    const topicIndex = select?.value !== '' ? parseInt(select.value) : undefined;
+
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Generiere & veröffentliche…'; }
+    if (resultEl) resultEl.innerHTML = '<p style="color:#999;">Claude Sonnet schreibt den Artikel… (~15–20 Sek.)</p>';
+
+    try {
+        const response = await fetch(`${API_URL}/api/wordpress/publish`, {
+            method: 'POST',
+            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topicIndex })
+        });
+        const data = await response.json();
+        if (data.success) {
+            resultEl.innerHTML = `
+                <div style="background:#f0fff4;border:1px solid #9ae6b4;border-radius:8px;padding:14px;margin-top:10px;">
+                    <p style="font-weight:700;margin:0 0 6px;">${data.title}</p>
+                    <p style="font-size:13px;color:#666;margin:0 0 10px;">Kategorie: ${data.category} · CTA: ${data.includedCTA ? '✅' : '—'}</p>
+                    ${data.wpUrl ? `<a href="${data.wpUrl}" target="_blank" style="color:#21759b;font-size:13px;">📝 Auf WordPress lesen →</a>` : ''}
+                </div>`;
+            loadWordPressRecentPosts();
+            loadWordPressStatus();
+        } else {
+            resultEl.innerHTML = `<p style="color:#e53e3e;">❌ ${data.error}</p>`;
         }
     } catch (err) {
-        if (resultEl) resultEl.innerHTML = `<p style="color: #e53e3e;">❌ ${err.message}</p>`;
+        resultEl.innerHTML = `<p style="color:#e53e3e;">❌ ${err.message}</p>`;
     } finally {
-        if (btn) { btn.disabled = false; btn.textContent = '✍️ Generate & Publish'; }
+        if (btn) { btn.disabled = false; btn.textContent = '🚀 Artikel veröffentlichen'; }
     }
 }
 
-async function loadMediumTopics() {
-    const container = document.getElementById('medium-topics');
-    const listEl = document.getElementById('medium-topics-list');
-    if (!container || !listEl) return;
-
+async function startWordPressScheduler() {
     try {
-        const response = await fetch(`${API_URL}/api/medium/topics`, { headers: getAuthHeaders() });
+        const response = await fetch(`${API_URL}/api/wordpress/scheduler/start`, { method: 'POST', headers: getAuthHeaders() });
         const data = await response.json();
-        if (!data.topics) return;
-
-        listEl.innerHTML = data.topics.map(t => `
-            <div style="padding: 8px 12px; border-radius: 6px; margin-bottom: 6px; background: ${t.isNext ? '#f0f0f0' : '#fafafa'}; border: 1px solid ${t.isNext ? '#000' : '#eee'};">
-                <span style="font-size: 12px; color: #999;">#${t.index + 1}</span>
-                ${t.isNext ? '<span style="font-size: 11px; background: #000; color: white; padding: 2px 6px; border-radius: 10px; margin: 0 6px;">NEXT</span>' : ''}
-                <strong>${t.title}</strong>
-                <span style="font-size: 12px; color: #888; margin-left: 8px;">${t.category}</span>
-            </div>`).join('');
-        container.style.display = 'block';
-    } catch {
-        listEl.innerHTML = '<p style="color: #999;">Konnte Topics nicht laden.</p>';
-        container.style.display = 'block';
-    }
+        showAlert(data.started ? `WordPress Scheduler gestartet — alle ${data.intervalHours}h` : (data.reason || 'Konnte nicht starten'), data.started ? 'success' : 'warning');
+        loadWordPressStatus();
+    } catch (err) { showAlert('Server error: ' + err.message, 'error'); }
 }
 
-async function startMediumScheduler() {
+async function stopWordPressScheduler() {
     try {
-        const response = await fetch(`${API_URL}/api/medium/scheduler/start`, {
-            method: 'POST', headers: getAuthHeaders()
-        });
+        const response = await fetch(`${API_URL}/api/wordpress/scheduler/stop`, { method: 'POST', headers: getAuthHeaders() });
         const data = await response.json();
-        showAlert(data.started ? `Medium Scheduler gestartet — alle ${data.intervalHours}h` : (data.reason || 'Konnte nicht starten'), data.started ? 'success' : 'warning');
-        loadMediumStatus();
-    } catch (err) {
-        showAlert('Server error: ' + err.message, 'error');
-    }
+        showAlert(data.stopped ? 'WordPress Scheduler gestoppt' : (data.reason || 'Nicht aktiv'), data.stopped ? 'success' : 'warning');
+        loadWordPressStatus();
+    } catch (err) { showAlert('Server error: ' + err.message, 'error'); }
 }
 
-async function stopMediumScheduler() {
+async function loadWordPressRecentPosts() {
+    const container = document.getElementById('wp-posts-list');
+    if (!container) return;
     try {
-        const response = await fetch(`${API_URL}/api/medium/scheduler/stop`, {
-            method: 'POST', headers: getAuthHeaders()
-        });
-        const data = await response.json();
-        showAlert(data.stopped ? 'Medium Scheduler gestoppt' : (data.reason || 'Nicht aktiv'), data.stopped ? 'success' : 'warning');
-        loadMediumStatus();
-    } catch (err) {
-        showAlert('Server error: ' + err.message, 'error');
-    }
-}
-
-async function loadMediumRecentPosts() {
-    const el = document.getElementById('medium-recent-posts');
-    if (!el) return;
-    try {
-        const response = await fetch(`${API_URL}/api/medium/recent-posts`, { headers: getAuthHeaders() });
+        const response = await fetch(`${API_URL}/api/wordpress/recent-posts`, { headers: getAuthHeaders() });
         const data = await response.json();
         if (!data.posts || data.posts.length === 0) {
-            el.innerHTML = '<p style="color: #999;">Noch keine Artikel veröffentlicht.</p>';
+            container.innerHTML = '<p style="color:#999;">Noch keine Artikel veröffentlicht.</p>';
             return;
         }
-        el.innerHTML = data.posts.map(p => `
-            <div style="padding: 12px; border-bottom: 1px solid #f0f0f0;">
-                <p style="font-weight: 600; margin: 0;">
-                    ${p.medium_url ? `<a href="${p.medium_url}" target="_blank" style="color: #000; text-decoration: none;">${p.title}</a>` : p.title}
-                </p>
-                <p style="font-size: 12px; color: #666; margin: 4px 0 0;">
-                    ${p.category} · ~${Math.round(p.body_length / 5)} Wörter · CTA: ${p.included_cta ? '✅' : '—'} · ${new Date(p.posted_at).toLocaleString()}
-                </p>
-                ${p.tags ? `<p style="font-size: 11px; color: #999; margin: 2px 0 0;">${p.tags}</p>` : ''}
+        container.innerHTML = data.posts.map(p => `
+            <div style="border:1px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+                <div>
+                    <p style="font-weight:700;font-size:14px;margin:0 0 4px;">${p.title}</p>
+                    <p style="font-size:12px;color:#999;margin:0;">${p.category} · CTA: ${p.included_cta ? '✅' : '—'} · ${new Date(p.posted_at).toLocaleString()}</p>
+                </div>
+                ${p.wp_url ? `<a href="${p.wp_url}" target="_blank" style="font-size:12px;color:#21759b;white-space:nowrap;flex-shrink:0;">Lesen →</a>` : ''}
             </div>`).join('');
-    } catch {
-        el.innerHTML = '<p style="color: #999;">Konnte Artikel nicht laden.</p>';
-    }
+    } catch { container.innerHTML = '<p style="color:#999;">Konnte Artikel nicht laden.</p>'; }
 }
 
 // ============================================================
