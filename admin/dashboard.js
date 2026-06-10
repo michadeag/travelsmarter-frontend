@@ -1001,6 +1001,23 @@ async function loadSettings() {
                 if (el) el.value = settings.twitter_posting_time.value;
             }
 
+            // Load Medium settings
+            const mediumFields = [
+                ['medium_integration_token', 'medium-integration-token'],
+                ['medium_publication_id', 'medium-publication-id'],
+                ['medium_posting_frequency', 'medium-frequency']
+            ];
+            mediumFields.forEach(([key, id]) => {
+                if (settings[key]?.value) {
+                    const el = document.getElementById(id);
+                    if (el) el.value = settings[key].value;
+                }
+            });
+            if (settings.medium_auto_posting?.value) {
+                const el = document.getElementById('medium-auto-posting');
+                if (el) el.checked = settings.medium_auto_posting.value === 'true';
+            }
+
             // Load Instagram settings
             const instagramFields = [
                 ['instagram_access_token', 'instagram-access-token'],
@@ -1165,6 +1182,12 @@ async function saveSettings() {
     const twitterPostingSchedule = document.getElementById('twitter-posting-schedule')?.value || 'recommended';
     const twitterPostingTime = document.getElementById('twitter-posting-time')?.value || '09:00';
 
+    // Medium settings
+    const mediumToken = document.getElementById('medium-integration-token')?.value || '';
+    const mediumPubId = document.getElementById('medium-publication-id')?.value || '';
+    const mediumFrequency = document.getElementById('medium-frequency')?.value || 'daily';
+    const mediumAutoPosting = document.getElementById('medium-auto-posting')?.checked || false;
+
     // Instagram settings
     const instagramAccessToken = document.getElementById('instagram-access-token')?.value || '';
     const instagramAccountId = document.getElementById('instagram-account-id')?.value || '';
@@ -1232,6 +1255,12 @@ async function saveSettings() {
         localStorage.setItem('admin_twitter_posting_schedule', twitterPostingSchedule);
         localStorage.setItem('admin_twitter_posting_time', twitterPostingTime);
 
+        // Save Medium settings
+        if (mediumToken) localStorage.setItem('admin_medium_token', mediumToken);
+        if (mediumPubId) localStorage.setItem('admin_medium_pub_id', mediumPubId);
+        localStorage.setItem('admin_medium_frequency', mediumFrequency);
+        localStorage.setItem('admin_medium_auto_posting', mediumAutoPosting.toString());
+
         // Save Instagram settings
         if (instagramAccessToken) localStorage.setItem('admin_instagram_access_token', instagramAccessToken);
         if (instagramAccountId) localStorage.setItem('admin_instagram_account_id', instagramAccountId);
@@ -1295,6 +1324,14 @@ async function saveSettings() {
                 settingsData['twitter_posting_time'] = twitterPostingTime;
             }
 
+            // Add Medium settings if provided
+            if (mediumToken) {
+                settingsData['medium_integration_token'] = mediumToken;
+                settingsData['medium_publication_id'] = mediumPubId;
+                settingsData['medium_posting_frequency'] = mediumFrequency;
+                settingsData['medium_auto_posting'] = mediumAutoPosting.toString();
+            }
+
             // Add Instagram settings if provided
             if (instagramAccessToken) {
                 settingsData['instagram_access_token'] = instagramAccessToken;
@@ -1349,6 +1386,18 @@ async function saveSettings() {
                 body: JSON.stringify(settingsData)
             });
             console.log('✅ Settings also synced to backend database');
+
+            // If Medium token was saved, reload the Medium service
+            if (mediumToken) {
+                try {
+                    await fetch(`${API_URL}/api/medium/reload-settings`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${getAdminToken()}`, 'Content-Type': 'application/json' }
+                    });
+                } catch (err) {
+                    console.warn('⚠️ Medium reload failed (non-blocking):', err.message);
+                }
+            }
 
             // If Instagram credentials were saved, reload the Instagram service
             if (instagramAccessToken && instagramAccountId) {
@@ -2770,6 +2819,146 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// ============================================================
+// MEDIUM MANAGEMENT
+// ============================================================
+
+async function loadMediumStatus() {
+    try {
+        const response = await fetch(`${API_URL}/api/medium/status`, { headers: getAuthHeaders() });
+        const data = await response.json();
+        const el = document.getElementById('medium-status');
+        if (!el) return;
+
+        if (!data.success || !data.status.configured) {
+            el.innerHTML = `
+                <p style="color: #ffcccc;">❌ Medium not configured</p>
+                <p style="font-size: 12px; opacity: 0.8;">Integration Token in Settings → Medium Configuration eintragen</p>`;
+            return;
+        }
+        const s = data.status;
+        el.innerHTML = `
+            <p style="color: #ccffcc;">✅ Verbunden · User ID: ${s.userId || 'resolving…'}${s.publicationId ? ' · Publication: ' + s.publicationId : ' · Profil-Posts'}</p>
+            <p style="font-size: 13px; margin-top: 8px;">
+                Scheduler: <strong>${s.schedulerRunning ? '▶️ Running' : '⏹️ Stopped'}</strong> &nbsp;|&nbsp;
+                Frequenz: <strong>${s.frequency}</strong> &nbsp;|&nbsp;
+                Artikel publiziert: <strong>${s.postCounter}</strong>
+            </p>
+            <p style="font-size: 12px; opacity: 0.8; margin-top: 4px;">Nächstes Thema: ${s.nextTopic || '—'}</p>`;
+    } catch {
+        const el = document.getElementById('medium-status');
+        if (el) el.innerHTML = `<p style="color: #ffcccc;">⚠️ Server nicht erreichbar</p>`;
+    }
+}
+
+async function publishMediumArticle() {
+    const btn = document.getElementById('medium-post-btn');
+    const resultEl = document.getElementById('medium-post-result');
+
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Writing & publishing…'; }
+    if (resultEl) resultEl.innerHTML = '<p style="color: #999;">Claude Sonnet schreibt den Artikel (900–1300 Wörter), dann auf Medium veröffentlichen…</p>';
+
+    try {
+        const response = await fetch(`${API_URL}/api/medium/publish`, {
+            method: 'POST',
+            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            if (resultEl) resultEl.innerHTML = `
+                <div style="background: #f0fff4; padding: 12px; border-radius: 8px; border-left: 4px solid #38a169;">
+                    <p>✅ <strong>${data.title}</strong></p>
+                    <p style="font-size: 13px; margin-top: 4px;">~${data.wordCount} Wörter · Kategorie: ${data.category} · CTA: ${data.includedCTA ? 'Ja ✅' : '—'}</p>
+                    ${data.url ? `<a href="${data.url}" target="_blank" style="color: #000; font-size: 13px; margin-top: 6px; display: inline-block;">Artikel auf Medium lesen →</a>` : ''}
+                </div>`;
+            loadMediumRecentPosts();
+            loadMediumStatus();
+        } else {
+            if (resultEl) resultEl.innerHTML = `<p style="color: #e53e3e;">❌ ${data.error}</p>`;
+        }
+    } catch (err) {
+        if (resultEl) resultEl.innerHTML = `<p style="color: #e53e3e;">❌ ${err.message}</p>`;
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '✍️ Generate & Publish'; }
+    }
+}
+
+async function loadMediumTopics() {
+    const container = document.getElementById('medium-topics');
+    const listEl = document.getElementById('medium-topics-list');
+    if (!container || !listEl) return;
+
+    try {
+        const response = await fetch(`${API_URL}/api/medium/topics`, { headers: getAuthHeaders() });
+        const data = await response.json();
+        if (!data.topics) return;
+
+        listEl.innerHTML = data.topics.map(t => `
+            <div style="padding: 8px 12px; border-radius: 6px; margin-bottom: 6px; background: ${t.isNext ? '#f0f0f0' : '#fafafa'}; border: 1px solid ${t.isNext ? '#000' : '#eee'};">
+                <span style="font-size: 12px; color: #999;">#${t.index + 1}</span>
+                ${t.isNext ? '<span style="font-size: 11px; background: #000; color: white; padding: 2px 6px; border-radius: 10px; margin: 0 6px;">NEXT</span>' : ''}
+                <strong>${t.title}</strong>
+                <span style="font-size: 12px; color: #888; margin-left: 8px;">${t.category}</span>
+            </div>`).join('');
+        container.style.display = 'block';
+    } catch {
+        listEl.innerHTML = '<p style="color: #999;">Konnte Topics nicht laden.</p>';
+        container.style.display = 'block';
+    }
+}
+
+async function startMediumScheduler() {
+    try {
+        const response = await fetch(`${API_URL}/api/medium/scheduler/start`, {
+            method: 'POST', headers: getAuthHeaders()
+        });
+        const data = await response.json();
+        showAlert(data.started ? `Medium Scheduler gestartet — alle ${data.intervalHours}h` : (data.reason || 'Konnte nicht starten'), data.started ? 'success' : 'warning');
+        loadMediumStatus();
+    } catch (err) {
+        showAlert('Server error: ' + err.message, 'error');
+    }
+}
+
+async function stopMediumScheduler() {
+    try {
+        const response = await fetch(`${API_URL}/api/medium/scheduler/stop`, {
+            method: 'POST', headers: getAuthHeaders()
+        });
+        const data = await response.json();
+        showAlert(data.stopped ? 'Medium Scheduler gestoppt' : (data.reason || 'Nicht aktiv'), data.stopped ? 'success' : 'warning');
+        loadMediumStatus();
+    } catch (err) {
+        showAlert('Server error: ' + err.message, 'error');
+    }
+}
+
+async function loadMediumRecentPosts() {
+    const el = document.getElementById('medium-recent-posts');
+    if (!el) return;
+    try {
+        const response = await fetch(`${API_URL}/api/medium/recent-posts`, { headers: getAuthHeaders() });
+        const data = await response.json();
+        if (!data.posts || data.posts.length === 0) {
+            el.innerHTML = '<p style="color: #999;">Noch keine Artikel veröffentlicht.</p>';
+            return;
+        }
+        el.innerHTML = data.posts.map(p => `
+            <div style="padding: 12px; border-bottom: 1px solid #f0f0f0;">
+                <p style="font-weight: 600; margin: 0;">
+                    ${p.medium_url ? `<a href="${p.medium_url}" target="_blank" style="color: #000; text-decoration: none;">${p.title}</a>` : p.title}
+                </p>
+                <p style="font-size: 12px; color: #666; margin: 4px 0 0;">
+                    ${p.category} · ~${Math.round(p.body_length / 5)} Wörter · CTA: ${p.included_cta ? '✅' : '—'} · ${new Date(p.posted_at).toLocaleString()}
+                </p>
+                ${p.tags ? `<p style="font-size: 11px; color: #999; margin: 2px 0 0;">${p.tags}</p>` : ''}
+            </div>`).join('');
+    } catch {
+        el.innerHTML = '<p style="color: #999;">Konnte Artikel nicht laden.</p>';
+    }
+}
 
 // ============================================================
 // INSTAGRAM MANAGEMENT
