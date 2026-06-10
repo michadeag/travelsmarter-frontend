@@ -86,6 +86,7 @@ function switchTab(tabName) {
 
     // Auto-load data when switching to platform tabs
     if (tabName === 'analytics') loadAnalytics();
+    if (tabName === 'twitter') { loadTwitterStatus(); loadTwitterRecentPosts(); }
     if (tabName === 'reddit') { loadRedditStatus(); loadRedditRecentPosts(); }
     if (tabName === 'linkedin') { loadLinkedInStatus(); loadLinkedInRecentPosts(); }
     if (tabName === 'pinterest') { loadPinterestStatus(); loadPinterestRecentPosts(); }
@@ -1679,6 +1680,51 @@ async function loadAnalytics() {
     } catch (err) {
         console.error('Analytics error:', err);
     }
+}
+
+// ─── TWITTER ─────────────────────────────────────────────────────────────────
+async function loadTwitterStatus() {
+    const card = document.getElementById('twitter-status-card');
+    try {
+        const res = await fetch(`${API_URL}/api/twitter/status`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const s = data.status || data;
+        card.innerHTML = `<p><strong>Status:</strong> ${s.configured ? '✅ Configured' : '❌ Not configured — add credentials in Settings'}</p>
+            ${s.configured ? `<p><strong>Scheduler:</strong> ${s.schedulerRunning ? '▶ Running' : '⏹ Stopped'}</p>` : ''}`;
+    } catch { card.innerHTML = '<p>❌ Could not reach backend</p>'; }
+}
+async function publishTwitterPost() {
+    showAlert('Generating Twitter post...', 'success');
+    try {
+        const res = await fetch(`${API_URL}/api/twitter/post`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (data.success) { showAlert('✅ Posted to Twitter!', 'success'); loadTwitterRecentPosts(); }
+        else showAlert(`❌ ${data.error || data.message}`, 'error');
+    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+}
+async function startTwitterScheduler() {
+    const res = await fetch(`${API_URL}/api/twitter/scheduler/start`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+    const data = await res.json();
+    showAlert(data.success ? '▶ Twitter scheduler started' : `❌ ${data.error}`, data.success ? 'success' : 'error');
+    loadTwitterStatus();
+}
+async function stopTwitterScheduler() {
+    const res = await fetch(`${API_URL}/api/twitter/scheduler/stop`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+    const data = await res.json();
+    showAlert(data.success ? '⏹ Twitter scheduler stopped' : `❌ ${data.error}`, data.success ? 'success' : 'error');
+    loadTwitterStatus();
+}
+async function loadTwitterRecentPosts() {
+    const el = document.getElementById('twitter-recent-posts');
+    try {
+        const res = await fetch(`${API_URL}/api/twitter/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.posts?.length) { el.innerHTML = '<p style="color:#6b7280">No posts yet.</p>'; return; }
+        el.innerHTML = data.posts.map(p => `<div style="padding:10px;border-bottom:1px solid #e5e7eb">
+            <strong>🐦</strong> ${p.content?.substring(0,100) || p.text?.substring(0,100)}...<br>
+            <small style="color:#6b7280">${new Date(p.posted_at || p.created_at).toLocaleString()} ${p.tweet_url ? `| <a href="${p.tweet_url}" target="_blank">View</a>` : ''}</small>
+        </div>`).join('');
+    } catch { el.innerHTML = '<p style="color:#ef4444">Error loading posts</p>'; }
 }
 
 // ─── REDDIT ──────────────────────────────────────────────────────────────────

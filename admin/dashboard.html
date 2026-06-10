@@ -596,6 +596,7 @@
                 <a class="nav-link" data-tab="promos">🎟️ Promo Codes</a>
                 <a class="nav-link" data-tab="email-templates">📧 Email Templates</a>
                 <a class="nav-link" data-tab="analytics">📈 Analytics</a>
+                <a class="nav-link" data-tab="twitter">🐦 Twitter</a>
                 <a class="nav-link" data-tab="reddit">🤖 Reddit</a>
                 <a class="nav-link" data-tab="linkedin">💼 LinkedIn</a>
                 <a class="nav-link" data-tab="pinterest">📌 Pinterest</a>
@@ -990,6 +991,27 @@
                             <tr><td colspan="4" style="text-align:center;padding:20px;">Loading...</td></tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- TWITTER TAB -->
+            <div id="twitter" class="tab-content">
+                <h3>🐦 Twitter / X Auto-Posting</h3>
+                <div id="twitter-status-card" style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
+                    <p>Loading...</p>
+                </div>
+                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
+                    <h4>Manual Post</h4>
+                    <button class="btn btn-primary" onclick="publishTwitterPost()" style="margin-top:10px;">🐦 Generate & Post to Twitter</button>
+                </div>
+                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
+                    <h4>Auto-Scheduler</h4>
+                    <button class="btn btn-primary" onclick="startTwitterScheduler()">▶ Start Scheduler</button>
+                    <button class="btn btn-danger" onclick="stopTwitterScheduler()" style="margin-left:10px;">⏹ Stop Scheduler</button>
+                </div>
+                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
+                    <h4>Recent Posts</h4>
+                    <div id="twitter-recent-posts"><p>Loading...</p></div>
                 </div>
             </div>
 
