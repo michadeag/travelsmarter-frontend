@@ -1001,6 +1001,27 @@ async function loadSettings() {
                 if (el) el.value = settings.twitter_posting_time.value;
             }
 
+            // Load Reddit settings
+            const redditFields = [
+                ['reddit_client_id', 'reddit-client-id'],
+                ['reddit_client_secret', 'reddit-client-secret'],
+                ['reddit_username', 'reddit-username'],
+                ['reddit_password', 'reddit-password'],
+                ['reddit_posting_frequency', 'reddit-frequency'],
+                ['reddit_max_posts_per_day', 'reddit-max-posts'],
+                ['reddit_subreddits', 'reddit-subreddits']
+            ];
+            redditFields.forEach(([key, id]) => {
+                if (settings[key]?.value) {
+                    const el = document.getElementById(id);
+                    if (el) el.value = settings[key].value;
+                }
+            });
+            if (settings.reddit_auto_posting?.value) {
+                const el = document.getElementById('reddit-auto-posting');
+                if (el) el.checked = settings.reddit_auto_posting.value === 'true';
+            }
+
             // Load checkboxes
             const sendSignupEmail = document.getElementById('send-signup');
             const sendSubEmail = document.getElementById('send-sub');
@@ -1086,6 +1107,16 @@ async function saveSettings() {
     const twitterPostingSchedule = document.getElementById('twitter-posting-schedule')?.value || 'recommended';
     const twitterPostingTime = document.getElementById('twitter-posting-time')?.value || '09:00';
 
+    // Reddit settings
+    const redditClientId = document.getElementById('reddit-client-id')?.value || '';
+    const redditClientSecret = document.getElementById('reddit-client-secret')?.value || '';
+    const redditUsername = document.getElementById('reddit-username')?.value || '';
+    const redditPassword = document.getElementById('reddit-password')?.value || '';
+    const redditFrequency = document.getElementById('reddit-frequency')?.value || 'daily';
+    const redditMaxPosts = document.getElementById('reddit-max-posts')?.value || '1';
+    const redditSubreddits = document.getElementById('reddit-subreddits')?.value || 'travel,solotravel,budgettravel';
+    const redditAutoPosting = document.getElementById('reddit-auto-posting')?.checked || false;
+
     // Checkbox values
     const sendSignupEmail = document.getElementById('send-signup').checked;
     const sendSubEmail = document.getElementById('send-sub').checked;
@@ -1118,6 +1149,16 @@ async function saveSettings() {
         localStorage.setItem('admin_twitter_posting_schedule', twitterPostingSchedule);
         localStorage.setItem('admin_twitter_posting_time', twitterPostingTime);
 
+        // Save Reddit settings
+        if (redditClientId) localStorage.setItem('admin_reddit_client_id', redditClientId);
+        if (redditClientSecret) localStorage.setItem('admin_reddit_client_secret', redditClientSecret);
+        if (redditUsername) localStorage.setItem('admin_reddit_username', redditUsername);
+        if (redditPassword) localStorage.setItem('admin_reddit_password', redditPassword);
+        localStorage.setItem('admin_reddit_frequency', redditFrequency);
+        localStorage.setItem('admin_reddit_max_posts', redditMaxPosts);
+        localStorage.setItem('admin_reddit_subreddits', redditSubreddits);
+        localStorage.setItem('admin_reddit_auto_posting', redditAutoPosting.toString());
+
         console.log('✅ Settings saved to localStorage');
         showAlert('Settings saved successfully!', 'success');
 
@@ -1146,6 +1187,18 @@ async function saveSettings() {
                 settingsData['twitter_posting_time'] = twitterPostingTime;
             }
 
+            // Add Reddit settings if provided
+            if (redditClientId) {
+                settingsData['reddit_client_id'] = redditClientId;
+                settingsData['reddit_client_secret'] = redditClientSecret;
+                settingsData['reddit_username'] = redditUsername;
+                settingsData['reddit_password'] = redditPassword;
+                settingsData['reddit_posting_frequency'] = redditFrequency;
+                settingsData['reddit_max_posts_per_day'] = redditMaxPosts;
+                settingsData['reddit_subreddits'] = redditSubreddits;
+                settingsData['reddit_auto_posting'] = redditAutoPosting.toString();
+            }
+
             await fetch(`${API_URL}/api/admin/settings/batch/update`, {
                 method: 'POST',
                 headers: {
@@ -1155,6 +1208,22 @@ async function saveSettings() {
                 body: JSON.stringify(settingsData)
             });
             console.log('✅ Settings also synced to backend database');
+
+            // If Reddit credentials were saved, reload the Reddit service
+            if (redditClientId && redditClientSecret) {
+                try {
+                    await fetch(`${API_URL}/api/reddit/reload-settings`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${getAdminToken()}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    console.log('✅ Reddit service reinitialized with new credentials');
+                } catch (redditError) {
+                    console.warn('⚠️ Reddit service reload failed (non-blocking):', redditError.message);
+                }
+            }
 
             // If Twitter credentials were saved, reload the Twitter service
             if (twitterApiKey && twitterApiSecret) {
@@ -2523,3 +2592,129 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// ============================================================
+// REDDIT MANAGEMENT
+// ============================================================
+
+async function loadRedditStatus() {
+    try {
+        const response = await fetch(`${API_URL}/api/reddit/status`, {
+            headers: getAuthHeaders()
+        });
+        const data = await response.json();
+        const statusEl = document.getElementById('reddit-status');
+        if (!statusEl) return;
+
+        if (!data.success || !data.status.configured) {
+            statusEl.innerHTML = `
+                <p style="color: #ffcccc;">❌ Reddit not configured</p>
+                <p style="font-size: 12px; opacity: 0.8;">Add Reddit API credentials in Settings → Social Media → Reddit</p>`;
+            return;
+        }
+
+        const s = data.status;
+        statusEl.innerHTML = `
+            <p style="color: #ccffcc;">✅ Connected as u/${s.username}</p>
+            <p style="font-size: 13px; margin-top: 8px;">
+                Scheduler: <strong>${s.schedulerRunning ? '▶️ Running' : '⏹️ Stopped'}</strong> &nbsp;|&nbsp;
+                Frequency: <strong>${s.frequency}</strong> &nbsp;|&nbsp;
+                Subreddits: <strong>${s.subreddits}</strong>
+            </p>
+            <p style="font-size: 12px; opacity: 0.8; margin-top: 4px;">Posts this session: ${s.postCounter} (CTA included every 2nd post)</p>`;
+    } catch (err) {
+        const statusEl = document.getElementById('reddit-status');
+        if (statusEl) statusEl.innerHTML = `<p style="color: #ffcccc;">⚠️ Could not reach server</p>`;
+    }
+}
+
+async function postRedditArticle() {
+    const btn = document.getElementById('reddit-post-btn');
+    const resultEl = document.getElementById('reddit-post-result');
+    const subreddit = document.getElementById('reddit-custom-subreddit')?.value?.trim() || '';
+
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Generating & posting...'; }
+    if (resultEl) resultEl.innerHTML = '<p style="color: #999;">Generating article with AI, then posting to Reddit...</p>';
+
+    try {
+        const response = await fetch(`${API_URL}/api/reddit/post-article`, {
+            method: 'POST',
+            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ subreddit: subreddit || undefined })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            if (resultEl) resultEl.innerHTML = `
+                <div style="background: #f0fff4; padding: 12px; border-radius: 8px; border-left: 4px solid #38a169;">
+                    <p>✅ <strong>${data.title}</strong></p>
+                    <p style="font-size: 13px; margin-top: 4px;">Posted to r/${data.subreddit} · Category: ${data.category} · CTA included: ${data.includedCTA ? 'Yes' : 'No'}</p>
+                    ${data.url ? `<a href="${data.url}" target="_blank" style="color: #667eea; font-size: 13px;">View post →</a>` : ''}
+                </div>`;
+            loadRedditRecentPosts();
+            loadRedditStatus();
+        } else {
+            if (resultEl) resultEl.innerHTML = `<p style="color: #e53e3e;">❌ ${data.error}</p>`;
+        }
+    } catch (err) {
+        if (resultEl) resultEl.innerHTML = `<p style="color: #e53e3e;">❌ ${err.message}</p>`;
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '🤖 Generate & Post Article'; }
+    }
+}
+
+async function startRedditScheduler() {
+    try {
+        const response = await fetch(`${API_URL}/api/reddit/scheduler/start`, {
+            method: 'POST',
+            headers: getAuthHeaders()
+        });
+        const data = await response.json();
+        if (data.success && data.started) {
+            showAlert(`Reddit scheduler started — posting every ${data.intervalMinutes} minutes`, 'success');
+        } else {
+            showAlert(data.reason || 'Could not start scheduler', 'warning');
+        }
+        loadRedditStatus();
+    } catch (err) {
+        showAlert('Server error: ' + err.message, 'error');
+    }
+}
+
+async function stopRedditScheduler() {
+    try {
+        const response = await fetch(`${API_URL}/api/reddit/scheduler/stop`, {
+            method: 'POST',
+            headers: getAuthHeaders()
+        });
+        const data = await response.json();
+        showAlert(data.stopped ? 'Reddit scheduler stopped' : (data.reason || 'Not running'), data.stopped ? 'success' : 'warning');
+        loadRedditStatus();
+    } catch (err) {
+        showAlert('Server error: ' + err.message, 'error');
+    }
+}
+
+async function loadRedditRecentPosts() {
+    const el = document.getElementById('reddit-recent-posts');
+    if (!el) return;
+    try {
+        const response = await fetch(`${API_URL}/api/reddit/recent-posts`, { headers: getAuthHeaders() });
+        const data = await response.json();
+        if (!data.posts || data.posts.length === 0) {
+            el.innerHTML = '<p style="color: #999;">No posts yet.</p>';
+            return;
+        }
+        el.innerHTML = data.posts.map(p => `
+            <div style="padding: 10px; border-bottom: 1px solid #f0f0f0;">
+                <p style="font-weight: 600; margin: 0;">${p.title}</p>
+                <p style="font-size: 12px; color: #666; margin: 4px 0 0;">
+                    r/${p.subreddit} · ${p.category} · CTA: ${p.included_cta ? '✅' : '—'} ·
+                    ${new Date(p.posted_at).toLocaleString()}
+                    ${p.reddit_url ? ` · <a href="${p.reddit_url}" target="_blank" style="color: #667eea;">View</a>` : ''}
+                </p>
+            </div>`).join('');
+    } catch {
+        el.innerHTML = '<p style="color: #999;">Could not load posts.</p>';
+    }
+}
