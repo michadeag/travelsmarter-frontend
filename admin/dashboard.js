@@ -3533,6 +3533,19 @@ async function loadInstagramRecentPosts() {
 // PINTEREST MANAGEMENT
 // ============================================================
 
+async function reloadPinterestSettings() {
+    try {
+        const response = await fetch(`${API_URL}/api/pinterest/reload-settings`, {
+            method: 'POST', headers: getAuthHeaders()
+        });
+        const data = await response.json();
+        showAlert(data.configured ? '✅ Pinterest Settings geladen — konfiguriert!' : '⚠️ Settings geladen aber nicht vollständig konfiguriert. Bitte Access Token, Board ID und Ideogram Key prüfen.', data.configured ? 'success' : 'warning');
+        loadPinterestStatus();
+    } catch (err) {
+        showAlert('Fehler: ' + err.message, 'error');
+    }
+}
+
 async function loadPinterestStatus() {
     try {
         const response = await fetch(`${API_URL}/api/pinterest/status`, { headers: getAuthHeaders() });

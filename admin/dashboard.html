@@ -1357,7 +1357,10 @@
                 <h3>📌 Pinterest Management</h3>
 
                 <div class="card" style="margin-top: 20px; background: linear-gradient(135deg, #e60023 0%, #ad081b 100%); color: white;">
-                    <h4>Service Status</h4>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4>Service Status</h4>
+                        <button onclick="reloadPinterestSettings()" style="padding: 6px 14px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white; border-radius: 6px; cursor: pointer; font-size: 12px;">🔄 Reload Settings</button>
+                    </div>
                     <div id="pinterest-status" style="margin-top: 15px;">
                         <p style="opacity: 0.8;">Loading status...</p>
                     </div>
