@@ -1609,51 +1609,62 @@ function displayError(elementId, message) {
     tbody.innerHTML = `<tr><td colspan="10" class="empty-state">${message}</td></tr>`;
 }
 
-// ANALYTICS
+// ANALYTICS (single canonical definition — second duplicate below is removed)
 async function loadAnalytics() {
     try {
         const response = await fetch(`${API_URL}/api/admin/analytics/summary`, {
             headers: getAuthHeaders()
         });
+        const data = await response.json();
+        if (!data.success) return;
 
-        if (!response.ok) {
-            console.error('Failed to load analytics');
-            return;
+        const u = data.users;
+        const s = data.social;
+
+        // User KPIs
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+        set('an-total-users', u.total.toLocaleString());
+        set('an-signups-month', u.signupsThisMonth.toLocaleString());
+        set('an-paid-users', u.paid.toLocaleString());
+        set('an-elite-users', u.elite.toLocaleString());
+
+        const changeEl = document.getElementById('an-signups-change');
+        if (changeEl && u.signupChange !== null) {
+            const sign = u.signupChange >= 0 ? '+' : '';
+            changeEl.textContent = `${sign}${u.signupChange}% vs. Vormonat`;
+            changeEl.style.color = u.signupChange >= 0 ? '#38a169' : '#e53e3e';
         }
 
-        const data = await response.json();
-        const { signups, conversions, churn, ltv } = data.data;
+        // Social totals
+        set('an-total-posts', s.totalPosts.toLocaleString());
+        set('an-total-cta', s.totalCTA.toLocaleString());
 
-        // Update signup card
-        document.getElementById('analytics-signups').innerHTML = `
-            <h3>Signups (This Month)</h3>
-            <div class="number">+${signups.thisMonth}</div>
-            <div class="change">${signups.label}</div>
-        `;
-
-        // Update conversion card
-        document.getElementById('analytics-conversions').innerHTML = `
-            <h3>Trial Conversions</h3>
-            <div class="number">${conversions.rate}%</div>
-            <div class="change">${conversions.label}</div>
-        `;
-
-        // Update churn card
-        document.getElementById('analytics-churn').innerHTML = `
-            <h3>Churn Rate</h3>
-            <div class="number">${churn.rate}%</div>
-            <div class="change">${churn.label}</div>
-        `;
-
-        // Update LTV card
-        document.getElementById('analytics-ltv').innerHTML = `
-            <h3>Avg LTV</h3>
-            <div class="number">€${ltv.ltv}</div>
-            <div class="change">${ltv.label}</div>
-        `;
-
-    } catch (error) {
-        console.error('Error loading analytics:', error);
+        // Per-platform table
+        const platformMeta = [
+            { key: 'reddit',    label: '🤖 Reddit' },
+            { key: 'linkedin',  label: '💼 LinkedIn' },
+            { key: 'pinterest', label: '📌 Pinterest' },
+            { key: 'instagram', label: '📸 Instagram' },
+            { key: 'medium',    label: '📝 Medium' },
+            { key: 'blogger',   label: '📰 Blogger' },
+            { key: 'quora',     label: '❓ Quora' }
+        ];
+        const tbody = document.getElementById('an-platform-tbody');
+        if (tbody) {
+            tbody.innerHTML = platformMeta.map(p => {
+                const pd = s.platforms[p.key] || { total: 0, thisMonth: 0, withCTA: 0 };
+                const ctaRate = pd.total > 0 ? Math.round((pd.withCTA / pd.total) * 100) : 0;
+                return `<tr>
+                    <td style="font-weight: 600;">${p.label}</td>
+                    <td style="text-align: right;">${pd.total.toLocaleString()}</td>
+                    <td style="text-align: right;">${pd.thisMonth.toLocaleString()}</td>
+                    <td style="text-align: right;">${pd.withCTA.toLocaleString()}</td>
+                    <td style="text-align: right; color: ${ctaRate > 0 ? '#38a169' : '#999'};">${ctaRate}%</td>
+                </tr>`;
+            }).join('');
+        }
+    } catch (err) {
+        console.error('Analytics error:', err);
     }
 }
 
@@ -2816,34 +2827,6 @@ async function deletePost(postId) {
     }
 }
 
-// LOAD ANALYTICS
-async function loadAnalytics() {
-    try {
-        const response = await fetch(`${API_URL}/api/social/analytics`, {
-            headers: getAuthHeaders()
-        });
-
-        if (response.ok) {
-            const data = response.json();
-
-            // Update summary cards
-            document.getElementById('analytics-total-posts').textContent = data.total_posts || 0;
-            document.getElementById('analytics-total-engagement').textContent = data.total_engagement || 0;
-            document.getElementById('analytics-avg-rate').textContent = (data.avg_rate || 0).toFixed(1) + '%';
-            document.getElementById('analytics-impressions').textContent = data.impressions || 0;
-
-            // Update per-platform stats
-            const platforms = ['twitter', 'reddit', 'pinterest', 'instagram', 'linkedin'];
-            platforms.forEach(platform => {
-                const platformData = data.by_platform?.[platform] || {};
-                document.getElementById(`analytics-${platform}-posts`).textContent = platformData.posts || 0;
-                document.getElementById(`analytics-${platform}-engagement`).textContent = platformData.engagement || 0;
-            });
-        }
-    } catch (error) {
-        console.error('Error loading analytics:', error);
-    }
-}
 
 // HELPER: GET PLATFORM EMOJI
 function getPlatformEmoji(platform) {

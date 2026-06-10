@@ -951,73 +951,61 @@
 
             <!-- ANALYTICS TAB -->
             <div id="analytics" class="tab-content">
-                <h3>Platform Analytics</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3>Analytics</h3>
+                    <button class="btn btn-secondary" onclick="loadAnalytics()" style="font-size: 12px; padding: 6px 14px;">🔄 Aktualisieren</button>
+                </div>
 
-                <div class="cards-grid" style="margin-top: 20px;">
-                    <div class="card" id="analytics-signups">
-                        <h3>Signups (This Month)</h3>
-                        <div class="number" style="opacity: 0.5;">Loading...</div>
-                        <div class="change">-</div>
+                <!-- User KPIs -->
+                <h4 style="margin: 20px 0 12px; color: #6b7280; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em;">👥 Nutzer</h4>
+                <div class="cards-grid">
+                    <div class="card" style="text-align: center;">
+                        <div style="font-size: 12px; color: #999; margin-bottom: 6px;">Gesamt</div>
+                        <div id="an-total-users" style="font-size: 32px; font-weight: 700; color: #2c3e50;">—</div>
                     </div>
-                    <div class="card" id="analytics-conversions">
-                        <h3>Trial Conversions</h3>
-                        <div class="number" style="opacity: 0.5;">Loading...</div>
-                        <div class="change">-</div>
+                    <div class="card" style="text-align: center;">
+                        <div style="font-size: 12px; color: #999; margin-bottom: 6px;">Neue Signups (Monat)</div>
+                        <div id="an-signups-month" style="font-size: 32px; font-weight: 700; color: #2c3e50;">—</div>
+                        <div id="an-signups-change" style="font-size: 12px; margin-top: 4px; color: #999;"></div>
                     </div>
-                    <div class="card" id="analytics-churn">
-                        <h3>Churn Rate</h3>
-                        <div class="number" style="opacity: 0.5;">Loading...</div>
-                        <div class="change">-</div>
+                    <div class="card" style="text-align: center;">
+                        <div style="font-size: 12px; color: #999; margin-bottom: 6px;">Bezahlende Nutzer</div>
+                        <div id="an-paid-users" style="font-size: 32px; font-weight: 700; color: #667eea;">—</div>
                     </div>
-                    <div class="card" id="analytics-ltv">
-                        <h3>Avg LTV</h3>
-                        <div class="number" style="opacity: 0.5;">Loading...</div>
-                        <div class="change">-</div>
+                    <div class="card" style="text-align: center;">
+                        <div style="font-size: 12px; color: #999; margin-bottom: 6px;">Elite</div>
+                        <div id="an-elite-users" style="font-size: 32px; font-weight: 700; color: #f6ad55;">—</div>
                     </div>
                 </div>
 
-                <h3 style="margin-top: 30px; margin-bottom: 20px;">Traffic Sources</h3>
+                <!-- Social Media Overview -->
+                <h4 style="margin: 28px 0 12px; color: #6b7280; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em;">📣 Social Media — Gesamt</h4>
+                <div class="cards-grid" style="grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));">
+                    <div class="card" style="text-align: center;">
+                        <div style="font-size: 12px; color: #999; margin-bottom: 6px;">Posts gesamt</div>
+                        <div id="an-total-posts" style="font-size: 32px; font-weight: 700; color: #2c3e50;">—</div>
+                    </div>
+                    <div class="card" style="text-align: center;">
+                        <div style="font-size: 12px; color: #999; margin-bottom: 6px;">Posts mit CTA</div>
+                        <div id="an-total-cta" style="font-size: 32px; font-weight: 700; color: #38a169;">—</div>
+                    </div>
+                </div>
+
+                <!-- Per-Platform Table -->
+                <h4 style="margin: 28px 0 12px; color: #6b7280; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em;">📊 Pro Plattform</h4>
                 <div class="table-container">
                     <table>
                         <thead>
                             <tr>
-                                <th>Source</th>
-                                <th>Visits</th>
-                                <th>Signups</th>
-                                <th>Conversion Rate</th>
+                                <th>Plattform</th>
+                                <th style="text-align: right;">Posts gesamt</th>
+                                <th style="text-align: right;">Diesen Monat</th>
+                                <th style="text-align: right;">Mit CTA</th>
+                                <th style="text-align: right;">CTA-Rate</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>YouTube</td>
-                                <td>12,450</td>
-                                <td>456</td>
-                                <td>3.7%</td>
-                            </tr>
-                            <tr>
-                                <td>Reddit</td>
-                                <td>8,234</td>
-                                <td>234</td>
-                                <td>2.8%</td>
-                            </tr>
-                            <tr>
-                                <td>Email</td>
-                                <td>5,678</td>
-                                <td>892</td>
-                                <td>15.7%</td>
-                            </tr>
-                            <tr>
-                                <td>Google</td>
-                                <td>3,456</td>
-                                <td>156</td>
-                                <td>4.5%</td>
-                            </tr>
-                            <tr>
-                                <td>Referral</td>
-                                <td>2,123</td>
-                                <td>345</td>
-                                <td>16.3%</td>
-                            </tr>
+                        <tbody id="an-platform-tbody">
+                            <tr><td colspan="5" style="text-align: center; color: #999; padding: 20px;">Wird geladen…</td></tr>
                         </tbody>
                     </table>
                 </div>
