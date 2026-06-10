@@ -1001,6 +1001,25 @@ async function loadSettings() {
                 if (el) el.value = settings.twitter_posting_time.value;
             }
 
+            // Load LinkedIn settings
+            const linkedinFields = [
+                ['linkedin_access_token', 'linkedin-access-token'],
+                ['linkedin_org_id', 'linkedin-org-id'],
+                ['linkedin_posting_frequency', 'linkedin-frequency'],
+                ['linkedin_max_posts_per_day', 'linkedin-max-posts'],
+                ['linkedin_posting_time', 'linkedin-time']
+            ];
+            linkedinFields.forEach(([key, id]) => {
+                if (settings[key]?.value) {
+                    const el = document.getElementById(id);
+                    if (el) el.value = settings[key].value;
+                }
+            });
+            if (settings.linkedin_auto_posting?.value) {
+                const el = document.getElementById('linkedin-auto-posting');
+                if (el) el.checked = settings.linkedin_auto_posting.value === 'true';
+            }
+
             // Load Reddit settings
             const redditFields = [
                 ['reddit_client_id', 'reddit-client-id'],
@@ -1107,6 +1126,14 @@ async function saveSettings() {
     const twitterPostingSchedule = document.getElementById('twitter-posting-schedule')?.value || 'recommended';
     const twitterPostingTime = document.getElementById('twitter-posting-time')?.value || '09:00';
 
+    // LinkedIn settings
+    const linkedinAccessToken = document.getElementById('linkedin-access-token')?.value || '';
+    const linkedinOrgId = document.getElementById('linkedin-org-id')?.value || '';
+    const linkedinFrequency = document.getElementById('linkedin-frequency')?.value || 'daily';
+    const linkedinMaxPosts = document.getElementById('linkedin-max-posts')?.value || '1';
+    const linkedinTime = document.getElementById('linkedin-time')?.value || '09:00';
+    const linkedinAutoPosting = document.getElementById('linkedin-auto-posting')?.checked || false;
+
     // Reddit settings
     const redditClientId = document.getElementById('reddit-client-id')?.value || '';
     const redditClientSecret = document.getElementById('reddit-client-secret')?.value || '';
@@ -1149,6 +1176,14 @@ async function saveSettings() {
         localStorage.setItem('admin_twitter_posting_schedule', twitterPostingSchedule);
         localStorage.setItem('admin_twitter_posting_time', twitterPostingTime);
 
+        // Save LinkedIn settings
+        if (linkedinAccessToken) localStorage.setItem('admin_linkedin_access_token', linkedinAccessToken);
+        if (linkedinOrgId) localStorage.setItem('admin_linkedin_org_id', linkedinOrgId);
+        localStorage.setItem('admin_linkedin_frequency', linkedinFrequency);
+        localStorage.setItem('admin_linkedin_max_posts', linkedinMaxPosts);
+        localStorage.setItem('admin_linkedin_time', linkedinTime);
+        localStorage.setItem('admin_linkedin_auto_posting', linkedinAutoPosting.toString());
+
         // Save Reddit settings
         if (redditClientId) localStorage.setItem('admin_reddit_client_id', redditClientId);
         if (redditClientSecret) localStorage.setItem('admin_reddit_client_secret', redditClientSecret);
@@ -1187,6 +1222,16 @@ async function saveSettings() {
                 settingsData['twitter_posting_time'] = twitterPostingTime;
             }
 
+            // Add LinkedIn settings if provided
+            if (linkedinAccessToken) {
+                settingsData['linkedin_access_token'] = linkedinAccessToken;
+                settingsData['linkedin_org_id'] = linkedinOrgId;
+                settingsData['linkedin_posting_frequency'] = linkedinFrequency;
+                settingsData['linkedin_max_posts_per_day'] = linkedinMaxPosts;
+                settingsData['linkedin_posting_time'] = linkedinTime;
+                settingsData['linkedin_auto_posting'] = linkedinAutoPosting.toString();
+            }
+
             // Add Reddit settings if provided
             if (redditClientId) {
                 settingsData['reddit_client_id'] = redditClientId;
@@ -1208,6 +1253,19 @@ async function saveSettings() {
                 body: JSON.stringify(settingsData)
             });
             console.log('✅ Settings also synced to backend database');
+
+            // If LinkedIn credentials were saved, reload the LinkedIn service
+            if (linkedinAccessToken && linkedinOrgId) {
+                try {
+                    await fetch(`${API_URL}/api/linkedin/reload-settings`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${getAdminToken()}`, 'Content-Type': 'application/json' }
+                    });
+                    console.log('✅ LinkedIn service reinitialized with new credentials');
+                } catch (liErr) {
+                    console.warn('⚠️ LinkedIn service reload failed (non-blocking):', liErr.message);
+                }
+            }
 
             // If Reddit credentials were saved, reload the Reddit service
             if (redditClientId && redditClientSecret) {
@@ -2592,6 +2650,121 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// ============================================================
+// LINKEDIN MANAGEMENT
+// ============================================================
+
+async function loadLinkedInStatus() {
+    try {
+        const response = await fetch(`${API_URL}/api/linkedin/status`, { headers: getAuthHeaders() });
+        const data = await response.json();
+        const statusEl = document.getElementById('linkedin-status');
+        if (!statusEl) return;
+
+        if (!data.success || !data.status.configured) {
+            statusEl.innerHTML = `
+                <p style="color: #ffcccc;">❌ LinkedIn not configured</p>
+                <p style="font-size: 12px; opacity: 0.8;">Add Access Token and Organization ID in Settings → Social Media → LinkedIn</p>`;
+            return;
+        }
+
+        const s = data.status;
+        statusEl.innerHTML = `
+            <p style="color: #ccffcc;">✅ Connected · Organization ID: ${s.orgId}</p>
+            <p style="font-size: 13px; margin-top: 8px;">
+                Scheduler: <strong>${s.schedulerRunning ? '▶️ Running' : '⏹️ Stopped'}</strong> &nbsp;|&nbsp;
+                Frequency: <strong>${s.frequency}</strong> &nbsp;|&nbsp;
+                Posting time: <strong>${s.postingTime}</strong>
+            </p>
+            <p style="font-size: 12px; opacity: 0.8; margin-top: 4px;">Posts this session: ${s.postCounter} (CTA included every 2nd post)</p>`;
+    } catch {
+        const statusEl = document.getElementById('linkedin-status');
+        if (statusEl) statusEl.innerHTML = `<p style="color: #ffcccc;">⚠️ Could not reach server</p>`;
+    }
+}
+
+async function postLinkedInArticle() {
+    const btn = document.getElementById('linkedin-post-btn');
+    const resultEl = document.getElementById('linkedin-post-result');
+
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Generating & posting...'; }
+    if (resultEl) resultEl.innerHTML = '<p style="color: #999;">Generating post with AI, then publishing to LinkedIn...</p>';
+
+    try {
+        const response = await fetch(`${API_URL}/api/linkedin/post-article`, {
+            method: 'POST',
+            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            if (resultEl) resultEl.innerHTML = `
+                <div style="background: #f0fff4; padding: 12px; border-radius: 8px; border-left: 4px solid #38a169;">
+                    <p>✅ Post published · Category: <strong>${data.category}</strong> · CTA included: ${data.includedCTA ? 'Yes' : 'No'}</p>
+                    <p style="font-size: 13px; margin-top: 6px; color: #555;">${data.preview}</p>
+                </div>`;
+            loadLinkedInRecentPosts();
+            loadLinkedInStatus();
+        } else {
+            if (resultEl) resultEl.innerHTML = `<p style="color: #e53e3e;">❌ ${data.error}</p>`;
+        }
+    } catch (err) {
+        if (resultEl) resultEl.innerHTML = `<p style="color: #e53e3e;">❌ ${err.message}</p>`;
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '💼 Generate & Post'; }
+    }
+}
+
+async function startLinkedInScheduler() {
+    try {
+        const response = await fetch(`${API_URL}/api/linkedin/scheduler/start`, {
+            method: 'POST', headers: getAuthHeaders()
+        });
+        const data = await response.json();
+        showAlert(data.started ? `LinkedIn scheduler started — every ${data.intervalMinutes} minutes` : (data.reason || 'Could not start'), data.started ? 'success' : 'warning');
+        loadLinkedInStatus();
+    } catch (err) {
+        showAlert('Server error: ' + err.message, 'error');
+    }
+}
+
+async function stopLinkedInScheduler() {
+    try {
+        const response = await fetch(`${API_URL}/api/linkedin/scheduler/stop`, {
+            method: 'POST', headers: getAuthHeaders()
+        });
+        const data = await response.json();
+        showAlert(data.stopped ? 'LinkedIn scheduler stopped' : (data.reason || 'Not running'), data.stopped ? 'success' : 'warning');
+        loadLinkedInStatus();
+    } catch (err) {
+        showAlert('Server error: ' + err.message, 'error');
+    }
+}
+
+async function loadLinkedInRecentPosts() {
+    const el = document.getElementById('linkedin-recent-posts');
+    if (!el) return;
+    try {
+        const response = await fetch(`${API_URL}/api/linkedin/recent-posts`, { headers: getAuthHeaders() });
+        const data = await response.json();
+        if (!data.posts || data.posts.length === 0) {
+            el.innerHTML = '<p style="color: #999;">No posts yet.</p>';
+            return;
+        }
+        el.innerHTML = data.posts.map(p => `
+            <div style="padding: 10px; border-bottom: 1px solid #f0f0f0;">
+                <p style="font-size: 13px; margin: 0; color: #333;">${p.body.substring(0, 120)}…</p>
+                <p style="font-size: 12px; color: #666; margin: 4px 0 0;">
+                    Category: ${p.category} · CTA: ${p.included_cta ? '✅' : '—'} ·
+                    ${new Date(p.posted_at).toLocaleString()}
+                    ${p.linkedin_post_id ? ` · Post ID: ${p.linkedin_post_id}` : ''}
+                </p>
+            </div>`).join('');
+    } catch {
+        el.innerHTML = '<p style="color: #999;">Could not load posts.</p>';
+    }
+}
 
 // ============================================================
 // REDDIT MANAGEMENT

@@ -598,6 +598,7 @@
                 <a class="nav-link" data-tab="analytics">📈 Analytics</a>
                 <a class="nav-link" data-tab="twitter">🐦 Twitter</a>
                 <a class="nav-link" data-tab="reddit" onclick="loadRedditStatus(); loadRedditRecentPosts();">🤖 Reddit</a>
+                <a class="nav-link" data-tab="linkedin" onclick="loadLinkedInStatus(); loadLinkedInRecentPosts();">💼 LinkedIn</a>
                 <a class="nav-link" data-tab="social-media">📱 Social Media</a>
                 <a class="nav-link" data-tab="settings">⚙️ Settings</a>
             </nav>
@@ -1118,6 +1119,53 @@
                 </div>
             </div>
 
+            <!-- LINKEDIN TAB -->
+            <div id="linkedin" class="tab-content">
+                <h3>💼 LinkedIn Management</h3>
+
+                <div class="card" style="margin-top: 20px; background: linear-gradient(135deg, #0077b5 0%, #00a0dc 100%); color: white;">
+                    <h4>Service Status</h4>
+                    <div id="linkedin-status" style="margin-top: 15px;">
+                        <p style="opacity: 0.8;">Loading status...</p>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <h4>💼 Generate & Post Article</h4>
+                    <p style="font-size: 13px; color: #666; margin-top: 8px;">Claude AI generates a professional travel insight post and publishes it to your LinkedIn company page. Every 2nd post includes a subtle mention of TravelSmarter.</p>
+                    <div style="margin-top: 15px;">
+                        <button id="linkedin-post-btn" class="btn btn-primary" onclick="postLinkedInArticle()" style="padding: 10px 24px;">💼 Generate & Post</button>
+                    </div>
+                    <div id="linkedin-post-result" style="margin-top: 15px;"></div>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <h4>⏰ Scheduler Controls</h4>
+                    <p style="font-size: 13px; color: #666; margin-top: 8px;">Frequency and posting time are configured in <strong>Settings → Social Media → LinkedIn</strong>.</p>
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button class="btn btn-success" onclick="startLinkedInScheduler()" style="flex: 1;">▶️ Start Scheduler</button>
+                        <button class="btn btn-danger" onclick="stopLinkedInScheduler()" style="flex: 1;">⏹️ Stop Scheduler</button>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <h4>📋 Recent Posts</h4>
+                    <div id="linkedin-recent-posts" style="margin-top: 15px; max-height: 400px; overflow-y: auto;">
+                        <p style="color: #999;">No posts yet.</p>
+                    </div>
+                </div>
+
+                <div style="background: #e8f4fb; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #0077b5;">
+                    <strong>ℹ️ LinkedIn Strategy:</strong>
+                    <ul style="margin-top: 10px; margin-left: 20px; font-size: 14px; color: #555;">
+                        <li>Posts are professional, insight-driven — suited for a business audience</li>
+                        <li>Topics: business travel, productivity, points/miles, remote work, travel hacks</li>
+                        <li>Every 2nd post includes a subtle footnote linking to TravelSmarter</li>
+                        <li>Credentials: Access Token from <a href="https://www.linkedin.com/developers/apps" target="_blank" style="color: #0077b5;">LinkedIn Developer Portal</a> — create an app and generate a token with <code>w_member_social</code> or <code>w_organization_social</code> scope</li>
+                    </ul>
+                </div>
+            </div>
+
             <!-- REDDIT TAB -->
             <div id="reddit" class="tab-content">
                 <h3>🤖 Reddit Management</h3>
@@ -1607,6 +1655,14 @@
                         <div class="form-group">
                             <label>Preferred Posting Time (24h format)</label>
                             <input type="time" id="linkedin-time" value="09:00" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="linkedin-auto-posting"> Enable LinkedIn Auto-Posting
+                            </label>
+                        </div>
+                        <div style="background: #e8f4fb; padding: 12px 15px; border-radius: 8px; border-left: 4px solid #0077b5; font-size: 13px; color: #555;">
+                            Get Access Token at <a href="https://www.linkedin.com/developers/apps" target="_blank" style="color: #0077b5;">linkedin.com/developers/apps</a> → create app → OAuth 2.0 Tools → generate token with <strong>w_organization_social</strong> scope
                         </div>
                     </div>
 
