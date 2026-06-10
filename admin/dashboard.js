@@ -941,6 +941,10 @@ async function loadSettings() {
             console.log('🔧 Found settings:', Object.keys(settings));
 
             // Populate form fields with settings values
+            if (settings.anthropic_api_key?.value) {
+                const el = document.getElementById('anthropic-api-key');
+                if (el) el.value = settings.anthropic_api_key.value;
+            }
             if (settings.sendgrid_api_key?.value) {
                 console.log('✅ Setting SendGrid key');
                 document.getElementById('sendgrid-key').value = settings.sendgrid_api_key.value;
@@ -1083,6 +1087,7 @@ async function saveSettings() {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
+                    'anthropic_api_key': document.getElementById('anthropic-api-key')?.value?.trim() || '',
                     'sendgrid_api_key': sendgridKey,
                     'sender_email': senderEmail,
                     'stripe_secret_key': stripeKey,
