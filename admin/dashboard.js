@@ -1001,6 +1001,26 @@ async function loadSettings() {
                 if (el) el.value = settings.twitter_posting_time.value;
             }
 
+            // Load Pinterest settings
+            const pinterestFields = [
+                ['pinterest_access_token', 'pinterest-access-token'],
+                ['pinterest_board_id', 'pinterest-board-id'],
+                ['ideogram_api_key', 'ideogram-api-key'],
+                ['pinterest_posting_frequency', 'pinterest-frequency'],
+                ['pinterest_max_posts_per_day', 'pinterest-max-posts'],
+                ['pinterest_posting_time', 'pinterest-time']
+            ];
+            pinterestFields.forEach(([key, id]) => {
+                if (settings[key]?.value) {
+                    const el = document.getElementById(id);
+                    if (el) el.value = settings[key].value;
+                }
+            });
+            if (settings.pinterest_auto_posting?.value) {
+                const el = document.getElementById('pinterest-auto-posting');
+                if (el) el.checked = settings.pinterest_auto_posting.value === 'true';
+            }
+
             // Load LinkedIn settings
             const linkedinFields = [
                 ['linkedin_access_token', 'linkedin-access-token'],
@@ -1126,6 +1146,15 @@ async function saveSettings() {
     const twitterPostingSchedule = document.getElementById('twitter-posting-schedule')?.value || 'recommended';
     const twitterPostingTime = document.getElementById('twitter-posting-time')?.value || '09:00';
 
+    // Pinterest settings
+    const pinterestAccessToken = document.getElementById('pinterest-access-token')?.value || '';
+    const pinterestBoardId = document.getElementById('pinterest-board-id')?.value || '';
+    const ideogramApiKey = document.getElementById('ideogram-api-key')?.value || '';
+    const pinterestFrequency = document.getElementById('pinterest-frequency')?.value || 'daily';
+    const pinterestMaxPosts = document.getElementById('pinterest-max-posts')?.value || '1';
+    const pinterestTime = document.getElementById('pinterest-time')?.value || '20:00';
+    const pinterestAutoPosting = document.getElementById('pinterest-auto-posting')?.checked || false;
+
     // LinkedIn settings
     const linkedinAccessToken = document.getElementById('linkedin-access-token')?.value || '';
     const linkedinOrgId = document.getElementById('linkedin-org-id')?.value || '';
@@ -1176,6 +1205,15 @@ async function saveSettings() {
         localStorage.setItem('admin_twitter_posting_schedule', twitterPostingSchedule);
         localStorage.setItem('admin_twitter_posting_time', twitterPostingTime);
 
+        // Save Pinterest settings
+        if (pinterestAccessToken) localStorage.setItem('admin_pinterest_access_token', pinterestAccessToken);
+        if (pinterestBoardId) localStorage.setItem('admin_pinterest_board_id', pinterestBoardId);
+        if (ideogramApiKey) localStorage.setItem('admin_ideogram_api_key', ideogramApiKey);
+        localStorage.setItem('admin_pinterest_frequency', pinterestFrequency);
+        localStorage.setItem('admin_pinterest_max_posts', pinterestMaxPosts);
+        localStorage.setItem('admin_pinterest_time', pinterestTime);
+        localStorage.setItem('admin_pinterest_auto_posting', pinterestAutoPosting.toString());
+
         // Save LinkedIn settings
         if (linkedinAccessToken) localStorage.setItem('admin_linkedin_access_token', linkedinAccessToken);
         if (linkedinOrgId) localStorage.setItem('admin_linkedin_org_id', linkedinOrgId);
@@ -1222,6 +1260,19 @@ async function saveSettings() {
                 settingsData['twitter_posting_time'] = twitterPostingTime;
             }
 
+            // Add Pinterest settings if provided
+            if (pinterestAccessToken) {
+                settingsData['pinterest_access_token'] = pinterestAccessToken;
+                settingsData['pinterest_board_id'] = pinterestBoardId;
+                settingsData['pinterest_posting_frequency'] = pinterestFrequency;
+                settingsData['pinterest_max_posts_per_day'] = pinterestMaxPosts;
+                settingsData['pinterest_posting_time'] = pinterestTime;
+                settingsData['pinterest_auto_posting'] = pinterestAutoPosting.toString();
+            }
+            if (ideogramApiKey) {
+                settingsData['ideogram_api_key'] = ideogramApiKey;
+            }
+
             // Add LinkedIn settings if provided
             if (linkedinAccessToken) {
                 settingsData['linkedin_access_token'] = linkedinAccessToken;
@@ -1253,6 +1304,18 @@ async function saveSettings() {
                 body: JSON.stringify(settingsData)
             });
             console.log('✅ Settings also synced to backend database');
+
+            // If Pinterest credentials were saved, reload the Pinterest service
+            if (pinterestAccessToken && pinterestBoardId && ideogramApiKey) {
+                try {
+                    await fetch(`${API_URL}/api/pinterest/reload-settings`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${getAdminToken()}`, 'Content-Type': 'application/json' }
+                    });
+                } catch (err) {
+                    console.warn('⚠️ Pinterest reload failed (non-blocking):', err.message);
+                }
+            }
 
             // If LinkedIn credentials were saved, reload the LinkedIn service
             if (linkedinAccessToken && linkedinOrgId) {
@@ -2650,6 +2713,150 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// ============================================================
+// PINTEREST MANAGEMENT
+// ============================================================
+
+async function loadPinterestStatus() {
+    try {
+        const response = await fetch(`${API_URL}/api/pinterest/status`, { headers: getAuthHeaders() });
+        const data = await response.json();
+        const statusEl = document.getElementById('pinterest-status');
+        if (!statusEl) return;
+
+        if (!data.success || !data.status.configured) {
+            statusEl.innerHTML = `
+                <p style="color: #ffcccc;">❌ Pinterest not configured</p>
+                <p style="font-size: 12px; opacity: 0.8;">Access Token, Board ID und Ideogram API Key in Settings → Social Media → Pinterest eintragen</p>`;
+            return;
+        }
+        const s = data.status;
+        statusEl.innerHTML = `
+            <p style="color: #ccffcc;">✅ Verbunden · Board ID: ${s.boardId} · Ideogram: ${s.ideogramConfigured ? '✅' : '❌'}</p>
+            <p style="font-size: 13px; margin-top: 8px;">
+                Scheduler: <strong>${s.schedulerRunning ? '▶️ Running' : '⏹️ Stopped'}</strong> &nbsp;|&nbsp;
+                Frequenz: <strong>${s.frequency}</strong> &nbsp;|&nbsp;
+                Nächstes Thema: <strong>${s.nextTopic || '—'}</strong>
+            </p>
+            <p style="font-size: 12px; opacity: 0.8; margin-top: 4px;">Pins gesamt: ${s.postCounter} (CTA jeden 2. Pin)</p>`;
+    } catch {
+        const el = document.getElementById('pinterest-status');
+        if (el) el.innerHTML = `<p style="color: #ffcccc;">⚠️ Server nicht erreichbar</p>`;
+    }
+}
+
+async function postPinterestPin() {
+    const btn = document.getElementById('pinterest-post-btn');
+    const resultEl = document.getElementById('pinterest-post-result');
+
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Generating image & pinning...'; }
+    if (resultEl) resultEl.innerHTML = '<p style="color: #999;">Ideogram generiert Infografik, dann Pinterest-Pin erstellen…</p>';
+
+    try {
+        const response = await fetch(`${API_URL}/api/pinterest/post-pin`, {
+            method: 'POST',
+            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            if (resultEl) resultEl.innerHTML = `
+                <div style="background: #f0fff4; padding: 12px; border-radius: 8px; border-left: 4px solid #38a169; display: flex; gap: 15px; align-items: flex-start;">
+                    ${data.imageUrl ? `<img src="${data.imageUrl}" style="width: 80px; border-radius: 6px; flex-shrink: 0;">` : ''}
+                    <div>
+                        <p>✅ <strong>${data.title}</strong></p>
+                        <p style="font-size: 13px; margin-top: 4px;">Kategorie: ${data.category} · CTA: ${data.includedCTA ? 'Ja ✅' : '—'}</p>
+                        <p style="font-size: 12px; color: #666; margin-top: 4px;">${data.description}</p>
+                    </div>
+                </div>`;
+            loadPinterestRecentPosts();
+            loadPinterestStatus();
+        } else {
+            if (resultEl) resultEl.innerHTML = `<p style="color: #e53e3e;">❌ ${data.error}</p>`;
+        }
+    } catch (err) {
+        if (resultEl) resultEl.innerHTML = `<p style="color: #e53e3e;">❌ ${err.message}</p>`;
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '📌 Generate & Pin'; }
+    }
+}
+
+async function loadPinterestTopics() {
+    const container = document.getElementById('pinterest-topics');
+    const listEl = document.getElementById('pinterest-topics-list');
+    if (!container || !listEl) return;
+
+    try {
+        const response = await fetch(`${API_URL}/api/pinterest/topics`, { headers: getAuthHeaders() });
+        const data = await response.json();
+        if (!data.topics) return;
+
+        listEl.innerHTML = data.topics.map(t => `
+            <div style="padding: 8px 12px; border-radius: 6px; margin-bottom: 6px; background: ${t.isNext ? '#fff5f0' : '#f9f9f9'}; border: 1px solid ${t.isNext ? '#e60023' : '#eee'};">
+                <span style="font-size: 12px; color: #999;">#${t.index + 1}</span>
+                ${t.isNext ? '<span style="font-size: 11px; background: #e60023; color: white; padding: 2px 6px; border-radius: 10px; margin: 0 6px;">NEXT</span>' : ''}
+                <strong>${t.title}</strong>
+                <span style="font-size: 12px; color: #888; margin-left: 8px;">${t.category}</span>
+            </div>`).join('');
+
+        container.style.display = 'block';
+    } catch {
+        listEl.innerHTML = '<p style="color: #999;">Konnte Topics nicht laden.</p>';
+        container.style.display = 'block';
+    }
+}
+
+async function startPinterestScheduler() {
+    try {
+        const response = await fetch(`${API_URL}/api/pinterest/scheduler/start`, {
+            method: 'POST', headers: getAuthHeaders()
+        });
+        const data = await response.json();
+        showAlert(data.started ? `Pinterest Scheduler gestartet — alle ${data.intervalMinutes} Minuten` : (data.reason || 'Konnte nicht starten'), data.started ? 'success' : 'warning');
+        loadPinterestStatus();
+    } catch (err) {
+        showAlert('Server error: ' + err.message, 'error');
+    }
+}
+
+async function stopPinterestScheduler() {
+    try {
+        const response = await fetch(`${API_URL}/api/pinterest/scheduler/stop`, {
+            method: 'POST', headers: getAuthHeaders()
+        });
+        const data = await response.json();
+        showAlert(data.stopped ? 'Pinterest Scheduler gestoppt' : (data.reason || 'Nicht aktiv'), data.stopped ? 'success' : 'warning');
+        loadPinterestStatus();
+    } catch (err) {
+        showAlert('Server error: ' + err.message, 'error');
+    }
+}
+
+async function loadPinterestRecentPosts() {
+    const el = document.getElementById('pinterest-recent-posts');
+    if (!el) return;
+    try {
+        const response = await fetch(`${API_URL}/api/pinterest/recent-posts`, { headers: getAuthHeaders() });
+        const data = await response.json();
+        if (!data.posts || data.posts.length === 0) {
+            el.innerHTML = '<p style="color: #999;">Noch keine Pins.</p>';
+            return;
+        }
+        el.innerHTML = data.posts.map(p => `
+            <div style="padding: 12px; border-bottom: 1px solid #f0f0f0; display: flex; gap: 12px; align-items: flex-start;">
+                ${p.image_url ? `<img src="${p.image_url}" style="width: 60px; height: 90px; object-fit: cover; border-radius: 6px; flex-shrink: 0;">` : ''}
+                <div>
+                    <p style="font-weight: 600; margin: 0;">${p.title}</p>
+                    <p style="font-size: 12px; color: #666; margin: 4px 0 0;">
+                        ${p.category} · CTA: ${p.included_cta ? '✅' : '—'} · ${new Date(p.posted_at).toLocaleString()}
+                    </p>
+                </div>
+            </div>`).join('');
+    } catch {
+        el.innerHTML = '<p style="color: #999;">Konnte Posts nicht laden.</p>';
+    }
+}
 
 // ============================================================
 // LINKEDIN MANAGEMENT

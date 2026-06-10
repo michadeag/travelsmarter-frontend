@@ -599,6 +599,7 @@
                 <a class="nav-link" data-tab="twitter">🐦 Twitter</a>
                 <a class="nav-link" data-tab="reddit" onclick="loadRedditStatus(); loadRedditRecentPosts();">🤖 Reddit</a>
                 <a class="nav-link" data-tab="linkedin" onclick="loadLinkedInStatus(); loadLinkedInRecentPosts();">💼 LinkedIn</a>
+                <a class="nav-link" data-tab="pinterest" onclick="loadPinterestStatus(); loadPinterestRecentPosts();">📌 Pinterest</a>
                 <a class="nav-link" data-tab="social-media">📱 Social Media</a>
                 <a class="nav-link" data-tab="settings">⚙️ Settings</a>
             </nav>
@@ -1166,6 +1167,58 @@
                 </div>
             </div>
 
+            <!-- PINTEREST TAB -->
+            <div id="pinterest" class="tab-content">
+                <h3>📌 Pinterest Management</h3>
+
+                <div class="card" style="margin-top: 20px; background: linear-gradient(135deg, #e60023 0%, #ad081b 100%); color: white;">
+                    <h4>Service Status</h4>
+                    <div id="pinterest-status" style="margin-top: 15px;">
+                        <p style="opacity: 0.8;">Loading status...</p>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <h4>🎨 Generate & Pin Infographic</h4>
+                    <p style="font-size: 13px; color: #666; margin-top: 8px;">Ideogram generiert ein Text-in-Bild Infografik (Portrait 2:3), Claude schreibt die Beschreibung — dann direkt auf Pinterest gepinnt. Jeder 2. Pin enthält einen Link zu TravelSmarter.</p>
+                    <div style="margin-top: 15px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <button id="pinterest-post-btn" class="btn btn-primary" onclick="postPinterestPin()" style="padding: 10px 24px;">📌 Generate & Pin</button>
+                        <button class="btn" onclick="loadPinterestTopics()" style="padding: 10px 16px; background: #f5f5f5; border: 1px solid #ddd;">📋 Show Topic Queue</button>
+                    </div>
+                    <div id="pinterest-post-result" style="margin-top: 15px;"></div>
+                    <div id="pinterest-topics" style="margin-top: 15px; display: none;">
+                        <h5 style="margin-bottom: 10px; color: #555;">Topic Rotation Queue</h5>
+                        <div id="pinterest-topics-list"></div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <h4>⏰ Scheduler Controls</h4>
+                    <p style="font-size: 13px; color: #666; margin-top: 8px;">Frequenz konfigurierbar in <strong>Settings → Social Media → Pinterest</strong>.</p>
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button class="btn btn-success" onclick="startPinterestScheduler()" style="flex: 1;">▶️ Start Scheduler</button>
+                        <button class="btn btn-danger" onclick="stopPinterestScheduler()" style="flex: 1;">⏹️ Stop Scheduler</button>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <h4>📋 Recent Pins</h4>
+                    <div id="pinterest-recent-posts" style="margin-top: 15px; max-height: 500px; overflow-y: auto;">
+                        <p style="color: #999;">No pins yet.</p>
+                    </div>
+                </div>
+
+                <div style="background: #fff0f3; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #e60023;">
+                    <strong>ℹ️ Pinterest Strategy:</strong>
+                    <ul style="margin-top: 10px; margin-left: 20px; font-size: 14px; color: #555;">
+                        <li>Ideogram erstellt portrait Infografiken (2:3) mit lesbarem Text-Overlay</li>
+                        <li>8 rotierende Themen: Budget Flights, Packing, Points/Miles, Destinations, Airport Hacks, Safety, Hotels, Digital Nomad</li>
+                        <li>Jeder 2. Pin verlinkt auf <strong>travelsmarterapp.com/welcome.html</strong></li>
+                        <li>Pinterest bevorzugt frische Pins — tägliches Posten wird empfohlen</li>
+                    </ul>
+                </div>
+            </div>
+
             <!-- REDDIT TAB -->
             <div id="reddit" class="tab-content">
                 <h3>🤖 Reddit Management</h3>
@@ -1560,18 +1613,24 @@
 
                     <!-- Pinterest Settings -->
                     <div class="platform-settings" id="settings-pinterest" style="display: none;">
-                        <h5 style="margin-bottom: 15px; color: #2c3e50;">🔐 API Credentials</h5>
+                        <h5 style="margin-bottom: 15px; color: #2c3e50;">🔐 Pinterest API Credentials</h5>
                         <div class="form-group">
                             <label>Pinterest Access Token</label>
                             <input type="password" id="pinterest-access-token" placeholder="Your Access Token" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                         </div>
                         <div class="form-group">
-                            <label>Pinterest Business Account ID</label>
-                            <input type="text" id="pinterest-account-id" placeholder="Your Business Account ID" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
-                        </div>
-                        <div class="form-group">
                             <label>Pinterest Board ID</label>
                             <input type="text" id="pinterest-board-id" placeholder="Your Board ID" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                        </div>
+
+                        <hr style="margin: 20px 0; border: none; border-top: 1px solid #e5e7eb;">
+                        <h5 style="margin-bottom: 15px; color: #2c3e50;">🎨 Ideogram API (Image Generation)</h5>
+                        <div class="form-group">
+                            <label>Ideogram API Key</label>
+                            <input type="password" id="ideogram-api-key" placeholder="Your Ideogram API Key" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                        </div>
+                        <div style="background: #f9f0ff; padding: 12px 15px; border-radius: 8px; border-left: 4px solid #9b59b6; font-size: 13px; color: #555; margin-bottom: 10px;">
+                            Ideogram API Key bei <a href="https://ideogram.ai/manage-api" target="_blank" style="color: #9b59b6;">ideogram.ai/manage-api</a> abrufen
                         </div>
 
                         <hr style="margin: 20px 0; border: none; border-top: 1px solid #e5e7eb;">
@@ -1591,6 +1650,14 @@
                         <div class="form-group">
                             <label>Preferred Posting Time (24h format)</label>
                             <input type="time" id="pinterest-time" value="20:00" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="pinterest-auto-posting"> Enable Pinterest Auto-Posting
+                            </label>
+                        </div>
+                        <div style="background: #fff0f3; padding: 12px 15px; border-radius: 8px; border-left: 4px solid #e60023; font-size: 13px; color: #555;">
+                            Access Token + Board ID bei <a href="https://developers.pinterest.com/apps/" target="_blank" style="color: #e60023;">developers.pinterest.com</a> → App erstellen → OAuth Token generieren
                         </div>
                     </div>
 
