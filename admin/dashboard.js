@@ -1668,7 +1668,7 @@ async function loadAnalytics() {
         document.getElementById('an-total-posts').textContent = data.social.totalPosts.toLocaleString();
         document.getElementById('an-cta-posts').textContent = `with CTA: ${data.social.totalCTA}`;
 
-        const icons = { reddit:'🤖', linkedin:'💼', pinterest:'📌', instagram:'📸', wordpress:'📝', blogger:'📰', quora:'❓' };
+        const icons = { twitter:'🐦', reddit:'🤖', linkedin:'💼', pinterest:'📌', instagram:'📸', wordpress:'📝', blogger:'📰', quora:'❓' };
         const tbody = document.getElementById('analytics-platforms');
         tbody.innerHTML = Object.entries(data.social.platforms).map(([key, p]) => `
             <tr>
