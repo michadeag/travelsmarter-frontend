@@ -4,11 +4,9 @@
 // Determine correct API URL based on current domain
 let API_URL;
 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    // Local development
     API_URL = 'http://localhost:5000';
 } else {
-    // Production - use same domain for both frontend and backend
-    API_URL = window.location.origin;
+    API_URL = localStorage.getItem('apiUrl') || 'https://api.travelsmarterapp.com';
 }
 
 console.log('Admin Dashboard using API:', API_URL);
