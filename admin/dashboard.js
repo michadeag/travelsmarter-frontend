@@ -91,7 +91,7 @@ function switchTab(tabName) {
     if (tabName === 'linkedin') { initLinkedInTab(); }
     if (tabName === 'pinterest') { loadPinterestStatus(); loadPinterestRecentPosts(); }
     if (tabName === 'instagram') { loadInstagramStatus(); loadInstagramRecentPosts(); }
-    if (tabName === 'wordpress') { loadWordPressStatus(); loadWordPressRecentPosts(); }
+    if (tabName === 'wordpress') { initWordPressTab(); }
     if (tabName === 'quora') { loadQuoraStatus(); loadQuoraRecentAnswers(); }
     if (tabName === 'blogger') { loadBloggerStatus(); loadBloggerRecentPosts(); }
     if (tabName === 'medium') { initMediumTab(); }
@@ -2014,91 +2014,111 @@ async function loadInstagramRecentPosts() {
 }
 
 // ─── WORDPRESS ────────────────────────────────────────────────────────────────
+async function initWordPressTab() {
+    // Load topics into dropdown
+    try {
+        const res = await fetch(`${API_URL}/api/wordpress/topics`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const sel = document.getElementById('wordpress-topic-select');
+        if (sel && data.success) {
+            sel.innerHTML = '<option value="">— Nächstes Thema (automatisch) —</option>';
+            data.topics.forEach(t => { sel.innerHTML += `<option value="${t.index}">${t.title}</option>`; });
+        }
+    } catch (e) { console.warn('WP topics:', e.message); }
+    loadWordPressStatus();
+    loadWordPressRecentPosts();
+}
+
 async function loadWordPressStatus() {
     const card = document.getElementById('wordpress-status-card');
     try {
         const res = await fetch(`${API_URL}/api/wordpress/status`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
         const data = await res.json();
         const s = data.status || {};
-        card.innerHTML = `<p><strong>Status:</strong> ${s.configured ? '✅ Connected' : '❌ Not connected — authorize below'}</p>
-            ${s.configured ? `<p><strong>Site ID:</strong> ${s.siteId || 'Set'}</p><p><strong>Scheduler:</strong> ${s.schedulerRunning ? '▶ Running' : '⏹ Stopped'}</p><p><strong>Total Posts:</strong> ${s.totalPosts || 0}</p>` : ''}`;
-    } catch { card.innerHTML = '<p>❌ Could not reach backend</p>'; }
+        card.innerHTML = `
+            <div style="display:flex;gap:24px;flex-wrap:wrap;">
+                <div><strong>Status:</strong> ${s.configured ? '✅ Verbunden' : '❌ Nicht konfiguriert — URL + Credentials in Settings eintragen'}</div>
+                ${s.configured ? `<div><strong>Site:</strong> ${s.siteUrl || '—'}</div>` : ''}
+                <div><strong>Scheduler:</strong> ${s.schedulerRunning ? '▶ Läuft' : '⏹ Gestoppt'}</div>
+                <div><strong>Posts gesamt:</strong> ${s.totalPosts || 0}</div>
+            </div>`;
+    } catch { card.innerHTML = '<p>❌ Backend nicht erreichbar</p>'; }
 }
-async function getWordPressAuthUrl() {
+
+async function testWordPressConnection() {
+    const el = document.getElementById('wordpress-test-result');
+    el.textContent = '⏳ Teste Verbindung...';
     try {
-        const res = await fetch(`${API_URL}/api/wordpress/auth-url`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
-        const data = await res.json();
-        if (data.authUrl) {
-            document.getElementById('wordpress-auth-url').innerHTML = `<p>Open this URL in your browser, authorize, then copy the code:<br><a href="${data.authUrl}" target="_blank" style="word-break:break-all">${data.authUrl}</a></p>`;
-        } else showAlert(`❌ ${data.error || 'Could not get URL'}`, 'error');
-    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
-}
-async function exchangeWordPressToken() {
-    const code = document.getElementById('wordpress-auth-code').value.trim();
-    if (!code) { showAlert('Please enter the authorization code', 'error'); return; }
-    try {
-        const res = await fetch(`${API_URL}/api/wordpress/exchange-token`, {
-            method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code })
+        const res = await fetch(`${API_URL}/api/wordpress/test-connection`, {
+            method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` }
         });
         const data = await res.json();
-        if (data.success) { showAlert('✅ WordPress.com connected!', 'success'); loadWordPressStatus(); }
-        else showAlert(`❌ ${data.error}`, 'error');
-    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+        if (data.success) {
+            el.innerHTML = `<span style="color:#16a34a;">✅ Verbunden als <strong>${data.name}</strong> auf ${data.url}</span>`;
+            loadWordPressStatus();
+        } else {
+            el.innerHTML = `<span style="color:#dc2626;">❌ ${data.error}</span>`;
+        }
+    } catch (err) { el.innerHTML = `<span style="color:#dc2626;">❌ ${err.message}</span>`; }
 }
-async function loadWordPressSites() {
-    try {
-        const res = await fetch(`${API_URL}/api/wordpress/sites`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
-        const data = await res.json();
-        if (!data.sites?.length) { document.getElementById('wordpress-sites').innerHTML = '<p style="color:#6b7280">No sites found. Make sure you are connected.</p>'; return; }
-        document.getElementById('wordpress-sites').innerHTML = data.sites.map(s =>
-            `<button onclick="selectWordPressSite('${s.ID}','${s.name}')" style="margin:4px;padding:8px 14px;background:#e5e7eb;border:none;border-radius:6px;cursor:pointer;">${s.name}</button>`
-        ).join('');
-    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
-}
-async function selectWordPressSite(siteId, siteName) {
-    try {
-        const res = await fetch(`${API_URL}/api/wordpress/select-site`, {
-            method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ siteId, siteName })
-        });
-        const data = await res.json();
-        if (data.success) { showAlert(`✅ Site selected: ${siteName}`, 'success'); loadWordPressStatus(); }
-        else showAlert(`❌ ${data.error}`, 'error');
-    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
-}
+
 async function publishWordPressPost() {
-    showAlert('Generating WordPress article...', 'success');
+    const btn = document.getElementById('wp-publish-btn');
+    const result = document.getElementById('wp-publish-result');
+    const topicIdx = document.getElementById('wordpress-topic-select')?.value;
+    btn.disabled = true;
+    btn.textContent = '⏳ Generiere & veröffentliche... (30-60 Sek.)';
+    result.textContent = '';
     try {
-        const res = await fetch(`${API_URL}/api/wordpress/publish`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const res = await fetch(`${API_URL}/api/wordpress/publish`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topicIndex: topicIdx !== '' ? parseInt(topicIdx) : undefined })
+        });
         const data = await res.json();
-        if (data.success) { showAlert('✅ Article published on WordPress!', 'success'); loadWordPressRecentPosts(); }
-        else showAlert(`❌ ${data.error || data.message}`, 'error');
-    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+        if (data.success) {
+            result.innerHTML = `✅ Veröffentlicht: <a href="${data.wpUrl}" target="_blank" style="color:#21759b;">${data.title}</a>`;
+            loadWordPressRecentPosts();
+            loadWordPressStatus();
+        } else {
+            result.innerHTML = `<span style="color:#dc2626;">❌ ${data.error}</span>`;
+        }
+    } catch (err) { result.innerHTML = `<span style="color:#dc2626;">❌ ${err.message}</span>`; }
+    btn.disabled = false;
+    btn.textContent = '📝 Artikel generieren & veröffentlichen';
 }
+
 async function startWordPressScheduler() {
     const res = await fetch(`${API_URL}/api/wordpress/scheduler/start`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
     const data = await res.json();
-    showAlert(data.success ? '▶ WordPress scheduler started' : `❌ ${data.error}`, data.success ? 'success' : 'error');
+    showAlert(data.success ? `▶ Scheduler gestartet — ${data.schedule}` : `❌ ${data.error || data.reason}`, data.success ? 'success' : 'error');
     loadWordPressStatus();
 }
+
 async function stopWordPressScheduler() {
     const res = await fetch(`${API_URL}/api/wordpress/scheduler/stop`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
     const data = await res.json();
-    showAlert(data.success ? '⏹ WordPress scheduler stopped' : `❌ ${data.error}`, data.success ? 'success' : 'error');
+    showAlert(data.success ? '⏹ Scheduler gestoppt' : `❌ ${data.error || data.reason}`, data.success ? 'success' : 'error');
     loadWordPressStatus();
 }
+
 async function loadWordPressRecentPosts() {
     const el = document.getElementById('wordpress-recent-posts');
+    if (!el) return;
     try {
         const res = await fetch(`${API_URL}/api/wordpress/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
         const data = await res.json();
-        if (!data.posts?.length) { el.innerHTML = '<p style="color:#6b7280">No posts yet.</p>'; return; }
-        el.innerHTML = data.posts.map(p => `<div style="padding:10px;border-bottom:1px solid #e5e7eb">
-            <strong>📝 ${p.title?.substring(0,80)}</strong><br>
-            <small style="color:#6b7280">${new Date(p.posted_at).toLocaleString()} ${p.post_url ? `| <a href="${p.post_url}" target="_blank">View</a>` : ''}</small>
-        </div>`).join('');
-    } catch { el.innerHTML = '<p style="color:#ef4444">Error loading posts</p>'; }
+        if (!data.posts?.length) { el.innerHTML = '<p>Noch keine Artikel veröffentlicht.</p>'; return; }
+        el.innerHTML = data.posts.map(p => `
+            <div style="padding:10px 0;border-bottom:1px solid #f0f0f0;">
+                <strong>${p.title?.substring(0, 80)}</strong>
+                ${p.included_cta ? '<span style="margin-left:6px;font-size:11px;background:#dcfce7;color:#166534;padding:2px 7px;border-radius:10px;">CTA</span>' : ''}
+                <div style="font-size:12px;color:#9ca3af;margin-top:2px;">
+                    ${new Date(p.posted_at).toLocaleString('de-DE')} · ${p.category || ''}
+                    ${p.wp_url ? `· <a href="${p.wp_url}" target="_blank" style="color:#21759b;">Ansehen ↗</a>` : ''}
+                </div>
+            </div>`).join('');
+    } catch { el.innerHTML = '<p style="color:#ef4444">Fehler beim Laden.</p>'; }
 }
 
 // ─── QUORA ────────────────────────────────────────────────────────────────────
@@ -2282,8 +2302,9 @@ async function loadSocialSettings() {
         set('linkedin-person-urn', 'linkedin_person_urn');
         set('linkedin-frequency', 'linkedin_frequency_hours');
         chk('linkedin-auto', 'linkedin_auto_posting');
-        set('wordpress-client-id', 'wordpress_client_id');
-        set('wordpress-client-secret', 'wordpress_client_secret');
+        set('wordpress-site-url', 'wordpress_site_url');
+        set('wordpress-username', 'wordpress_username');
+        set('wordpress-app-password', 'wordpress_app_password');
         set('wordpress-frequency', 'wordpress_frequency_hours');
         chk('wordpress-auto', 'wordpress_auto_posting');
         set('google-client-id', 'google_client_id');
@@ -2328,9 +2349,10 @@ async function saveSocialSettings() {
         linkedin_person_urn: val('linkedin-person-urn'),
         linkedin_frequency_hours: val('linkedin-frequency') || '12',
         linkedin_auto_posting: chk('linkedin-auto'),
-        wordpress_client_id: val('wordpress-client-id'),
-        wordpress_client_secret: val('wordpress-client-secret'),
-        wordpress_frequency_hours: val('wordpress-frequency') || '24',
+        wordpress_site_url: val('wordpress-site-url'),
+        wordpress_username: val('wordpress-username'),
+        wordpress_app_password: val('wordpress-app-password'),
+        wordpress_frequency_hours: val('wordpress-frequency') || '48',
         wordpress_auto_posting: chk('wordpress-auto'),
         google_client_id: val('google-client-id'),
         google_client_secret: val('google-client-secret'),

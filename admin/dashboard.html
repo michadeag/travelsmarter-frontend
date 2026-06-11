@@ -1195,37 +1195,45 @@
 
             <!-- WORDPRESS TAB -->
             <div id="wordpress" class="tab-content">
-                <h3>📝 WordPress.com Auto-Publishing</h3>
-                <div id="wordpress-status-card" style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
-                    <p>Loading...</p>
+                <h3 style="margin-bottom:6px;">📝 WordPress Auto-Publishing</h3>
+                <p style="color:#6b7280;margin-bottom:24px;font-size:14px;">Vollautomatisch — Claude generiert Artikel und postet direkt auf deine WordPress-Seite</p>
+
+                <div id="wordpress-status-card" style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                    <p style="color:#6b7280;">Wird geladen...</p>
                 </div>
-                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
-                    <h4>Connect WordPress.com</h4>
-                    <p style="color:#6b7280;margin-bottom:10px;">1. Save your Client ID & Secret in Settings first. 2. Click Authorize. 3. Copy the code and paste it here.</p>
-                    <button class="btn btn-primary" onclick="getWordPressAuthUrl()">🔗 Get Authorization URL</button>
-                    <div id="wordpress-auth-url" style="margin-top:10px;"></div>
-                    <div style="margin-top:15px;">
-                        <input type="text" id="wordpress-auth-code" placeholder="Paste authorization code here" style="width:60%;padding:10px;border:1px solid #ddd;border-radius:6px;">
-                        <button class="btn btn-primary" onclick="exchangeWordPressToken()" style="margin-left:10px;">Exchange for Token</button>
+
+                <div style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                    <h4 style="margin-bottom:14px;">🔧 Verbindung testen</h4>
+                    <button onclick="testWordPressConnection()" style="background:#21759b;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:600;">
+                        🔗 Verbindung testen
+                    </button>
+                    <div id="wordpress-test-result" style="margin-top:10px;font-size:13px;"></div>
+                </div>
+
+                <div style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                    <h4 style="margin-bottom:14px;">✍️ Manuell veröffentlichen</h4>
+                    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                        <button onclick="publishWordPressPost()" id="wp-publish-btn"
+                            style="background:#21759b;color:#fff;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:600;font-size:15px;">
+                            📝 Artikel generieren & veröffentlichen
+                        </button>
+                        <select id="wordpress-topic-select" style="padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;min-width:260px;">
+                            <option value="">— Nächstes Thema (automatisch) —</option>
+                        </select>
                     </div>
+                    <div id="wp-publish-result" style="margin-top:12px;font-size:13px;"></div>
                 </div>
-                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
-                    <h4>Select Site</h4>
-                    <button class="btn btn-primary" onclick="loadWordPressSites()">🔄 Load My Sites</button>
-                    <div id="wordpress-sites" style="margin-top:10px;"></div>
+
+                <div style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                    <h4 style="margin-bottom:8px;">⏰ Auto-Scheduler</h4>
+                    <p style="color:#6b7280;font-size:13px;margin-bottom:12px;">Postet automatisch alle 2 Tage um 10:00 Uhr UTC</p>
+                    <button onclick="startWordPressScheduler()" style="background:#16a34a;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:600;">▶ Scheduler starten</button>
+                    <button onclick="stopWordPressScheduler()" style="background:#dc2626;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:600;margin-left:10px;">⏹ Stoppen</button>
                 </div>
-                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
-                    <h4>Manual Publish</h4>
-                    <button class="btn btn-primary" onclick="publishWordPressPost()" style="margin-top:10px;">📝 Generate & Publish Article</button>
-                </div>
-                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
-                    <h4>Auto-Scheduler</h4>
-                    <button class="btn btn-primary" onclick="startWordPressScheduler()">▶ Start Scheduler</button>
-                    <button class="btn btn-danger" onclick="stopWordPressScheduler()" style="margin-left:10px;">⏹ Stop Scheduler</button>
-                </div>
-                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
-                    <h4>Recent Posts</h4>
-                    <div id="wordpress-recent-posts"><p>Loading...</p></div>
+
+                <div style="background:white;padding:20px;border-radius:12px;">
+                    <h4 style="margin-bottom:12px;">📋 Veröffentlichte Artikel</h4>
+                    <div id="wordpress-recent-posts" style="font-size:13px;color:#6b7280;">Wird geladen...</div>
                 </div>
             </div>
 
@@ -1500,9 +1508,10 @@
 
                     <!-- WordPress Settings -->
                     <div class="platform-settings" id="settings-wordpress" style="display:none;">
-                        <div class="form-group"><label>WordPress.com Client ID</label><input type="text" id="wordpress-client-id" placeholder="From developer.wordpress.com/apps"></div>
-                        <div class="form-group"><label>WordPress.com Client Secret</label><input type="password" id="wordpress-client-secret" placeholder="Client Secret"></div>
-                        <div class="form-group"><label>Posting Frequency (hours)</label><input type="number" id="wordpress-frequency" value="24" min="1"></div>
+                        <div class="form-group"><label>WordPress Site URL</label><input type="text" id="wordpress-site-url" placeholder="https://deineblog.de (ohne trailing slash)"></div>
+                        <div class="form-group"><label>WordPress Benutzername</label><input type="text" id="wordpress-username" placeholder="dein WordPress Login-Name"></div>
+                        <div class="form-group"><label>WordPress App Password</label><input type="password" id="wordpress-app-password" placeholder="xxxx xxxx xxxx xxxx xxxx xxxx"></div>
+                        <div class="form-group"><label>Posting Frequency (hours)</label><input type="number" id="wordpress-frequency" value="48" min="1"></div>
                         <div class="form-group"><label><input type="checkbox" id="wordpress-auto"> Enable Auto-Posting</label></div>
                         <p style="color:#6b7280;font-size:0.85em;">After saving, go to the WordPress tab to authorize and connect your site.</p>
                     </div>
