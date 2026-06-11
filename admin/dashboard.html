@@ -1239,19 +1239,90 @@
 
             <!-- QUORA TAB -->
             <div id="quora" class="tab-content">
-                <h3>❓ Quora Content Generator</h3>
-                <div id="quora-status-card" style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
-                    <p>Loading...</p>
+                <h3 style="margin-bottom:6px;">❓ Quora Copy-Paste Workflow</h3>
+                <p style="color:#6b7280;margin-bottom:24px;font-size:14px;">Claude generiert Frage + Antwort → du postest manuell auf Quora → hier als gepostet markieren</p>
+
+                <div id="quora-status-card" style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                    <p style="color:#6b7280;">Wird geladen...</p>
                 </div>
-                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
-                    <h4>Generate Answer</h4>
-                    <p style="color:#6b7280;margin-bottom:10px;">Claude Sonnet generates expert travel answers. Copy & paste manually to Quora.</p>
-                    <button class="btn btn-primary" onclick="generateQuoraAnswer()">❓ Generate Single Answer</button>
-                    <button class="btn btn-primary" onclick="generateQuoraBatch()" style="margin-left:10px;background:#10b981;">📦 Generate Batch (5)</button>
+
+                <!-- Generate -->
+                <div style="background:white;padding:24px;border-radius:12px;margin-bottom:20px;">
+                    <h4 style="margin:0 0 16px;">Antwort generieren</h4>
+                    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                        <select id="quora-topic-select" style="padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;min-width:240px;">
+                            <option value="">— Nächstes Thema (automatisch) —</option>
+                        </select>
+                        <button id="quora-generate-btn" onclick="generateQuoraPost()"
+                            style="padding:10px 22px;background:#b92b27;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;">
+                            ❓ Generieren
+                        </button>
+                    </div>
                 </div>
-                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
-                    <h4>Generated Answers</h4>
-                    <div id="quora-answers-list"><p>Loading...</p></div>
+
+                <!-- Result -->
+                <div id="quora-result-card" style="display:none;background:white;padding:24px;border-radius:12px;margin-bottom:20px;">
+                    <!-- Search question -->
+                    <div style="margin-bottom:20px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <label style="font-weight:700;font-size:13px;color:#374151;">🔍 DIESE FRAGE AUF QUORA SUCHEN</label>
+                            <button onclick="copyQuoraField('quora-question-field')"
+                                style="padding:5px 14px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">
+                                📋 Kopieren
+                            </button>
+                        </div>
+                        <textarea id="quora-question-field" rows="2"
+                            style="width:100%;padding:12px;border:2px solid #b92b27;border-radius:8px;font-size:14px;font-family:inherit;resize:vertical;box-sizing:border-box;background:#fff8f8;"
+                            readonly></textarea>
+                    </div>
+
+                    <!-- Spaces -->
+                    <div style="margin-bottom:20px;">
+                        <label style="font-weight:700;font-size:13px;color:#374151;display:block;margin-bottom:6px;">📚 EMPFOHLENE QUORA SPACES</label>
+                        <div id="quora-spaces-badges" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+                    </div>
+
+                    <!-- Answer -->
+                    <div style="margin-bottom:20px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <label style="font-weight:700;font-size:13px;color:#374151;">✍️ DEINE ANTWORT (kopieren & einfügen)</label>
+                            <button onclick="copyQuoraField('quora-answer-field')"
+                                style="padding:5px 14px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">
+                                📋 Kopieren
+                            </button>
+                        </div>
+                        <textarea id="quora-answer-field" rows="14"
+                            style="width:100%;padding:12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;line-height:1.6;box-sizing:border-box;"
+                            readonly></textarea>
+                    </div>
+
+                    <!-- Steps -->
+                    <div style="background:#fef9f0;border:1px solid #f59e0b;border-radius:8px;padding:16px;margin-bottom:20px;">
+                        <strong style="font-size:13px;">📋 So gehst du vor:</strong>
+                        <ol style="margin:8px 0 0 0;padding-left:20px;font-size:13px;color:#374151;line-height:1.8;">
+                            <li>Frage kopieren → auf <strong>quora.com</strong> in die Suchleiste eingeben</li>
+                            <li>Passende Frage aus den Ergebnissen auswählen (oder ähnliche Frage suchen)</li>
+                            <li>Auf <strong>"Antworten"</strong> klicken → Antwort einfügen → posten</li>
+                            <li>Auch in einem der empfohlenen <strong>Spaces</strong> teilen für mehr Reichweite</li>
+                            <li>Hier unten als gepostet markieren</li>
+                        </ol>
+                    </div>
+
+                    <!-- Mark as posted -->
+                    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                        <input type="text" id="quora-post-url" placeholder="Quora Antwort-URL (optional)"
+                            style="flex:1;min-width:200px;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:13px;">
+                        <button onclick="markQuoraAsPosted()"
+                            style="padding:10px 20px;background:#16a34a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;">
+                            ✅ Als gepostet markieren
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent posts -->
+                <div style="background:white;padding:24px;border-radius:12px;">
+                    <h4 style="margin:0 0 16px;">Letzte Antworten</h4>
+                    <div id="quora-recent-posts" style="font-size:13px;color:#6b7280;">Wird geladen...</div>
                 </div>
             </div>
 

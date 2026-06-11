@@ -92,7 +92,7 @@ function switchTab(tabName) {
     if (tabName === 'pinterest') { loadPinterestStatus(); loadPinterestRecentPosts(); }
     if (tabName === 'instagram') { loadInstagramStatus(); loadInstagramRecentPosts(); }
     if (tabName === 'wordpress') { initWordPressTab(); }
-    if (tabName === 'quora') { loadQuoraStatus(); loadQuoraRecentAnswers(); }
+    if (tabName === 'quora') { initQuoraTab(); }
     if (tabName === 'blogger') { initBloggerTab(); }
     if (tabName === 'medium') { initMediumTab(); }
 }
@@ -2122,56 +2122,122 @@ async function loadWordPressRecentPosts() {
 }
 
 // ─── QUORA ────────────────────────────────────────────────────────────────────
+let _quoraCurrentPost = null;
+
+async function initQuoraTab() {
+    try {
+        const res = await fetch(`${API_URL}/api/quora/topics`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const sel = document.getElementById('quora-topic-select');
+        if (sel && data.success) {
+            sel.innerHTML = '<option value="">— Nächstes Thema (automatisch) —</option>';
+            data.topics.forEach(t => {
+                sel.innerHTML += `<option value="${t.index}"${t.isNext ? ' style="font-weight:700"' : ''}>${t.isNext ? '▶ ' : ''}${t.title}</option>`;
+            });
+        }
+    } catch (e) { console.warn('Quora topics:', e.message); }
+    loadQuoraStatus();
+    loadQuoraRecentPostsNew();
+}
+
 async function loadQuoraStatus() {
     const card = document.getElementById('quora-status-card');
     try {
         const res = await fetch(`${API_URL}/api/quora/status`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
         const data = await res.json();
         const s = data.status || {};
-        card.innerHTML = `<p><strong>Status:</strong> ${s.configured ? '✅ Claude API ready' : '❌ No Claude API key — add in Settings'}</p>
-            <p><strong>Generated Answers:</strong> ${s.totalAnswers || 0}</p>`;
-    } catch { card.innerHTML = '<p>❌ Could not reach backend</p>'; }
+        card.innerHTML = `
+            <div style="display:flex;gap:24px;flex-wrap:wrap;">
+                <div><strong>Gepostete Antworten:</strong> ${s.totalPosts || 0}</div>
+                <div><strong>Nächste Frage:</strong> <em style="color:#6b7280;">${(s.nextQuestion || '').substring(0, 60)}…</em></div>
+            </div>`;
+    } catch { card.innerHTML = '<p>❌ Backend nicht erreichbar</p>'; }
 }
-async function generateQuoraAnswer() {
-    showAlert('Generating Quora answer...', 'success');
+
+async function generateQuoraPost() {
+    const btn = document.getElementById('quora-generate-btn');
+    const topicIdx = document.getElementById('quora-topic-select')?.value;
+    btn.disabled = true;
+    btn.textContent = '⏳ Generiere...';
+    document.getElementById('quora-result-card').style.display = 'none';
     try {
-        const res = await fetch(`${API_URL}/api/quora/generate`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const res = await fetch(`${API_URL}/api/quora/generate`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topicIndex: topicIdx !== '' ? parseInt(topicIdx) : undefined })
+        });
         const data = await res.json();
-        if (data.success) { showAlert('✅ Answer generated!', 'success'); loadQuoraRecentAnswers(); }
-        else showAlert(`❌ ${data.error || data.message}`, 'error');
-    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+        if (!data.success) { showAlert(`❌ ${data.error}`, 'error'); return; }
+
+        _quoraCurrentPost = data;
+        document.getElementById('quora-question-field').value = data.question;
+        document.getElementById('quora-answer-field').value = data.answer;
+        document.getElementById('quora-post-url').value = '';
+
+        const spacesEl = document.getElementById('quora-spaces-badges');
+        spacesEl.innerHTML = (data.spaces || []).map(s =>
+            `<span style="padding:5px 14px;background:#fef3c7;border:1px solid #d97706;border-radius:20px;font-size:12px;font-weight:600;color:#92400e;">📚 ${s}</span>`
+        ).join('');
+
+        document.getElementById('quora-result-card').style.display = 'block';
+        document.getElementById('quora-result-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) { showAlert('❌ ' + err.message, 'error'); }
+    btn.disabled = false;
+    btn.textContent = '❓ Generieren';
 }
-async function generateQuoraBatch() {
-    showAlert('Generating 5 Quora answers...', 'success');
-    try {
-        const res = await fetch(`${API_URL}/api/quora/generate-batch`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
-        const data = await res.json();
-        if (data.success) { showAlert(`✅ ${data.count || 5} answers generated!`, 'success'); loadQuoraRecentAnswers(); }
-        else showAlert(`❌ ${data.error || data.message}`, 'error');
-    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+
+function copyQuoraField(fieldId) {
+    const el = document.getElementById(fieldId);
+    if (!el) return;
+    navigator.clipboard.writeText(el.value)
+        .then(() => showAlert('✅ In die Zwischenablage kopiert!', 'success'))
+        .catch(() => { el.select(); document.execCommand('copy'); showAlert('✅ Kopiert!', 'success'); });
 }
-async function loadQuoraRecentAnswers() {
-    const el = document.getElementById('quora-answers-list');
+
+async function markQuoraAsPosted() {
+    if (!_quoraCurrentPost?.dbId) { showAlert('Zuerst eine Antwort generieren', 'error'); return; }
+    const postUrl = document.getElementById('quora-post-url').value.trim();
     try {
-        const res = await fetch(`${API_URL}/api/quora/recent-answers`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const res = await fetch(`${API_URL}/api/quora/log-manual`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ dbId: _quoraCurrentPost.dbId, postUrl })
+        });
         const data = await res.json();
-        if (!data.answers?.length) { el.innerHTML = '<p style="color:#6b7280">No answers yet. Click Generate above.</p>'; return; }
-        el.innerHTML = data.answers.map(a => `
-            <div style="padding:15px;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:10px;">
-                <strong style="color:#667eea">Q: ${a.question}</strong>
-                <p style="margin:8px 0;font-size:0.9em;color:#374151;max-height:120px;overflow:hidden">${a.answer?.substring(0,300)}...</p>
-                <button onclick="copyQuoraAnswer('${a.id}')" style="padding:6px 12px;background:#667eea;color:white;border:none;border-radius:4px;cursor:pointer;">📋 Copy Full Answer</button>
-                <small style="color:#9ca3af;margin-left:10px">${new Date(a.created_at || a.posted_at).toLocaleString()}</small>
+        if (data.success) {
+            showAlert('✅ Als gepostet markiert!', 'success');
+            document.getElementById('quora-result-card').style.display = 'none';
+            _quoraCurrentPost = null;
+            loadQuoraStatus();
+            loadQuoraRecentPostsNew();
+        } else showAlert(`❌ ${data.error}`, 'error');
+    } catch (err) { showAlert('❌ ' + err.message, 'error'); }
+}
+
+async function loadQuoraRecentPostsNew() {
+    const el = document.getElementById('quora-recent-posts');
+    if (!el) return;
+    try {
+        const res = await fetch(`${API_URL}/api/quora/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.posts?.length) { el.innerHTML = '<p>Noch keine Antworten gepostet.</p>'; return; }
+        el.innerHTML = data.posts.map(p => `
+            <div style="padding:10px 0;border-bottom:1px solid #f0f0f0;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+                    <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${p.status==='posted'?'#dcfce7':'#f3f4f6'};color:${p.status==='posted'?'#16a34a':'#6b7280'};">
+                        ${p.status === 'posted' ? '✅ gepostet' : '📝 entwurf'}
+                    </span>
+                    <span style="font-size:11px;color:#9ca3af;">${p.category || ''}</span>
+                    ${p.included_cta ? '<span style="font-size:11px;padding:2px 8px;background:#fef3c7;color:#92400e;border-radius:10px;">CTA</span>' : ''}
+                </div>
+                <strong style="font-size:13px;">${p.question?.substring(0, 80)}</strong>
+                <div style="font-size:11px;color:#9ca3af;margin-top:2px;">
+                    ${new Date(p.posted_at).toLocaleString('de-DE')}
+                    ${p.space_suggestions ? `· ${p.space_suggestions}` : ''}
+                    ${p.post_url ? `· <a href="${p.post_url}" target="_blank" style="color:#b92b27;">Ansehen ↗</a>` : ''}
+                </div>
             </div>`).join('');
-        // Store answers for copying
-        window._quoraAnswers = data.answers;
-    } catch { el.innerHTML = '<p style="color:#ef4444">Error loading answers</p>'; }
-}
-function copyQuoraAnswer(id) {
-    const a = (window._quoraAnswers || []).find(x => String(x.id) === String(id));
-    if (!a) { showAlert('Answer not found', 'error'); return; }
-    const text = `Q: ${a.question}\n\n${a.answer}`;
-    navigator.clipboard.writeText(text).then(() => showAlert('✅ Copied to clipboard!', 'success')).catch(() => showAlert('❌ Copy failed', 'error'));
+    } catch { el.innerHTML = '<p style="color:#ef4444">Fehler beim Laden.</p>'; }
 }
 
 // ─── BLOGGER ──────────────────────────────────────────────────────────────────
