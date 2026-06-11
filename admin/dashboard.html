@@ -1379,8 +1379,25 @@
 
                     <!-- Pinterest Settings -->
                     <div class="platform-settings" id="settings-pinterest" style="display:none;">
-                        <div class="form-group"><label>Pinterest Access Token</label><input type="password" id="pinterest-access-token" placeholder="Access token from developers.pinterest.com"></div>
-                        <div class="form-group"><label>Pinterest Board ID (numeric)</label><input type="text" id="pinterest-board-id" placeholder="123456789012345678"></div>
+                        <div style="background:#f0f9ff;border:1px solid #bae6fd;padding:14px 18px;border-radius:8px;margin-bottom:16px;">
+                            <strong>🔐 Schritt 1: App-Daten eintragen</strong>
+                            <div class="form-group" style="margin-top:10px;"><label>Pinterest App ID</label><input type="text" id="pinterest-app-id" placeholder="App ID from developers.pinterest.com"></div>
+                            <div class="form-group"><label>Pinterest App Secret</label><input type="password" id="pinterest-app-secret" placeholder="App Secret"></div>
+                            <button onclick="saveSettings()" style="background:#667eea;color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-weight:600;margin-top:4px;">💾 Speichern</button>
+                        </div>
+                        <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:14px 18px;border-radius:8px;margin-bottom:16px;">
+                            <strong>🔗 Schritt 2: Pinterest verbinden</strong><br>
+                            <small style="color:#6b7280;">Nach dem Speichern der App-Daten hier autorisieren:</small><br>
+                            <button onclick="getPinterestAuthUrl()" style="background:#e60023;color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-weight:600;margin-top:8px;">📌 Mit Pinterest verbinden</button>
+                            <div id="pinterest-auth-status" style="margin-top:8px;font-size:13px;color:#16a34a;"></div>
+                        </div>
+                        <div style="background:#fafafa;border:1px solid #e5e7eb;padding:14px 18px;border-radius:8px;margin-bottom:16px;">
+                            <strong>📋 Schritt 3: Board auswählen</strong><br>
+                            <button onclick="loadPinterestBoards()" style="background:#667eea;color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-weight:600;margin-top:8px;">🔄 Boards laden</button>
+                            <div id="pinterest-boards-list" style="margin-top:10px;"></div>
+                            <div class="form-group" style="margin-top:10px;"><label>Board ID (manuell)</label><input type="text" id="pinterest-board-id" placeholder="123456789012345678"></div>
+                        </div>
+                        <div class="form-group"><label>Pinterest Access Token</label><input type="password" id="pinterest-access-token" placeholder="Wird automatisch gesetzt nach OAuth"></div>
                         <div class="form-group"><label>Ideogram API Key</label><input type="password" id="ideogram-api-key" placeholder="For AI image generation"></div>
                         <div class="form-group"><label>Posting Frequency (hours)</label><input type="number" id="pinterest-frequency" value="4" min="1"></div>
                         <div class="form-group"><label><input type="checkbox" id="pinterest-auto"> Enable Auto-Posting</label></div>

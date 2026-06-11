@@ -2264,6 +2264,8 @@ async function loadSocialSettings() {
         set('reddit-password', 'reddit_password');
         set('reddit-frequency', 'reddit_frequency_hours');
         chk('reddit-auto', 'reddit_auto_posting');
+        set('pinterest-app-id', 'pinterest_app_id');
+        set('pinterest-app-secret', 'pinterest_app_secret');
         set('pinterest-access-token', 'pinterest_access_token');
         set('pinterest-board-id', 'pinterest_board_id');
         set('ideogram-api-key', 'ideogram_api_key');
@@ -2306,6 +2308,8 @@ async function saveSocialSettings() {
         reddit_password: val('reddit-password'),
         reddit_frequency_hours: val('reddit-frequency') || '6',
         reddit_auto_posting: chk('reddit-auto'),
+        pinterest_app_id: val('pinterest-app-id'),
+        pinterest_app_secret: val('pinterest-app-secret'),
         pinterest_access_token: val('pinterest-access-token'),
         pinterest_board_id: val('pinterest-board-id'),
         ideogram_api_key: val('ideogram-api-key'),
@@ -2338,6 +2342,45 @@ async function saveSocialSettings() {
     for (const platform of ['twitter', 'pinterest', 'reddit', 'linkedin', 'instagram', 'wordpress', 'blogger']) {
         fetch(`${API_URL}/api/${platform}/reload-settings`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } }).catch(() => {});
     }
+}
+
+// ─── PINTEREST OAUTH ──────────────────────────────────────────────────────────
+async function getPinterestAuthUrl() {
+    try {
+        const res = await fetch(`${API_URL}/api/pinterest/auth-url`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+        const popup = window.open(data.url, 'Pinterest Auth', 'width=600,height=700');
+        const status = document.getElementById('pinterest-auth-status');
+        status.textContent = '⏳ Warte auf Autorisierung...';
+        const check = setInterval(() => {
+            if (popup.closed) {
+                clearInterval(check);
+                status.textContent = '✅ Fenster geschlossen — bitte Boards laden um zu prüfen ob es geklappt hat.';
+            }
+        }, 1000);
+    } catch (e) { alert('Fehler: ' + e.message); }
+}
+
+async function loadPinterestBoards() {
+    const el = document.getElementById('pinterest-boards-list');
+    el.innerHTML = '⏳ Lade Boards...';
+    try {
+        const res = await fetch(`${API_URL}/api/pinterest/boards`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+        el.innerHTML = data.boards.map(b => `
+            <div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #f0f0f0;">
+                <span style="flex:1;font-size:13px;">${b.name}</span>
+                <code style="font-size:11px;color:#6b7280;">${b.id}</code>
+                <button onclick="selectPinterestBoard('${b.id}')" style="font-size:12px;padding:3px 10px;border:1px solid #667eea;border-radius:4px;cursor:pointer;background:#fff;color:#667eea;">Auswählen</button>
+            </div>`).join('');
+    } catch (e) { el.innerHTML = `<span style="color:red;">${e.message}</span>`; }
+}
+
+function selectPinterestBoard(id) {
+    document.getElementById('pinterest-board-id').value = id;
+    showAlert('Board ID eingetragen — bitte Save Settings klicken.', 'success');
 }
 
 // ─── MEDIUM ───────────────────────────────────────────────────────────────────
