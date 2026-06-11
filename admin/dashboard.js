@@ -89,7 +89,7 @@ function switchTab(tabName) {
     if (tabName === 'twitter') { loadTwitterStatus(); loadTwitterRecentPosts(); }
     if (tabName === 'reddit') { initRedditTab(); }
     if (tabName === 'linkedin') { initLinkedInTab(); }
-    if (tabName === 'pinterest') { loadPinterestStatus(); loadPinterestRecentPosts(); }
+    if (tabName === 'pinterest') { initPinterestTab(); }
     if (tabName === 'instagram') { loadInstagramStatus(); loadInstagramRecentPosts(); }
     if (tabName === 'wordpress') { initWordPressTab(); }
     if (tabName === 'quora') { initQuoraTab(); }
@@ -1907,65 +1907,133 @@ async function loadLinkedInRecentPosts() {
 }
 
 // ─── PINTEREST ───────────────────────────────────────────────────────────────
+let _pinterestCurrentPin = null;
+
+async function initPinterestTab() {
+    try {
+        const res = await fetch(`${API_URL}/api/pinterest/topics`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const sel = document.getElementById('pinterest-topic-select');
+        if (sel && data.success) {
+            sel.innerHTML = '<option value="">— Nächstes Thema (automatisch) —</option>';
+            data.topics.forEach(t => {
+                sel.innerHTML += `<option value="${t.index}"${t.isNext ? ' style="font-weight:700"' : ''}>${t.isNext ? '▶ ' : ''}${t.title}</option>`;
+            });
+        }
+    } catch (e) { console.warn('Pinterest topics:', e.message); }
+    loadPinterestStatus();
+    loadPinterestRecentPosts();
+}
+
 async function loadPinterestStatus() {
     const card = document.getElementById('pinterest-status-card');
     try {
         const res = await fetch(`${API_URL}/api/pinterest/status`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
         const data = await res.json();
         const s = data.status || {};
-        card.innerHTML = `<p><strong>Status:</strong> ${s.configured ? '✅ Configured' : '❌ Not configured — add credentials in Settings'}</p>
-            ${s.configured ? `<p><strong>Scheduler:</strong> ${s.schedulerRunning ? '▶ Running' : '⏹ Stopped'}</p><p><strong>Total Pins:</strong> ${s.totalPosts || 0}</p>` : ''}
-            <button onclick="reloadPinterestSettings()" style="margin-top:8px;padding:6px 12px;background:#e5e7eb;border:none;border-radius:4px;cursor:pointer;">🔄 Reload Settings</button>`;
-    } catch { card.innerHTML = '<p>❌ Could not reach backend</p>'; }
+        card.innerHTML = `
+            <div style="display:flex;gap:24px;flex-wrap:wrap;">
+                <div><strong>Pinterest:</strong> ${s.connected ? '✅ Verbunden' : '❌ Nicht verbunden'}</div>
+                <div><strong>Ideogram:</strong> ${s.ideogramConfigured ? '✅ Bereit' : '❌ API Key fehlt'}</div>
+                <div><strong>Board:</strong> ${s.boardName ? `✅ ${s.boardName}` : '❌ Kein Board gewählt'}</div>
+                <div><strong>Boards geladen:</strong> ${s.boardsLoaded || 0}</div>
+                <div><strong>Gepostete Pins:</strong> ${s.totalPosts || 0}</div>
+            </div>`;
+    } catch { card.innerHTML = '<p>❌ Backend nicht erreichbar</p>'; }
 }
-async function reloadPinterestSettings() {
+
+async function generatePinterestPin() {
+    const btn = document.getElementById('pinterest-generate-btn');
+    const topicIdx = document.getElementById('pinterest-topic-select')?.value;
+    btn.disabled = true;
+    btn.textContent = '⏳ Generiere Bild + Text... (20-40 Sek.)';
+    document.getElementById('pinterest-result-card').style.display = 'none';
     try {
-        const res = await fetch(`${API_URL}/api/pinterest/reload-settings`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const res = await fetch(`${API_URL}/api/pinterest/generate`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topicIndex: topicIdx !== '' ? parseInt(topicIdx) : undefined })
+        });
         const data = await res.json();
-        if (data.configured) { showAlert('✅ Pinterest configured!', 'success'); }
-        else {
-            const d = data.debug || {};
-            const missing = [];
-            if (!d.hasAccessToken) missing.push('Access Token');
-            if (!d.hasBoardId) missing.push('Board ID');
-            if (!d.hasIdeogramKey) missing.push('Ideogram API Key');
-            showAlert(`❌ Missing: ${missing.join(', ') || 'credentials'}`, 'error');
-        }
-        loadPinterestStatus();
-    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+        if (!data.success) { showAlert(`❌ ${data.error}`, 'error'); return; }
+
+        _pinterestCurrentPin = data;
+
+        // Fill fields
+        document.getElementById('pinterest-title-field').value = data.title;
+        document.getElementById('pinterest-desc-field').value = data.description;
+        document.getElementById('pinterest-tags-field').value = data.tags;
+        document.getElementById('pinterest-link-field').value = data.link;
+        document.getElementById('pinterest-board-badge').textContent = data.board?.name || 'Travel';
+        document.getElementById('pinterest-post-url').value = '';
+
+        // Image
+        const img = document.getElementById('pinterest-image-preview');
+        const link = document.getElementById('pinterest-image-link');
+        img.src = data.imageUrl;
+        link.href = data.imageUrl;
+
+        document.getElementById('pinterest-result-card').style.display = 'block';
+        document.getElementById('pinterest-result-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) { showAlert('❌ ' + err.message, 'error'); }
+    btn.disabled = false;
+    btn.textContent = '📌 Generieren';
 }
-async function publishPinterestPin() {
-    showAlert('Generating Pinterest pin...', 'success');
+
+function copyPinterestField(fieldId) {
+    const el = document.getElementById(fieldId);
+    if (!el) return;
+    navigator.clipboard.writeText(el.value)
+        .then(() => showAlert('✅ Kopiert!', 'success'))
+        .catch(() => { el.select(); document.execCommand('copy'); showAlert('✅ Kopiert!', 'success'); });
+}
+
+async function markPinterestAsPosted() {
+    if (!_pinterestCurrentPin?.dbId) { showAlert('Zuerst einen Pin generieren', 'error'); return; }
+    const pinUrl = document.getElementById('pinterest-post-url').value.trim();
     try {
-        const res = await fetch(`${API_URL}/api/pinterest/post-pin`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const res = await fetch(`${API_URL}/api/pinterest/log-manual`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ dbId: _pinterestCurrentPin.dbId, pinUrl })
+        });
         const data = await res.json();
-        if (data.success) { showAlert('✅ Pin posted to Pinterest!', 'success'); loadPinterestRecentPosts(); }
-        else showAlert(`❌ ${data.error || data.message}`, 'error');
-    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+        if (data.success) {
+            showAlert('✅ Als gepostet markiert!', 'success');
+            document.getElementById('pinterest-result-card').style.display = 'none';
+            _pinterestCurrentPin = null;
+            loadPinterestStatus();
+            loadPinterestRecentPosts();
+        } else showAlert(`❌ ${data.error}`, 'error');
+    } catch (err) { showAlert('❌ ' + err.message, 'error'); }
 }
-async function startPinterestScheduler() {
-    const res = await fetch(`${API_URL}/api/pinterest/scheduler/start`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
-    const data = await res.json();
-    showAlert(data.success ? '▶ Pinterest scheduler started' : `❌ ${data.error}`, data.success ? 'success' : 'error');
-    loadPinterestStatus();
-}
-async function stopPinterestScheduler() {
-    const res = await fetch(`${API_URL}/api/pinterest/scheduler/stop`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
-    const data = await res.json();
-    showAlert(data.success ? '⏹ Pinterest scheduler stopped' : `❌ ${data.error}`, data.success ? 'success' : 'error');
-    loadPinterestStatus();
-}
+
 async function loadPinterestRecentPosts() {
     const el = document.getElementById('pinterest-recent-posts');
+    if (!el) return;
     try {
         const res = await fetch(`${API_URL}/api/pinterest/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
         const data = await res.json();
-        if (!data.posts?.length) { el.innerHTML = '<p style="color:#6b7280">No pins yet.</p>'; return; }
-        el.innerHTML = data.posts.map(p => `<div style="padding:10px;border-bottom:1px solid #e5e7eb">
-            <strong>📌 ${p.title?.substring(0,80)}</strong><br>
-            <small style="color:#6b7280">${new Date(p.posted_at).toLocaleString()} ${p.pin_url ? `| <a href="${p.pin_url}" target="_blank">View</a>` : ''}</small>
-        </div>`).join('');
-    } catch { el.innerHTML = '<p style="color:#ef4444">Error loading pins</p>'; }
+        if (!data.posts?.length) { el.innerHTML = '<p>Noch keine Pins gepostet.</p>'; return; }
+        el.innerHTML = data.posts.map(p => `
+            <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #f0f0f0;align-items:flex-start;">
+                ${p.image_url ? `<img src="${p.image_url}" style="width:50px;height:75px;object-fit:cover;border-radius:4px;flex-shrink:0;">` : ''}
+                <div style="flex:1;min-width:0;">
+                    <div style="display:flex;gap:6px;margin-bottom:2px;">
+                        <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${p.status==='posted'?'#dcfce7':'#f3f4f6'};color:${p.status==='posted'?'#16a34a':'#6b7280'};">
+                            ${p.status === 'posted' ? '✅ gepostet' : '📝 entwurf'}
+                        </span>
+                        ${p.board_name ? `<span style="font-size:11px;padding:2px 8px;background:#fce7e7;color:#e60023;border-radius:10px;">📋 ${p.board_name}</span>` : ''}
+                        ${p.included_cta ? '<span style="font-size:11px;padding:2px 8px;background:#fef3c7;color:#92400e;border-radius:10px;">CTA</span>' : ''}
+                    </div>
+                    <strong style="font-size:13px;">${p.title?.substring(0, 70)}</strong>
+                    <div style="font-size:11px;color:#9ca3af;margin-top:2px;">
+                        ${new Date(p.posted_at).toLocaleString('de-DE')}
+                        ${p.pin_id ? `· <a href="${p.pin_id}" target="_blank" style="color:#e60023;">Ansehen ↗</a>` : ''}
+                    </div>
+                </div>
+            </div>`).join('');
+    } catch { el.innerHTML = '<p style="color:#ef4444">Fehler beim Laden.</p>'; }
 }
 
 // ─── INSTAGRAM ────────────────────────────────────────────────────────────────

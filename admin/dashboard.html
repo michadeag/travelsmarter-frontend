@@ -1153,22 +1153,122 @@
 
             <!-- PINTEREST TAB -->
             <div id="pinterest" class="tab-content">
-                <h3>📌 Pinterest Auto-Posting</h3>
-                <div id="pinterest-status-card" style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
-                    <p>Loading...</p>
+                <h3 style="margin-bottom:6px;">📌 Pinterest Copy-Paste Workflow</h3>
+                <p style="color:#6b7280;margin-bottom:24px;font-size:14px;">Claude generiert Pin + Bild → du postest manuell auf Pinterest → hier als gepostet markieren</p>
+
+                <div id="pinterest-status-card" style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                    <p style="color:#6b7280;">Wird geladen...</p>
                 </div>
-                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
-                    <h4>Manual Pin</h4>
-                    <button class="btn btn-primary" onclick="publishPinterestPin()" style="margin-top:10px;">📌 Generate & Post Pin</button>
+
+                <!-- Generate -->
+                <div style="background:white;padding:24px;border-radius:12px;margin-bottom:20px;">
+                    <h4 style="margin:0 0 16px;">Pin generieren</h4>
+                    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                        <select id="pinterest-topic-select" style="padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;min-width:240px;">
+                            <option value="">— Nächstes Thema (automatisch) —</option>
+                        </select>
+                        <button id="pinterest-generate-btn" onclick="generatePinterestPin()"
+                            style="padding:10px 22px;background:#e60023;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;">
+                            📌 Generieren
+                        </button>
+                    </div>
                 </div>
-                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
-                    <h4>Auto-Scheduler</h4>
-                    <button class="btn btn-primary" onclick="startPinterestScheduler()">▶ Start Scheduler</button>
-                    <button class="btn btn-danger" onclick="stopPinterestScheduler()" style="margin-left:10px;">⏹ Stop Scheduler</button>
+
+                <!-- Result -->
+                <div id="pinterest-result-card" style="display:none;background:white;padding:24px;border-radius:12px;margin-bottom:20px;">
+
+                    <!-- Image preview -->
+                    <div style="margin-bottom:20px;">
+                        <label style="font-weight:700;font-size:13px;color:#374151;display:block;margin-bottom:8px;">🖼️ GENERIERTES BILD (Rechtsklick → Bild speichern)</label>
+                        <a id="pinterest-image-link" href="#" target="_blank">
+                            <img id="pinterest-image-preview" src="" alt="Pin Bild"
+                                style="max-width:300px;border-radius:8px;border:2px solid #e60023;cursor:pointer;display:block;">
+                        </a>
+                        <div style="margin-top:6px;font-size:12px;color:#6b7280;">Klick auf Bild öffnet es in voller Größe zum Speichern</div>
+                    </div>
+
+                    <!-- Board -->
+                    <div style="margin-bottom:20px;">
+                        <label style="font-weight:700;font-size:13px;color:#374151;display:block;margin-bottom:6px;">📋 EMPFOHLENES BOARD</label>
+                        <div id="pinterest-board-badge" style="display:inline-block;padding:6px 16px;background:#fce7e7;border:1px solid #e60023;border-radius:20px;font-size:13px;font-weight:700;color:#e60023;"></div>
+                    </div>
+
+                    <!-- Title -->
+                    <div style="margin-bottom:16px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                            <label style="font-weight:700;font-size:13px;color:#374151;">📝 TITEL</label>
+                            <button onclick="copyPinterestField('pinterest-title-field')"
+                                style="padding:4px 12px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">📋 Kopieren</button>
+                        </div>
+                        <textarea id="pinterest-title-field" rows="2"
+                            style="width:100%;padding:10px;border:2px solid #e60023;border-radius:8px;font-size:14px;font-family:inherit;resize:vertical;box-sizing:border-box;background:#fff8f8;"
+                            readonly></textarea>
+                    </div>
+
+                    <!-- Description -->
+                    <div style="margin-bottom:16px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                            <label style="font-weight:700;font-size:13px;color:#374151;">✍️ BESCHREIBUNG</label>
+                            <button onclick="copyPinterestField('pinterest-desc-field')"
+                                style="padding:4px 12px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">📋 Kopieren</button>
+                        </div>
+                        <textarea id="pinterest-desc-field" rows="4"
+                            style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;line-height:1.6;box-sizing:border-box;"
+                            readonly></textarea>
+                    </div>
+
+                    <!-- Tags -->
+                    <div style="margin-bottom:16px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                            <label style="font-weight:700;font-size:13px;color:#374151;">🏷️ TAGS</label>
+                            <button onclick="copyPinterestField('pinterest-tags-field')"
+                                style="padding:4px 12px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">📋 Kopieren</button>
+                        </div>
+                        <textarea id="pinterest-tags-field" rows="2"
+                            style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:monospace;resize:vertical;box-sizing:border-box;"
+                            readonly></textarea>
+                    </div>
+
+                    <!-- Link -->
+                    <div style="margin-bottom:20px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                            <label style="font-weight:700;font-size:13px;color:#374151;">🔗 DESTINATION LINK</label>
+                            <button onclick="copyPinterestField('pinterest-link-field')"
+                                style="padding:4px 12px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">📋 Kopieren</button>
+                        </div>
+                        <textarea id="pinterest-link-field" rows="1"
+                            style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:monospace;resize:none;box-sizing:border-box;"
+                            readonly></textarea>
+                    </div>
+
+                    <!-- Steps -->
+                    <div style="background:#fef9f0;border:1px solid #f59e0b;border-radius:8px;padding:16px;margin-bottom:20px;">
+                        <strong style="font-size:13px;">📋 So postest du auf Pinterest:</strong>
+                        <ol style="margin:8px 0 0 0;padding-left:20px;font-size:13px;color:#374151;line-height:1.8;">
+                            <li>Bild speichern (Rechtsklick → Bild speichern)</li>
+                            <li>Auf <strong>pinterest.com</strong> → <strong>"Erstellen → Pin erstellen"</strong></li>
+                            <li>Bild hochladen → Titel einfügen → Beschreibung einfügen</li>
+                            <li>Destination Link einfügen → Tags hinzufügen</li>
+                            <li>Empfohlenes Board auswählen → <strong>"Veröffentlichen"</strong></li>
+                            <li>Hier unten als gepostet markieren</li>
+                        </ol>
+                    </div>
+
+                    <!-- Mark as posted -->
+                    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                        <input type="text" id="pinterest-post-url" placeholder="Pinterest Pin-URL (optional)"
+                            style="flex:1;min-width:200px;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:13px;">
+                        <button onclick="markPinterestAsPosted()"
+                            style="padding:10px 20px;background:#16a34a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;">
+                            ✅ Als gepostet markieren
+                        </button>
+                    </div>
                 </div>
-                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
-                    <h4>Recent Pins</h4>
-                    <div id="pinterest-recent-posts"><p>Loading...</p></div>
+
+                <!-- Recent posts -->
+                <div style="background:white;padding:24px;border-radius:12px;">
+                    <h4 style="margin:0 0 16px;">Letzte Pins</h4>
+                    <div id="pinterest-recent-posts" style="font-size:13px;color:#6b7280;">Wird geladen...</div>
                 </div>
             </div>
 
