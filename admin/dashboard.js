@@ -2363,7 +2363,7 @@ async function generateMediumArticle() {
     const result = document.getElementById('medium-generator-result');
     const topicIdx = document.getElementById('medium-topic-select')?.value;
     btn.disabled = true;
-    btn.textContent = '⏳ Generiere...';
+    btn.textContent = '⏳ Generiere... (30-60 Sek.)';
     result.style.display = 'none';
     try {
         const res = await fetch(`${API_URL}/api/medium/generate`, {
