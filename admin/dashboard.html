@@ -1071,22 +1071,44 @@
 
             <!-- LINKEDIN TAB -->
             <div id="linkedin" class="tab-content">
-                <h3>💼 LinkedIn Auto-Posting</h3>
-                <div id="linkedin-status-card" style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
-                    <p>Loading...</p>
+                <h3 style="margin-bottom:6px;">💼 LinkedIn Content Generator</h3>
+                <p style="color:#6b7280;margin-bottom:24px;font-size:14px;">Post generieren → in LinkedIn einfügen → als gepostet markieren</p>
+                <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap;">
+                    <button onclick="generateLinkedInPost()" id="linkedin-generate-btn"
+                        style="background:#0077b5;color:#fff;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:600;font-size:15px;">
+                        💼 Post generieren
+                    </button>
+                    <select id="linkedin-topic-select" style="padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;min-width:260px;">
+                        <option value="">— Nächstes Thema (automatisch) —</option>
+                    </select>
+                </div>
+                <div id="linkedin-generator-result" style="display:none;">
+                    <div style="background:white;padding:20px;border-radius:12px;margin-bottom:16px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <strong>📝 LinkedIn Post</strong>
+                            <button onclick="copyLinkedInField('linkedin-post-text')" style="font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:4px;cursor:pointer;background:#fff;">📋 Kopieren</button>
+                        </div>
+                        <textarea id="linkedin-post-text" rows="12" style="width:100%;padding:14px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;line-height:1.6;"></textarea>
+                    </div>
+                    <div style="background:#eff6ff;border:1px solid #bfdbfe;padding:16px 20px;border-radius:12px;margin-bottom:16px;">
+                        <strong style="color:#1e40af;">📌 So postest du auf LinkedIn:</strong>
+                        <ol style="margin:8px 0 0 16px;font-size:13px;color:#374151;line-height:1.8;">
+                            <li>Kopiere den Text oben</li>
+                            <li>Gehe zu <a href="https://www.linkedin.com/feed/" target="_blank" style="color:#0077b5;">linkedin.com</a> → "Beitrag starten"</li>
+                            <li>Füge den Text ein und klicke "Veröffentlichen"</li>
+                        </ol>
+                    </div>
+                    <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:16px 20px;border-radius:12px;margin-bottom:16px;">
+                        <strong style="color:#166534;">✅ Nachdem du auf LinkedIn gepostet hast:</strong>
+                        <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;">
+                            <input type="text" id="linkedin-posted-url" placeholder="LinkedIn Post URL (optional)" style="flex:1;min-width:220px;padding:9px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
+                            <button onclick="markLinkedInAsPosted()" style="background:#16a34a;color:#fff;border:none;padding:10px 22px;border-radius:6px;cursor:pointer;font-weight:600;font-size:14px;">Als gepostet markieren</button>
+                        </div>
+                    </div>
                 </div>
                 <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
-                    <h4>Manual Post</h4>
-                    <button class="btn btn-primary" onclick="publishLinkedInPost()" style="margin-top:10px;">💼 Generate & Post to LinkedIn</button>
-                </div>
-                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
-                    <h4>Auto-Scheduler</h4>
-                    <button class="btn btn-primary" onclick="startLinkedInScheduler()">▶ Start Scheduler</button>
-                    <button class="btn btn-danger" onclick="stopLinkedInScheduler()" style="margin-left:10px;">⏹ Stop Scheduler</button>
-                </div>
-                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
-                    <h4>Recent Posts</h4>
-                    <div id="linkedin-recent-posts"><p>Loading...</p></div>
+                    <h4 style="margin-bottom:12px;">📋 Generierte Posts</h4>
+                    <div id="linkedin-recent-posts" style="font-size:13px;color:#6b7280;">Wird geladen...</div>
                 </div>
             </div>
 

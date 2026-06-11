@@ -88,7 +88,7 @@ function switchTab(tabName) {
     if (tabName === 'analytics') loadAnalytics();
     if (tabName === 'twitter') { loadTwitterStatus(); loadTwitterRecentPosts(); }
     if (tabName === 'reddit') { loadRedditStatus(); loadRedditRecentPosts(); }
-    if (tabName === 'linkedin') { loadLinkedInStatus(); loadLinkedInRecentPosts(); }
+    if (tabName === 'linkedin') { initLinkedInTab(); }
     if (tabName === 'pinterest') { loadPinterestStatus(); loadPinterestRecentPosts(); }
     if (tabName === 'instagram') { loadInstagramStatus(); loadInstagramRecentPosts(); }
     if (tabName === 'wordpress') { loadWordPressStatus(); loadWordPressRecentPosts(); }
@@ -2510,6 +2510,97 @@ async function loadMediumRecentPosts() {
 }
 
 function copyMediumField(id) {
+    const el = document.getElementById(id);
+    const text = el.tagName === 'TEXTAREA' ? el.value : el.textContent;
+    navigator.clipboard.writeText(text).then(() => showAlert('📋 Kopiert!', 'success'));
+}
+
+// ── LINKEDIN COPY-PASTE GENERATOR ──────────────────────────────────────────
+
+let linkedInCurrentPost = null;
+
+async function initLinkedInTab() {
+    try {
+        const res = await fetch(`${API_URL}/api/linkedin/topics`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const sel = document.getElementById('linkedin-topic-select');
+        if (sel && data.success && data.topics) {
+            sel.innerHTML = '<option value="">— Nächstes Thema (automatisch) —</option>';
+            data.topics.forEach(t => {
+                sel.innerHTML += `<option value="${t.index}">${t.isNext ? '▶ ' : ''}${t.title}</option>`;
+            });
+        }
+    } catch (e) { console.warn('LinkedIn topics:', e.message); }
+    loadLinkedInRecentPostsNew();
+}
+
+async function generateLinkedInPost() {
+    const btn = document.getElementById('linkedin-generate-btn');
+    const result = document.getElementById('linkedin-generator-result');
+    const topicIdx = document.getElementById('linkedin-topic-select')?.value;
+    btn.disabled = true;
+    btn.textContent = '⏳ Generiere... (15-30 Sek.)';
+    result.style.display = 'none';
+    try {
+        const res = await fetch(`${API_URL}/api/linkedin/generate`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topicIndex: topicIdx !== '' ? parseInt(topicIdx) : null })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+        linkedInCurrentPost = data;
+        document.getElementById('linkedin-post-text').value = data.text;
+        result.style.display = 'block';
+        loadLinkedInRecentPostsNew();
+    } catch (e) { alert('Fehler: ' + e.message); }
+    btn.disabled = false;
+    btn.textContent = '💼 Post generieren';
+}
+
+async function markLinkedInAsPosted() {
+    if (!linkedInCurrentPost) return alert('Kein Post generiert.');
+    const url = document.getElementById('linkedin-posted-url')?.value || '';
+    try {
+        const res = await fetch(`${API_URL}/api/linkedin/log-manual`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                dbId: linkedInCurrentPost.dbId,
+                text: linkedInCurrentPost.text,
+                category: linkedInCurrentPost.category,
+                linkedinUrl: url,
+                includeCTA: linkedInCurrentPost.includeCTA
+            })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+        showAlert('✅ Post als gepostet markiert!', 'success');
+        document.getElementById('linkedin-posted-url').value = '';
+        document.getElementById('linkedin-generator-result').style.display = 'none';
+        linkedInCurrentPost = null;
+        loadLinkedInRecentPostsNew();
+    } catch (e) { alert('Fehler: ' + e.message); }
+}
+
+async function loadLinkedInRecentPostsNew() {
+    const el = document.getElementById('linkedin-recent-posts');
+    if (!el) return;
+    try {
+        const res = await fetch(`${API_URL}/api/linkedin/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.success || !data.posts.length) { el.innerHTML = '<p>Noch keine Posts gepostet.</p>'; return; }
+        el.innerHTML = data.posts.map(p => `
+            <div style="padding:10px 0;border-bottom:1px solid #f0f0f0;">
+                <div style="font-size:13px;color:#374151;">${(p.body||'').substring(0,120)}…</div>
+                <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${p.status==='posted'?'#dcfce7':'#fef9c3'};color:${p.status==='posted'?'#166534':'#854d0e'};">${p.status}</span>
+                <span style="font-size:12px;color:#9ca3af;margin-left:8px;">${new Date(p.posted_at).toLocaleString('de-DE')} · ${p.category||''}</span>
+                ${p.linkedin_post_id ? `<a href="${p.linkedin_post_id}" target="_blank" style="margin-left:8px;font-size:12px;color:#0077b5;">Ansehen ↗</a>` : ''}
+            </div>`).join('');
+    } catch (e) { el.innerHTML = '<p>Fehler beim Laden.</p>'; }
+}
+
+function copyLinkedInField(id) {
     const el = document.getElementById(id);
     const text = el.tagName === 'TEXTAREA' ? el.value : el.textContent;
     navigator.clipboard.writeText(text).then(() => showAlert('📋 Kopiert!', 'success'));
