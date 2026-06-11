@@ -2345,7 +2345,7 @@ let mediumCurrentArticle = null;
 
 async function initMediumTab() {
     try {
-        const res = await fetch(`${API_URL}/api/medium/topics`, { headers: getAuthHeaders() });
+        const res = await fetch(`${API_URL}/api/medium/topics`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
         const data = await res.json();
         const sel = document.getElementById('medium-topic-select');
         if (sel && data.success) {
@@ -2368,7 +2368,7 @@ async function generateMediumArticle() {
     try {
         const res = await fetch(`${API_URL}/api/medium/generate`, {
             method: 'POST',
-            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ topicIndex: topicIdx !== '' ? parseInt(topicIdx) : null })
         });
         const data = await res.json();
@@ -2396,7 +2396,7 @@ async function markMediumAsPosted() {
     try {
         const res = await fetch(`${API_URL}/api/medium/log-manual`, {
             method: 'POST',
-            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 dbId: mediumCurrentArticle.dbId,
                 title: mediumCurrentArticle.title,
@@ -2421,7 +2421,7 @@ async function loadMediumRecentPosts() {
     const el = document.getElementById('medium-recent-posts');
     if (!el) return;
     try {
-        const res = await fetch(`${API_URL}/api/medium/recent-posts`, { headers: getAuthHeaders() });
+        const res = await fetch(`${API_URL}/api/medium/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
         const data = await res.json();
         if (!data.success || !data.posts.length) { el.innerHTML = '<p>Noch keine Artikel gepostet.</p>'; return; }
         el.innerHTML = data.posts.map(p => `
