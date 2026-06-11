@@ -80,7 +80,7 @@ function switchTab(tabName) {
         deals: 'Deals Management', hacks: 'Hacks & Modules', promos: 'Promo Codes',
         'email-templates': 'Email Templates', analytics: 'Analytics', settings: 'Settings',
         reddit: '🤖 Reddit', linkedin: '💼 LinkedIn', pinterest: '📌 Pinterest',
-        instagram: '📸 Instagram', wordpress: '📝 WordPress', quora: '❓ Quora', blogger: '📰 Blogger'
+        instagram: '📸 Instagram', wordpress: '📝 WordPress', quora: '❓ Quora', blogger: '📰 Blogger', slideshare: '📊 SlideShare'
     };
     document.getElementById('page-title').textContent = titles[tabName] || tabName;
 
@@ -1670,7 +1670,7 @@ async function loadAnalytics() {
         document.getElementById('an-total-posts').textContent = data.social.totalPosts.toLocaleString();
         document.getElementById('an-cta-posts').textContent = `with CTA: ${data.social.totalCTA}`;
 
-        const icons = { twitter:'🐦', reddit:'🤖', linkedin:'💼', pinterest:'📌', instagram:'📸', wordpress:'📝', blogger:'📰', quora:'❓', medium:'✍️' };
+        const icons = { twitter:'🐦', reddit:'🤖', linkedin:'💼', pinterest:'📌', instagram:'📸', wordpress:'📝', blogger:'📰', quora:'❓', medium:'✍️', slideshare:'📊' };
         const tbody = document.getElementById('analytics-platforms');
         tbody.innerHTML = Object.entries(data.social.platforms).map(([key, p]) => `
             <tr>
