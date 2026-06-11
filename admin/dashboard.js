@@ -2326,6 +2326,7 @@ async function initSlideShareTab() {
     } catch (e) { console.warn('SlideShare topics:', e.message); }
     loadSlideShareStatus();
     loadSlideShareRecentPosts();
+    loadGoodies();
 }
 
 async function loadSlideShareStatus() {
@@ -2382,21 +2383,123 @@ function copySlideShareField(fieldId) {
 async function markSlideShareAsPosted() {
     if (!_slideshareCurrentPost?.dbId) { showAlert('Zuerst eine Präsentation generieren', 'error'); return; }
     const postUrl = document.getElementById('slideshare-post-url').value.trim();
+    const saveAsGoodie = document.getElementById('slideshare-save-goodie')?.checked;
+    const goodieTitle = document.getElementById('slideshare-goodie-title')?.value.trim();
+    const goodieDesc = document.getElementById('slideshare-goodie-desc')?.value.trim();
+    const goodieCat = document.getElementById('slideshare-goodie-category')?.value.trim();
     try {
         const res = await fetch(`${API_URL}/api/slideshare/log-manual`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ dbId: _slideshareCurrentPost.dbId, postUrl })
+            body: JSON.stringify({
+                dbId: _slideshareCurrentPost.dbId,
+                postUrl,
+                saveAsGoodie: saveAsGoodie && !!postUrl,
+                goodieTitle: goodieTitle || _slideshareCurrentPost.topic,
+                goodieDescription: goodieDesc,
+                goodieCategory: goodieCat || _slideshareCurrentPost.category,
+            })
         });
         const data = await res.json();
         if (data.success) {
-            showAlert('✅ Als gepostet markiert!', 'success');
+            showAlert(data.goodieId ? '✅ Gepostet & als Goodie gespeichert!' : '✅ Als gepostet markiert!', 'success');
             document.getElementById('slideshare-result-card').style.display = 'none';
+            document.getElementById('slideshare-save-goodie').checked = false;
+            document.getElementById('slideshare-goodie-fields').style.display = 'none';
             _slideshareCurrentPost = null;
             loadSlideShareStatus();
             loadSlideShareRecentPosts();
+            loadGoodies();
         } else showAlert(`❌ ${data.error}`, 'error');
     } catch (err) { showAlert('❌ ' + err.message, 'error'); }
+}
+
+// Toggle goodie fields on checkbox
+document.addEventListener('change', e => {
+    if (e.target.id === 'slideshare-save-goodie') {
+        const fields = document.getElementById('slideshare-goodie-fields');
+        if (fields) fields.style.display = e.target.checked ? 'block' : 'none';
+        if (e.target.checked && _slideshareCurrentPost) {
+            const t = document.getElementById('slideshare-goodie-title');
+            if (t && !t.value) t.value = _slideshareCurrentPost.topic || '';
+        }
+    }
+});
+
+function showAddGoodieForm() {
+    const f = document.getElementById('add-goodie-form');
+    if (f) f.style.display = f.style.display === 'none' ? 'block' : 'none';
+}
+
+async function saveGoodie() {
+    const title = document.getElementById('goodie-title')?.value.trim();
+    if (!title) { showAlert('Titel ist Pflicht', 'error'); return; }
+    try {
+        const res = await fetch(`${API_URL}/api/slideshare/goodies`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                title,
+                description: document.getElementById('goodie-description')?.value.trim(),
+                slideshareUrl: document.getElementById('goodie-slideshare-url')?.value.trim(),
+                pdfUrl: document.getElementById('goodie-pdf-url')?.value.trim(),
+                category: document.getElementById('goodie-category')?.value.trim() || 'travel',
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showAlert('✅ Goodie gespeichert!', 'success');
+            document.getElementById('add-goodie-form').style.display = 'none';
+            ['goodie-title','goodie-description','goodie-slideshare-url','goodie-pdf-url','goodie-category'].forEach(id => {
+                const el = document.getElementById(id); if (el) el.value = '';
+            });
+            loadGoodies();
+        } else showAlert(`❌ ${data.error}`, 'error');
+    } catch (err) { showAlert('❌ ' + err.message, 'error'); }
+}
+
+async function deleteGoodie(id) {
+    if (!confirm('Goodie löschen?')) return;
+    try {
+        const res = await fetch(`${API_URL}/api/slideshare/goodies/${id}`, {
+            method: 'DELETE', headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const data = await res.json();
+        if (data.success) { showAlert('🗑️ Gelöscht', 'success'); loadGoodies(); }
+        else showAlert(`❌ ${data.error}`, 'error');
+    } catch (err) { showAlert('❌ ' + err.message, 'error'); }
+}
+
+async function loadGoodies() {
+    const el = document.getElementById('goodies-list');
+    if (!el) return;
+    try {
+        const res = await fetch(`${API_URL}/api/slideshare/goodies`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.goodies?.length) { el.innerHTML = '<p>Noch keine Goodies. Erstelle dein erstes oben!</p>'; return; }
+        el.innerHTML = data.goodies.map(g => `
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:12px 0;border-bottom:1px solid #f0f0f0;">
+                <div style="flex:1;">
+                    <div style="display:flex;gap:6px;margin-bottom:4px;">
+                        <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${g.active?'#dcfce7':'#f3f4f6'};color:${g.active?'#16a34a':'#6b7280'};">
+                            ${g.active ? '✅ aktiv' : '⏸ inaktiv'}
+                        </span>
+                        <span style="font-size:11px;color:#9ca3af;">${g.category || ''}</span>
+                        <span style="font-size:11px;color:#9ca3af;">📥 ${g.download_count || 0} Downloads</span>
+                    </div>
+                    <strong style="font-size:13px;">${g.title}</strong>
+                    ${g.description ? `<div style="font-size:12px;color:#6b7280;margin-top:2px;">${g.description.substring(0,100)}</div>` : ''}
+                    <div style="font-size:11px;color:#9ca3af;margin-top:4px;">
+                        ${g.slideshare_url ? `<a href="${g.slideshare_url}" target="_blank" style="color:#0077b5;">SlideShare ↗</a>` : ''}
+                        ${g.pdf_url ? ` · <a href="${g.pdf_url}" target="_blank" style="color:#dc2626;">PDF ↗</a>` : ''}
+                    </div>
+                </div>
+                <button onclick="deleteGoodie('${g.id}')"
+                    style="margin-left:12px;padding:5px 10px;background:#fef2f2;border:1px solid #fca5a5;color:#dc2626;border-radius:5px;cursor:pointer;font-size:12px;">
+                    🗑️
+                </button>
+            </div>`).join('');
+    } catch { el.innerHTML = '<p style="color:#ef4444">Fehler beim Laden.</p>'; }
 }
 
 async function loadSlideShareRecentPosts() {
