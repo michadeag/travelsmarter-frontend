@@ -2275,6 +2275,8 @@ async function loadSocialSettings() {
         set('instagram-account-id', 'instagram_account_id');
         set('instagram-frequency', 'instagram_frequency_hours');
         chk('instagram-auto', 'instagram_auto_posting');
+        set('linkedin-client-id', 'linkedin_client_id');
+        set('linkedin-client-secret', 'linkedin_client_secret');
         set('linkedin-access-token', 'linkedin_access_token');
         set('linkedin-org-id', 'linkedin_org_id');
         set('linkedin-person-urn', 'linkedin_person_urn');
@@ -2319,6 +2321,8 @@ async function saveSocialSettings() {
         instagram_account_id: val('instagram-account-id'),
         instagram_frequency_hours: val('instagram-frequency') || '8',
         instagram_auto_posting: chk('instagram-auto'),
+        linkedin_client_id: val('linkedin-client-id'),
+        linkedin_client_secret: val('linkedin-client-secret'),
         linkedin_access_token: val('linkedin-access-token'),
         linkedin_org_id: val('linkedin-org-id'),
         linkedin_person_urn: val('linkedin-person-urn'),
@@ -2342,6 +2346,24 @@ async function saveSocialSettings() {
     for (const platform of ['twitter', 'pinterest', 'reddit', 'linkedin', 'instagram', 'wordpress', 'blogger']) {
         fetch(`${API_URL}/api/${platform}/reload-settings`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } }).catch(() => {});
     }
+}
+
+// ─── LINKEDIN OAUTH ───────────────────────────────────────────────────────────
+async function getLinkedInAuthUrl() {
+    try {
+        const res = await fetch(`${API_URL}/api/linkedin/auth-url`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+        const popup = window.open(data.url, 'LinkedIn Auth', 'width=600,height=700');
+        const status = document.getElementById('linkedin-auth-status');
+        status.textContent = '⏳ Warte auf Autorisierung...';
+        const check = setInterval(() => {
+            if (popup.closed) {
+                clearInterval(check);
+                status.textContent = '✅ Verbunden — bitte Seite neu laden um den Status zu sehen.';
+            }
+        }, 1000);
+    } catch (e) { alert('Fehler: ' + e.message); }
 }
 
 // ─── PINTEREST OAUTH ──────────────────────────────────────────────────────────
