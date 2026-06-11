@@ -1425,8 +1425,14 @@
                             <button onclick="getLinkedInAuthUrl()" style="background:#0077b5;color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-weight:600;margin-top:8px;">💼 Mit LinkedIn verbinden</button>
                             <div id="linkedin-auth-status" style="margin-top:8px;font-size:13px;color:#16a34a;"></div>
                         </div>
-                        <div class="form-group"><label>LinkedIn Access Token <small style="color:#6b7280">(wird automatisch gesetzt)</small></label><input type="password" id="linkedin-access-token" placeholder="Wird nach OAuth automatisch gesetzt"></div>
-                        <div class="form-group"><label>LinkedIn Person URN <small style="color:#6b7280">(wird automatisch gesetzt)</small></label><input type="text" id="linkedin-person-urn" placeholder="Wird nach OAuth automatisch gesetzt"></div>
+                        <div class="form-group"><label>LinkedIn Access Token</label><input type="password" id="linkedin-access-token" placeholder="Token vom Developer Token Generator"></div>
+                        <div class="form-group">
+                            <label>LinkedIn Person URN</label>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <input type="text" id="linkedin-person-urn" placeholder="Wird automatisch abgerufen" style="flex:1;">
+                                <button onclick="fetchLinkedInUrn()" style="background:#0077b5;color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-size:13px;white-space:nowrap;">🔍 URN abrufen</button>
+                            </div>
+                        </div>
                         <div class="form-group"><label>Posting Frequency (hours)</label><input type="number" id="linkedin-frequency" value="12" min="1"></div>
                         <div class="form-group"><label><input type="checkbox" id="linkedin-auto"> Enable Auto-Posting</label></div>
                     </div>

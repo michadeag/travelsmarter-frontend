@@ -2366,6 +2366,16 @@ async function getLinkedInAuthUrl() {
     } catch (e) { alert('Fehler: ' + e.message); }
 }
 
+async function fetchLinkedInUrn() {
+    try {
+        const res = await fetch(`${API_URL}/api/linkedin/fetch-urn`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+        document.getElementById('linkedin-person-urn').value = data.personUrn;
+        showAlert(`✅ Person URN: ${data.personUrn} — bitte Save All Settings klicken.`, 'success');
+    } catch (e) { alert('Fehler: ' + e.message); }
+}
+
 // ─── PINTEREST OAUTH ──────────────────────────────────────────────────────────
 async function getPinterestAuthUrl() {
     try {
