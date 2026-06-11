@@ -1714,7 +1714,7 @@ async function loadTwitterStatus() {
         const isRunning = (data.scheduledJobs || 0) > 0;
         card.innerHTML = `
             <p><strong>Status:</strong> ${data.configured ? '✅ Configured' : '❌ Not configured — add credentials in Settings'}</p>
-            ${data.configured ? `<p><strong>Scheduler:</strong> ${isRunning ? `▶ Running (${data.scheduledJobs} job${data.scheduledJobs > 1 ? 's' : ''})` : '⏹ Stopped'}</p>` : ''}`;
+            ${data.configured ? `<p><strong>Scheduler:</strong> ${isRunning ? `▶ Running (${data.scheduledJobs} job${data.scheduledJobs > 1 ? 's' : ''})` : '⏹ Stopped'}</p><p><strong>Total Posts:</strong> ${data.totalPosts || 0}</p>` : ''}`;
         renderTwitterUpcoming(jobs, isRunning);
     } catch { card.innerHTML = '<p>❌ Could not reach backend</p>'; }
 }
@@ -1795,10 +1795,24 @@ async function stopTwitterScheduler() {
 async function loadTwitterRecentPosts() {
     const el = document.getElementById('twitter-recent-posts');
     try {
-        const res = await fetch(`${API_URL}/api/twitter/tips/random`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
-        // Twitter has no DB log — show last scheduled jobs info instead
-        el.innerHTML = '<p style="color:#6b7280">Twitter posts are not stored locally. Check your <a href="https://twitter.com" target="_blank">Twitter profile</a> to see recent posts.</p>';
-    } catch { el.innerHTML = '<p style="color:#ef4444">Error</p>'; }
+        const res = await fetch(`${API_URL}/api/twitter/posts?limit=10`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.success || !data.posts.length) {
+            el.innerHTML = '<p style="color:#6b7280">No posts yet. Posts will appear here after the first scheduled tweet.</p>';
+            return;
+        }
+        el.innerHTML = data.posts.map(p => {
+            const date = new Date(p.posted_at).toLocaleString();
+            const tweetUrl = p.tweet_id ? `https://twitter.com/i/web/status/${p.tweet_id}` : null;
+            return `<div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px;margin-bottom:8px">
+                <p style="margin:0 0 6px;font-size:14px">${p.body}</p>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <span style="font-size:12px;color:#6b7280">${date}</span>
+                    ${tweetUrl ? `<a href="${tweetUrl}" target="_blank" style="font-size:12px;color:#1d9bf0">View on X ↗</a>` : ''}
+                </div>
+            </div>`;
+        }).join('');
+    } catch { el.innerHTML = '<p style="color:#ef4444">Error loading posts</p>'; }
 }
 
 // ─── REDDIT ──────────────────────────────────────────────────────────────────
