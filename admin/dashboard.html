@@ -1050,22 +1050,61 @@
 
             <!-- REDDIT TAB -->
             <div id="reddit" class="tab-content">
-                <h3>🤖 Reddit Auto-Posting</h3>
-                <div id="reddit-status-card" style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
-                    <p>Loading...</p>
+                <h3 style="margin-bottom:6px;">🤖 Reddit Content Generator</h3>
+                <p style="color:#6b7280;margin-bottom:24px;font-size:14px;">Post generieren → im empfohlenen Subreddit einfügen → als gepostet markieren</p>
+                <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap;">
+                    <button onclick="generateRedditPost()" id="reddit-generate-btn"
+                        style="background:#ff4500;color:#fff;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:600;font-size:15px;">
+                        🤖 Post generieren
+                    </button>
+                    <select id="reddit-topic-select" style="padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;min-width:260px;">
+                        <option value="">— Nächstes Thema (automatisch) —</option>
+                    </select>
+                </div>
+                <div id="reddit-generator-result" style="display:none;">
+                    <div style="background:#fff3ed;border:1px solid #fed7aa;padding:14px 18px;border-radius:10px;margin-bottom:16px;">
+                        <strong style="color:#c2410c;">📌 Empfohlener Subreddit:</strong>
+                        <span id="reddit-subreddit-badge" style="margin-left:8px;font-size:15px;font-weight:700;color:#ff4500;"></span>
+                        <div id="reddit-subreddit-alts" style="margin-top:6px;font-size:13px;color:#6b7280;"></div>
+                        <a id="reddit-post-link" href="#" target="_blank"
+                            style="display:inline-block;margin-top:8px;background:#ff4500;color:#fff;padding:7px 16px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;">
+                            ↗ Subreddit öffnen
+                        </a>
+                    </div>
+                    <div style="background:white;padding:20px;border-radius:12px;margin-bottom:16px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <strong>📌 Titel</strong>
+                            <button onclick="copyRedditField('reddit-title-text')" style="font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:4px;cursor:pointer;background:#fff;">📋 Kopieren</button>
+                        </div>
+                        <div id="reddit-title-text" style="background:#f8f9fa;padding:12px 16px;border-radius:6px;font-size:15px;font-weight:600;border:1px solid #e5e7eb;"></div>
+                    </div>
+                    <div style="background:white;padding:20px;border-radius:12px;margin-bottom:16px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <strong>📄 Post Text (Markdown)</strong>
+                            <button onclick="copyRedditField('reddit-body-text')" style="font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:4px;cursor:pointer;background:#fff;">📋 Kopieren</button>
+                        </div>
+                        <textarea id="reddit-body-text" rows="16" style="width:100%;padding:14px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-family:monospace;resize:vertical;box-sizing:border-box;line-height:1.6;"></textarea>
+                    </div>
+                    <div style="background:#fef3c7;border:1px solid #fde68a;padding:14px 18px;border-radius:10px;margin-bottom:16px;font-size:13px;color:#92400e;">
+                        <strong>💡 Reddit-Tipps:</strong>
+                        <ul style="margin:6px 0 0 16px;line-height:1.8;">
+                            <li>Erst 5–10 Min im Subreddit aktiv sein (Kommentare liken), dann posten</li>
+                            <li>Kein Link im Titel — Reddit filtert das oft raus</li>
+                            <li>Text Post (nicht Link Post) hat bessere Sichtbarkeit</li>
+                            <li>Besten Zeitpunkt: Mo–Do, 9–11 Uhr oder 19–21 Uhr UTC</li>
+                        </ul>
+                    </div>
+                    <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:16px 20px;border-radius:12px;margin-bottom:16px;">
+                        <strong style="color:#166534;">✅ Nachdem du auf Reddit gepostet hast:</strong>
+                        <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;">
+                            <input type="text" id="reddit-posted-url" placeholder="Reddit Post URL (optional)" style="flex:1;min-width:220px;padding:9px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
+                            <button onclick="markRedditAsPosted()" style="background:#16a34a;color:#fff;border:none;padding:10px 22px;border-radius:6px;cursor:pointer;font-weight:600;font-size:14px;">Als gepostet markieren</button>
+                        </div>
+                    </div>
                 </div>
                 <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
-                    <h4>Manual Post</h4>
-                    <button class="btn btn-primary" onclick="publishRedditPost()" style="margin-top:10px;">🤖 Generate & Post to Reddit</button>
-                </div>
-                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
-                    <h4>Auto-Scheduler</h4>
-                    <button class="btn btn-primary" onclick="startRedditScheduler()">▶ Start Scheduler</button>
-                    <button class="btn btn-danger" onclick="stopRedditScheduler()" style="margin-left:10px;">⏹ Stop Scheduler</button>
-                </div>
-                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
-                    <h4>Recent Posts</h4>
-                    <div id="reddit-recent-posts"><p>Loading...</p></div>
+                    <h4 style="margin-bottom:12px;">📋 Generierte Posts</h4>
+                    <div id="reddit-recent-posts" style="font-size:13px;color:#6b7280;">Wird geladen...</div>
                 </div>
             </div>
 

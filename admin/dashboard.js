@@ -87,7 +87,7 @@ function switchTab(tabName) {
     // Auto-load data when switching to platform tabs
     if (tabName === 'analytics') loadAnalytics();
     if (tabName === 'twitter') { loadTwitterStatus(); loadTwitterRecentPosts(); }
-    if (tabName === 'reddit') { loadRedditStatus(); loadRedditRecentPosts(); }
+    if (tabName === 'reddit') { initRedditTab(); }
     if (tabName === 'linkedin') { initLinkedInTab(); }
     if (tabName === 'pinterest') { loadPinterestStatus(); loadPinterestRecentPosts(); }
     if (tabName === 'instagram') { loadInstagramStatus(); loadInstagramRecentPosts(); }
@@ -2601,6 +2601,108 @@ async function loadLinkedInRecentPostsNew() {
 }
 
 function copyLinkedInField(id) {
+    const el = document.getElementById(id);
+    const text = el.tagName === 'TEXTAREA' ? el.value : el.textContent;
+    navigator.clipboard.writeText(text).then(() => showAlert('📋 Kopiert!', 'success'));
+}
+
+// ── REDDIT COPY-PASTE GENERATOR ────────────────────────────────────────────
+
+let redditCurrentPost = null;
+
+async function initRedditTab() {
+    try {
+        const res = await fetch(`${API_URL}/api/reddit/topics`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const sel = document.getElementById('reddit-topic-select');
+        if (sel && data.success && data.topics) {
+            sel.innerHTML = '<option value="">— Nächstes Thema (automatisch) —</option>';
+            data.topics.forEach(t => {
+                sel.innerHTML += `<option value="${t.index}">${t.isNext ? '▶ ' : ''}${t.title}</option>`;
+            });
+        }
+    } catch (e) { console.warn('Reddit topics:', e.message); }
+    loadRedditRecentPostsNew();
+}
+
+async function generateRedditPost() {
+    const btn = document.getElementById('reddit-generate-btn');
+    const result = document.getElementById('reddit-generator-result');
+    const topicIdx = document.getElementById('reddit-topic-select')?.value;
+    btn.disabled = true;
+    btn.textContent = '⏳ Generiere... (15-30 Sek.)';
+    result.style.display = 'none';
+    try {
+        const res = await fetch(`${API_URL}/api/reddit/generate`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topicIndex: topicIdx !== '' ? parseInt(topicIdx) : null })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+        redditCurrentPost = data;
+
+        const [primary, ...alts] = data.subreddits || ['travel'];
+        document.getElementById('reddit-title-text').textContent = data.title;
+        document.getElementById('reddit-body-text').value = data.body;
+        document.getElementById('reddit-subreddit-badge').textContent = `r/${primary}`;
+        document.getElementById('reddit-post-link').href = `https://www.reddit.com/r/${primary}/submit?title=${encodeURIComponent(data.title)}`;
+        document.getElementById('reddit-subreddit-alts').textContent = alts.length
+            ? `Alternativen: ${alts.map(s => 'r/' + s).join(', ')}`
+            : '';
+        result.style.display = 'block';
+        loadRedditRecentPostsNew();
+    } catch (e) { alert('Fehler: ' + e.message); }
+    btn.disabled = false;
+    btn.textContent = '🤖 Post generieren';
+}
+
+async function markRedditAsPosted() {
+    if (!redditCurrentPost) return alert('Kein Post generiert.');
+    const url = document.getElementById('reddit-posted-url')?.value || '';
+    try {
+        const res = await fetch(`${API_URL}/api/reddit/log-manual`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                dbId: redditCurrentPost.dbId,
+                title: redditCurrentPost.title,
+                body: redditCurrentPost.body,
+                subreddit: (redditCurrentPost.subreddits || ['travel'])[0],
+                category: redditCurrentPost.category,
+                redditUrl: url,
+                includeCTA: redditCurrentPost.includeCTA
+            })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+        showAlert('✅ Post als gepostet markiert!', 'success');
+        document.getElementById('reddit-posted-url').value = '';
+        document.getElementById('reddit-generator-result').style.display = 'none';
+        redditCurrentPost = null;
+        loadRedditRecentPostsNew();
+    } catch (e) { alert('Fehler: ' + e.message); }
+}
+
+async function loadRedditRecentPostsNew() {
+    const el = document.getElementById('reddit-recent-posts');
+    if (!el) return;
+    try {
+        const res = await fetch(`${API_URL}/api/reddit/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.success || !data.posts.length) { el.innerHTML = '<p>Noch keine Posts gepostet.</p>'; return; }
+        el.innerHTML = data.posts.map(p => `
+            <div style="padding:10px 0;border-bottom:1px solid #f0f0f0;">
+                <strong style="font-size:14px;">${p.title || ''}</strong>
+                <span style="margin-left:8px;font-size:12px;color:#ff4500;">r/${p.subreddit || ''}</span>
+                <span style="margin-left:8px;font-size:11px;padding:2px 8px;border-radius:10px;background:${p.status==='posted'?'#dcfce7':'#fef9c3'};color:${p.status==='posted'?'#166534':'#854d0e'};">${p.status}</span>
+                <div style="font-size:12px;color:#9ca3af;margin-top:2px;">${new Date(p.posted_at).toLocaleString('de-DE')} · ${p.category||''}
+                ${p.reddit_url ? `· <a href="${p.reddit_url}" target="_blank" style="color:#ff4500;">Ansehen ↗</a>` : ''}</div>
+            </div>`).join('');
+    } catch (e) { el.innerHTML = '<p>Fehler beim Laden.</p>'; }
+}
+
+function copyRedditField(id) {
     const el = document.getElementById(id);
     const text = el.tagName === 'TEXTAREA' ? el.value : el.textContent;
     navigator.clipboard.writeText(text).then(() => showAlert('📋 Kopiert!', 'success'));
