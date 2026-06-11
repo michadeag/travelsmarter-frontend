@@ -414,6 +414,20 @@
             </div>
         </div>
 
+        <!-- Free Guides / Goodies — visible to ALL users -->
+        <div id="goodies-section" style="margin-top:40px;">
+            <div style="background:white;border-radius:15px;padding:40px;box-shadow:0 10px 30px rgba(0,0,0,0.1);">
+                <div style="text-align:center;margin-bottom:32px;">
+                    <div style="font-size:2.5em;margin-bottom:8px;">🎁</div>
+                    <h2 style="font-size:1.8em;color:#1a2744;margin-bottom:8px;">Free Travel Guides</h2>
+                    <p style="color:#6b7280;font-size:1em;">Download these free PDF guides — no sign-up required. Share them with fellow travelers.</p>
+                </div>
+                <div id="goodies-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;">
+                    <div style="text-align:center;padding:40px;color:#9ca3af;">Loading guides...</div>
+                </div>
+            </div>
+        </div>
+
         <!-- Upgrade Prompt (shown to Free users) -->
         <div id="upgrade-section" style="display: none;">
             <div class="upgrade-prompt">
@@ -591,14 +605,60 @@
     <script src="api-service.js"></script>
     <script>
         // Check tier on page load
-        document.addEventListener('DOMContentLoaded', checkTierAccess);
+        document.addEventListener('DOMContentLoaded', () => {
+            checkTierAccess();
+            loadGoodies();
+        });
+
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:5000'
+            : 'https://api.travelsmarterapp.com';
+
+        async function loadGoodies() {
+            const grid = document.getElementById('goodies-grid');
+            if (!grid) return;
+            try {
+                const res = await fetch(`${API_URL}/api/slideshare/goodies/public`);
+                const data = await res.json();
+                if (!data.success || !data.goodies.length) {
+                    grid.innerHTML = '<p style="color:#666;text-align:center;">Noch keine Guides verfügbar – schau bald wieder rein!</p>';
+                    return;
+                }
+                grid.innerHTML = data.goodies.map(g => {
+                    const url = g.pdf_url || g.slideshare_url || '#';
+                    const categoryColors = {
+                        travel: '#1a2744', flights: '#ff6b4a', hotels: '#2196F3',
+                        points: '#9C27B0', packing: '#4CAF50', budget: '#FF9800'
+                    };
+                    const catColor = categoryColors[g.category] || '#1a2744';
+                    return `<div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);display:flex;flex-direction:column;gap:12px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <span style="background:${catColor};color:#fff;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;text-transform:uppercase;">${g.category || 'travel'}</span>
+                            ${g.download_count > 0 ? `<span style="color:#999;font-size:12px;">⬇ ${g.download_count}</span>` : ''}
+                        </div>
+                        ${g.thumbnail_url ? `<img src="${g.thumbnail_url}" alt="${g.title}" style="width:100%;border-radius:8px;object-fit:cover;max-height:140px;">` : ''}
+                        <h3 style="margin:0;font-size:16px;color:#1a2744;line-height:1.3;">${g.title}</h3>
+                        ${g.description ? `<p style="margin:0;font-size:13px;color:#555;line-height:1.5;">${g.description}</p>` : ''}
+                        <a href="${url}" target="_blank" rel="noopener"
+                           onclick="trackGoodieDownload('${g.id}')"
+                           style="display:inline-block;background:#ff6b4a;color:#fff;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:600;font-size:13px;text-align:center;margin-top:auto;">
+                           📥 Kostenlos herunterladen
+                        </a>
+                    </div>`;
+                }).join('');
+            } catch (err) {
+                console.error('loadGoodies error:', err);
+                grid.innerHTML = '<p style="color:#666;text-align:center;">Guides konnten nicht geladen werden.</p>';
+            }
+        }
+
+        async function trackGoodieDownload(id) {
+            try {
+                await fetch(`${API_URL}/api/slideshare/goodies/${id}/download`, { method: 'POST' });
+            } catch (_) {}
+        }
 
         async function checkTierAccess() {
-            // Get user tier from API
-            const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-                ? 'http://localhost:5000'
-                : 'https://api.travelsmarterapp.com';
-
             const token = localStorage.getItem('userToken');
 
             if (!token) {
