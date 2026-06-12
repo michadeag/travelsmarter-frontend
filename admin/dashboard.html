@@ -604,6 +604,7 @@
                 <a class="nav-link" data-tab="wordpress">📝 WordPress</a>
                 <a class="nav-link" data-tab="quora">❓ Quora</a>
                 <a class="nav-link" data-tab="slideshare">📊 SlideShare</a>
+                <a class="nav-link" data-tab="partner-deals">🤝 Partner Deals</a>
                 <a class="nav-link" data-tab="blogger">📰 Blogger</a>
                 <a class="nav-link" data-tab="medium">✍️ Medium</a>
                 <a class="nav-link" data-tab="settings">⚙️ Settings</a>
@@ -1339,6 +1340,61 @@
                 <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
                     <h4 style="margin:0 0 12px;">Letzte Posts</h4>
                     <div id="ig-recent-posts"><p style="color:#999;">Noch keine Posts.</p></div>
+                </div>
+            </div>
+
+            <!-- PARTNER DEALS TAB -->
+            <div id="partner-deals" class="tab-content">
+                <h3>🤝 Partner Deals</h3>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;">
+                    <p style="color:#6b7280;">Verwalte Affiliate-Deals für Elite-User.</p>
+                    <a href="../partner-deals.html" target="_blank" style="background:#1a2744;color:white;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">👁 Vorschau</a>
+                </div>
+
+                <!-- Add Deal Form -->
+                <div style="background:white;border-radius:12px;padding:24px;margin-top:20px;">
+                    <h4 style="margin-bottom:16px;">➕ Neuen Deal hinzufügen</h4>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div>
+                            <label style="font-size:13px;font-weight:600;color:#374151;">Titel *</label>
+                            <input id="deal-title" placeholder="z.B. Wise Travel Card" style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;margin-top:4px;font-size:14px;">
+                        </div>
+                        <div>
+                            <label style="font-size:13px;font-weight:600;color:#374151;">Kategorie</label>
+                            <select id="deal-category" style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;margin-top:4px;font-size:14px;">
+                                <option value="travel_card">💳 Travel Card</option>
+                                <option value="flights">✈️ Flights</option>
+                                <option value="hotels">🏨 Hotels</option>
+                                <option value="insurance">🛡️ Insurance</option>
+                                <option value="esim">📱 eSIM</option>
+                                <option value="vpn">🔒 VPN</option>
+                                <option value="car_rental">🚗 Car Rental</option>
+                                <option value="luggage">🧳 Luggage</option>
+                                <option value="other">🌍 Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:13px;font-weight:600;color:#374151;">Affiliate URL *</label>
+                            <input id="deal-url" placeholder="https://..." style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;margin-top:4px;font-size:14px;">
+                        </div>
+                        <div>
+                            <label style="font-size:13px;font-weight:600;color:#374151;">Rabatt Badge</label>
+                            <input id="deal-badge" placeholder="z.B. 50% OFF" style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;margin-top:4px;font-size:14px;">
+                        </div>
+                        <div style="grid-column:1/-1;">
+                            <label style="font-size:13px;font-weight:600;color:#374151;">Beschreibung</label>
+                            <textarea id="deal-desc" rows="2" placeholder="Kurze Beschreibung des Deals..." style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;margin-top:4px;font-size:14px;resize:vertical;"></textarea>
+                        </div>
+                    </div>
+                    <button onclick="savePartnerDeal()" style="background:#ff6b4a;color:white;border:none;padding:10px 24px;border-radius:8px;font-weight:600;cursor:pointer;margin-top:16px;">
+                        💾 Deal speichern
+                    </button>
+                </div>
+
+                <!-- Deals List -->
+                <div style="background:white;border-radius:12px;padding:24px;margin-top:20px;">
+                    <h4 style="margin-bottom:16px;">Alle Deals</h4>
+                    <div id="partner-deals-list"><p style="color:#999;">Lädt...</p></div>
                 </div>
             </div>
 

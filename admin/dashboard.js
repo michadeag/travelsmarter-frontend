@@ -94,6 +94,7 @@ function switchTab(tabName) {
     if (tabName === 'wordpress') { initWordPressTab(); }
     if (tabName === 'quora') { initQuoraTab(); }
     if (tabName === 'slideshare') { initSlideShareTab(); }
+    if (tabName === 'partner-deals') { loadPartnerDeals(); }
     if (tabName === 'blogger') { initBloggerTab(); }
     if (tabName === 'medium') { initMediumTab(); }
 }
@@ -3208,4 +3209,78 @@ function copyRedditField(id) {
     const el = document.getElementById(id);
     const text = el.tagName === 'TEXTAREA' ? el.value : el.textContent;
     navigator.clipboard.writeText(text).then(() => showAlert('📋 Kopiert!', 'success'));
+}
+
+// ─── PARTNER DEALS ────────────────────────────────────────────────────────────
+async function loadPartnerDeals() {
+    const el = document.getElementById('partner-deals-list');
+    try {
+        const res = await fetch(`${API_URL}/api/partner-deals/admin`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.deals?.length) { el.innerHTML = '<p style="color:#999;">Noch keine Deals.</p>'; return; }
+        el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead><tr style="background:#f9fafb;">
+                <th style="padding:10px;text-align:left;border-bottom:1px solid #e5e7eb;">Titel</th>
+                <th style="padding:10px;text-align:left;border-bottom:1px solid #e5e7eb;">Kategorie</th>
+                <th style="padding:10px;text-align:left;border-bottom:1px solid #e5e7eb;">Badge</th>
+                <th style="padding:10px;text-align:center;border-bottom:1px solid #e5e7eb;">Klicks</th>
+                <th style="padding:10px;text-align:center;border-bottom:1px solid #e5e7eb;">Aktiv</th>
+                <th style="padding:10px;border-bottom:1px solid #e5e7eb;"></th>
+            </tr></thead>
+            <tbody>${data.deals.map(d => `
+                <tr style="border-bottom:1px solid #f3f4f6;">
+                    <td style="padding:10px;font-weight:600;color:#1a2744;">${d.title}</td>
+                    <td style="padding:10px;color:#6b7280;">${d.category}</td>
+                    <td style="padding:10px;"><span style="background:#ff6b4a;color:white;padding:2px 8px;border-radius:10px;font-size:11px;">${d.discount_badge || '—'}</span></td>
+                    <td style="padding:10px;text-align:center;">${d.click_count}</td>
+                    <td style="padding:10px;text-align:center;">${d.is_active ? '✅' : '❌'}</td>
+                    <td style="padding:10px;text-align:right;">
+                        <button onclick="toggleDeal('${d.id}', ${!d.is_active})" style="background:#f3f4f6;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px;margin-right:6px;">${d.is_active ? 'Deaktivieren' : 'Aktivieren'}</button>
+                        <button onclick="deletePartnerDeal('${d.id}')" style="background:#fee2e2;color:#dc2626;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px;">Löschen</button>
+                    </td>
+                </tr>`).join('')}
+            </tbody>
+        </table>`;
+    } catch (err) { el.innerHTML = '<p style="color:#ef4444;">Fehler beim Laden.</p>'; }
+}
+
+async function savePartnerDeal() {
+    const title = document.getElementById('deal-title').value.trim();
+    const affiliateUrl = document.getElementById('deal-url').value.trim();
+    if (!title || !affiliateUrl) { showAlert('Titel und URL sind Pflichtfelder.', 'error'); return; }
+    try {
+        const res = await fetch(`${API_URL}/api/partner-deals`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                title,
+                affiliateUrl,
+                description: document.getElementById('deal-desc').value,
+                category: document.getElementById('deal-category').value,
+                discountBadge: document.getElementById('deal-badge').value,
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showAlert('✅ Deal gespeichert!', 'success');
+            ['deal-title','deal-url','deal-desc','deal-badge'].forEach(id => document.getElementById(id).value = '');
+            loadPartnerDeals();
+        } else { showAlert(`❌ ${data.error}`, 'error'); }
+    } catch (err) { showAlert('❌ Fehler: ' + err.message, 'error'); }
+}
+
+async function toggleDeal(id, active) {
+    await fetch(`${API_URL}/api/partner-deals/${id}`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: active })
+    });
+    loadPartnerDeals();
+}
+
+async function deletePartnerDeal(id) {
+    if (!confirm('Deal wirklich löschen?')) return;
+    await fetch(`${API_URL}/api/partner-deals/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+    showAlert('✅ Deal gelöscht.', 'success');
+    loadPartnerDeals();
 }

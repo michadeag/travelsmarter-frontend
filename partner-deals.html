@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Partner Deals — TravelSmarter</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f9fafb; color: #1f2937; }
+
+        .header { background: #1a2744; color: white; padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; }
+        .logo { font-size: 22px; font-weight: 700; }
+        .logo span { color: #ff6b4a; }
+        .elite-badge { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; letter-spacing: 1px; }
+
+        .hero { background: linear-gradient(135deg, #1a2744 0%, #2d3f6b 100%); color: white; padding: 60px 40px; text-align: center; }
+        .hero h1 { font-size: 40px; font-weight: 700; margin-bottom: 12px; }
+        .hero h1 span { color: #ff6b4a; }
+        .hero p { font-size: 18px; opacity: 0.85; max-width: 600px; margin: 0 auto 24px; }
+        .hero-stats { display: flex; gap: 40px; justify-content: center; margin-top: 32px; }
+        .stat { text-align: center; }
+        .stat-num { font-size: 32px; font-weight: 700; color: #ff6b4a; }
+        .stat-label { font-size: 13px; opacity: 0.7; margin-top: 4px; }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
+
+        .filters { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 32px; }
+        .filter-btn { padding: 8px 18px; border: 2px solid #e5e7eb; background: white; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; color: #374151; }
+        .filter-btn.active, .filter-btn:hover { border-color: #1a2744; background: #1a2744; color: white; }
+
+        .deals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+
+        .deal-card { background: white; border-radius: 16px; padding: 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid #e5e7eb; display: flex; flex-direction: column; gap: 14px; transition: transform 0.2s, box-shadow 0.2s; }
+        .deal-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+
+        .deal-header { display: flex; align-items: center; justify-content: space-between; }
+        .deal-category { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 3px 10px; border-radius: 12px; }
+        .cat-travel_card { background: #dbeafe; color: #1d4ed8; }
+        .cat-esim { background: #d1fae5; color: #065f46; }
+        .cat-insurance { background: #fef3c7; color: #92400e; }
+        .cat-vpn { background: #ede9fe; color: #6d28d9; }
+        .cat-hotels { background: #fee2e2; color: #991b1b; }
+        .cat-car_rental { background: #e0f2fe; color: #0369a1; }
+        .cat-flights { background: #f0fdf4; color: #15803d; }
+        .cat-luggage { background: #fdf4ff; color: #7e22ce; }
+        .cat-other { background: #f3f4f6; color: #374151; }
+
+        .verified-badge { font-size: 11px; color: #10b981; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+
+        .deal-title { font-size: 18px; font-weight: 700; color: #1a2744; }
+        .deal-desc { font-size: 14px; color: #6b7280; line-height: 1.6; }
+
+        .discount-badge { display: inline-block; background: #ff6b4a; color: white; font-size: 13px; font-weight: 700; padding: 5px 14px; border-radius: 20px; }
+
+        .deal-btn { display: block; background: #1a2744; color: white; text-align: center; padding: 12px; border-radius: 10px; font-weight: 600; font-size: 14px; text-decoration: none; margin-top: auto; transition: background 0.2s; cursor: pointer; border: none; width: 100%; }
+        .deal-btn:hover { background: #ff6b4a; }
+
+        .clicks { font-size: 11px; color: #9ca3af; text-align: center; margin-top: 4px; }
+
+        /* Upgrade wall for non-Elite */
+        .upgrade-wall { display: none; background: white; border-radius: 16px; padding: 60px 40px; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.08); margin-top: 20px; }
+        .upgrade-wall h2 { font-size: 28px; color: #1a2744; margin-bottom: 12px; }
+        .upgrade-wall p { color: #6b7280; font-size: 16px; margin-bottom: 28px; max-width: 480px; margin-left: auto; margin-right: auto; }
+        .upgrade-btn { display: inline-block; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 14px 36px; border-radius: 10px; font-weight: 700; font-size: 16px; text-decoration: none; }
+
+        .loading { text-align: center; padding: 60px; color: #9ca3af; font-size: 16px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="logo">Travel<span>Smarter</span></div>
+    <div class="elite-badge">⭐ ELITE MEMBERS</div>
+</div>
+
+<div class="hero">
+    <h1>Partner <span>Deals & Perks</span></h1>
+    <p>Exclusive discounts on the tools every smart traveler needs — verified by TravelSmarter.</p>
+    <div class="hero-stats">
+        <div class="stat"><div class="stat-num" id="deal-count">8</div><div class="stat-label">Active Deals</div></div>
+        <div class="stat"><div class="stat-num">50%</div><div class="stat-label">Avg. Savings</div></div>
+        <div class="stat"><div class="stat-num">✓</div><div class="stat-label">All Verified</div></div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Filters -->
+    <div class="filters" id="filters">
+        <button class="filter-btn active" onclick="filterDeals('all', this)">🌍 All Deals</button>
+        <button class="filter-btn" onclick="filterDeals('travel_card', this)">💳 Travel Cards</button>
+        <button class="filter-btn" onclick="filterDeals('flights', this)">✈️ Flights</button>
+        <button class="filter-btn" onclick="filterDeals('hotels', this)">🏨 Hotels</button>
+        <button class="filter-btn" onclick="filterDeals('insurance', this)">🛡️ Insurance</button>
+        <button class="filter-btn" onclick="filterDeals('esim', this)">📱 eSIM</button>
+        <button class="filter-btn" onclick="filterDeals('vpn', this)">🔒 VPN</button>
+        <button class="filter-btn" onclick="filterDeals('car_rental', this)">🚗 Car Rental</button>
+        <button class="filter-btn" onclick="filterDeals('luggage', this)">🧳 Luggage</button>
+    </div>
+
+    <!-- Deals grid -->
+    <div id="deals-content">
+        <div class="deals-grid" id="deals-grid">
+            <div class="loading">Loading deals...</div>
+        </div>
+    </div>
+
+    <!-- Upgrade wall (shown for non-Elite) -->
+    <div class="upgrade-wall" id="upgrade-wall">
+        <div style="font-size:56px;margin-bottom:16px;">🔒</div>
+        <h2>Elite Members Only</h2>
+        <p>Upgrade to Elite to unlock exclusive partner deals worth hundreds of euros in savings every year.</p>
+        <a href="sales-page.html" class="upgrade-btn">⭐ Upgrade to Elite</a>
+        <p style="margin-top:20px;font-size:13px;color:#9ca3af;">Already Elite? <a href="auth.html" style="color:#667eea;">Sign in here</a></p>
+    </div>
+</div>
+
+<script src="api-service.js"></script>
+<script>
+    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:5000'
+        : 'https://api.travelsmarterapp.com';
+
+    let allDeals = [];
+
+    const CATEGORY_LABELS = {
+        travel_card: '💳 Travel Card', esim: '📱 eSIM', insurance: '🛡️ Insurance',
+        vpn: '🔒 VPN', hotels: '🏨 Hotels', car_rental: '🚗 Car Rental',
+        flights: '✈️ Flights', luggage: '🧳 Luggage', other: '🌍 Other'
+    };
+
+    async function init() {
+        const token = localStorage.getItem('userToken');
+        if (!token) { showUpgradeWall(); return; }
+
+        try {
+            const res = await fetch(`${API_URL}/api/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const data = await res.json();
+            const tier = (data.user?.subscriptionTier || 'free').toLowerCase();
+            if (tier !== 'elite') { showUpgradeWall(); return; }
+        } catch { showUpgradeWall(); return; }
+
+        loadDeals();
+    }
+
+    function showUpgradeWall() {
+        document.getElementById('deals-content').style.display = 'none';
+        document.getElementById('filters').style.display = 'none';
+        document.getElementById('upgrade-wall').style.display = 'block';
+    }
+
+    async function loadDeals(category = 'all') {
+        try {
+            const url = category === 'all'
+                ? `${API_URL}/api/partner-deals`
+                : `${API_URL}/api/partner-deals?category=${category}`;
+            const res = await fetch(url);
+            const data = await res.json();
+            allDeals = data.deals || [];
+            document.getElementById('deal-count').textContent = allDeals.length;
+            renderDeals(allDeals);
+        } catch (err) {
+            document.getElementById('deals-grid').innerHTML = '<p style="color:#ef4444">Fehler beim Laden.</p>';
+        }
+    }
+
+    function renderDeals(deals) {
+        const grid = document.getElementById('deals-grid');
+        if (!deals.length) { grid.innerHTML = '<p style="color:#9ca3af;padding:40px;text-align:center;">Keine Deals in dieser Kategorie.</p>'; return; }
+        grid.innerHTML = deals.map(d => `
+            <div class="deal-card">
+                <div class="deal-header">
+                    <span class="deal-category cat-${d.category}">${CATEGORY_LABELS[d.category] || d.category}</span>
+                    ${d.is_verified ? '<span class="verified-badge">✓ Verified</span>' : ''}
+                </div>
+                <div class="deal-title">${d.title}</div>
+                <div class="deal-desc">${d.description}</div>
+                ${d.discount_badge ? `<div><span class="discount-badge">${d.discount_badge}</span></div>` : ''}
+                <button class="deal-btn" onclick="trackAndOpen('${d.id}', '${d.affiliate_url}')">
+                    🔗 Get This Deal
+                </button>
+                ${d.click_count > 0 ? `<div class="clicks">${d.click_count} travelers used this deal</div>` : ''}
+            </div>
+        `).join('');
+    }
+
+    function filterDeals(category, btn) {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        loadDeals(category);
+    }
+
+    async function trackAndOpen(id, url) {
+        try { await fetch(`${API_URL}/api/partner-deals/${id}/click`, { method: 'POST' }); } catch (_) {}
+        window.open(url, '_blank', 'noopener');
+    }
+
+    init();
+</script>
+</body>
+</html>
