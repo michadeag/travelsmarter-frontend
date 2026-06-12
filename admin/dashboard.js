@@ -2144,15 +2144,30 @@ async function loadIgRecentPosts() {
         if (!data.posts?.length) { el.innerHTML = '<p style="color:#6b7280;">Noch keine Posts.</p>'; return; }
         el.innerHTML = data.posts.map(p => `
             <div style="display:flex;gap:12px;padding:12px;border-bottom:1px solid #e5e7eb;align-items:flex-start;">
-                ${p.image_url ? `<img src="${p.image_url}" style="width:60px;height:60px;border-radius:6px;object-fit:cover;flex-shrink:0;">` : ''}
-                <div>
+                ${p.image_url ? `<img src="${p.image_url}" style="width:60px;height:60px;border-radius:6px;object-fit:cover;flex-shrink:0;cursor:pointer;" onclick="reloadIgPost(${JSON.stringify(p).replace(/"/g,'&quot;')})">` : ''}
+                <div style="flex:1;">
                     <strong>${p.title || 'Instagram Post'}</strong>
                     <span style="background:${p.status==='posted'?'#d1fae5':'#fef3c7'};color:${p.status==='posted'?'#065f46':'#92400e'};padding:2px 8px;border-radius:10px;font-size:11px;margin-left:8px;">${p.status}</span><br>
                     <small style="color:#6b7280;">${p.caption?.substring(0,80)}...</small><br>
                     <small style="color:#9ca3af;">${p.created_at ? new Date(p.created_at).toLocaleString('de-DE') : ''}</small>
                 </div>
+                <button onclick='reloadIgPost(${JSON.stringify(p).replace(/'/g,"&#39;")})' style="background:#E1306C;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;white-space:nowrap;flex-shrink:0;">
+                    🔄 Neu laden
+                </button>
             </div>`).join('');
     } catch { el.innerHTML = '<p style="color:#ef4444">Fehler beim Laden.</p>'; }
+}
+
+function reloadIgPost(p) {
+    igCurrentDbId = p.id;
+    document.getElementById('ig-topic-badge').textContent = p.title || '';
+    document.getElementById('ig-image-preview').src = p.image_url || '';
+    document.getElementById('ig-image-link').href = p.image_url || '#';
+    document.getElementById('ig-caption').value = p.caption || '';
+    document.getElementById('ig-preview').style.display = 'block';
+    document.getElementById('ig-posted-msg').style.display = 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    showAlert('✅ Post geladen — bereit zum Posten!', 'success');
 }
 
 // ─── WORDPRESS ────────────────────────────────────────────────────────────────
