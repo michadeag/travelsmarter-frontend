@@ -1275,22 +1275,74 @@
 
             <!-- INSTAGRAM TAB -->
             <div id="instagram" class="tab-content">
-                <h3>📸 Instagram Auto-Posting</h3>
-                <div id="instagram-status-card" style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
-                    <p>Loading...</p>
+                <h3>📸 Instagram</h3>
+
+                <!-- Topic Selector + Generate -->
+                <div style="background:white;padding:24px;border-radius:12px;margin-top:20px;">
+                    <h4 style="margin:0 0 16px;">Neuen Post generieren</h4>
+                    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                        <select id="ig-topic-select" style="padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;min-width:220px;">
+                            <option value="">🎲 Automatisch (nächstes Topic)</option>
+                        </select>
+                        <button onclick="generateInstagramPost()" style="background:#E1306C;color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;">
+                            📸 Generiere Post
+                        </button>
+                    </div>
                 </div>
-                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
-                    <h4>Manual Post</h4>
-                    <button class="btn btn-primary" onclick="publishInstagramPost()" style="margin-top:10px;">📸 Generate & Post to Instagram</button>
+
+                <!-- Preview -->
+                <div id="ig-preview" style="display:none;margin-top:20px;">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                        <div style="background:white;padding:20px;border-radius:12px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                                <h4 style="margin:0;">📷 Bild</h4>
+                                <span id="ig-topic-badge" style="background:#E1306C;color:white;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;"></span>
+                            </div>
+                            <a id="ig-image-link" href="#" target="_blank">
+                                <img id="ig-image-preview" src="" alt="Instagram Image"
+                                    style="width:100%;border-radius:8px;cursor:pointer;object-fit:cover;max-height:400px;">
+                            </a>
+                            <p style="font-size:11px;color:#999;margin-top:6px;text-align:center;">Klicken für Vollgröße</p>
+                        </div>
+                        <div style="background:white;padding:20px;border-radius:12px;display:flex;flex-direction:column;gap:12px;">
+                            <h4 style="margin:0;">✍️ Caption</h4>
+                            <textarea id="ig-caption" rows="12"
+                                style="width:100%;padding:12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;line-height:1.5;resize:vertical;box-sizing:border-box;"></textarea>
+                            <button onclick="copyIgField('ig-caption')"
+                                style="background:#f3f4f6;border:1px solid #e5e7eb;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">
+                                📋 Caption kopieren
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="background:#fef3c7;border:1px solid #fbbf24;border-radius:12px;padding:20px;margin-top:20px;">
+                        <h4 style="margin:0 0 12px;color:#92400e;">📋 So postest du auf Instagram</h4>
+                        <ol style="margin:0;padding-left:20px;color:#78350f;font-size:14px;line-height:1.8;">
+                            <li>Klicke auf das Bild → "Speichern unter" → als PNG speichern</li>
+                            <li>Öffne Instagram → "+" → Bild hochladen</li>
+                            <li>Format: <strong>4:5 Hochformat</strong> (ideal für Feed)</li>
+                            <li>Caption kopieren und einfügen</li>
+                            <li>Posten → dann hier "Als gepostet markieren"</li>
+                        </ol>
+                    </div>
+
+                    <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                        <button id="ig-publish-btn" onclick="publishInstagramPost()"
+                            style="background:#E1306C;color:white;border:none;padding:12px 24px;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;">
+                            🚀 Direkt auf Instagram posten
+                        </button>
+                        <button onclick="markInstagramAsPosted()"
+                            style="background:#10b981;color:white;border:none;padding:12px 24px;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;">
+                            ✅ Als gepostet markieren
+                        </button>
+                        <span id="ig-posted-msg" style="display:none;color:#10b981;font-weight:600;">✅ Gepostet!</span>
+                    </div>
                 </div>
+
+                <!-- Recent Posts -->
                 <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
-                    <h4>Auto-Scheduler</h4>
-                    <button class="btn btn-primary" onclick="startInstagramScheduler()">▶ Start Scheduler</button>
-                    <button class="btn btn-danger" onclick="stopInstagramScheduler()" style="margin-left:10px;">⏹ Stop Scheduler</button>
-                </div>
-                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
-                    <h4>Recent Posts</h4>
-                    <div id="instagram-recent-posts"><p>Loading...</p></div>
+                    <h4 style="margin:0 0 12px;">Letzte Posts</h4>
+                    <div id="ig-recent-posts"><p style="color:#999;">Noch keine Posts.</p></div>
                 </div>
             </div>
 

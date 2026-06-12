@@ -90,7 +90,7 @@ function switchTab(tabName) {
     if (tabName === 'reddit') { initRedditTab(); }
     if (tabName === 'linkedin') { initLinkedInTab(); }
     if (tabName === 'pinterest') { initPinterestTab(); }
-    if (tabName === 'instagram') { loadInstagramStatus(); loadInstagramRecentPosts(); }
+    if (tabName === 'instagram') { initInstagramTab(); }
     if (tabName === 'wordpress') { initWordPressTab(); }
     if (tabName === 'quora') { initQuoraTab(); }
     if (tabName === 'slideshare') { initSlideShareTab(); }
@@ -2038,48 +2038,121 @@ async function loadPinterestRecentPosts() {
 }
 
 // ─── INSTAGRAM ────────────────────────────────────────────────────────────────
-async function loadInstagramStatus() {
-    const card = document.getElementById('instagram-status-card');
+let igCurrentDbId = null;
+
+async function initInstagramTab() {
+    // Load topics into dropdown
     try {
-        const res = await fetch(`${API_URL}/api/instagram/status`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const res = await fetch(`${API_URL}/api/instagram/topics`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
         const data = await res.json();
-        const s = data.status || {};
-        card.innerHTML = `<p><strong>Status:</strong> ${s.configured ? '✅ Configured' : '❌ Not configured — add credentials in Settings'}</p>
-            ${s.configured ? `<p><strong>Scheduler:</strong> ${s.schedulerRunning ? '▶ Running' : '⏹ Stopped'}</p><p><strong>Total Posts:</strong> ${s.totalPosts || 0}</p>` : ''}`;
-    } catch { card.innerHTML = '<p>❌ Could not reach backend</p>'; }
+        const sel = document.getElementById('ig-topic-select');
+        if (sel && data.success) {
+            sel.innerHTML = '<option value="">🎲 Automatisch (nächstes Topic)</option>';
+            data.topics.forEach(t => { sel.innerHTML += `<option value="${t.index}">${t.name}</option>`; });
+        }
+    } catch (e) { console.warn('IG topics:', e.message); }
+    loadIgRecentPosts();
 }
+
+async function generateInstagramPost() {
+    const btn = event.target;
+    const topicIndex = document.getElementById('ig-topic-select').value;
+    btn.disabled = true;
+    btn.textContent = '⏳ Generiere... (ca. 60s)';
+    document.getElementById('ig-preview').style.display = 'none';
+    igCurrentDbId = null;
+
+    try {
+        const res = await fetch(`${API_URL}/api/instagram/generate`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topicIndex: topicIndex !== '' ? parseInt(topicIndex) : undefined })
+        });
+        const data = await res.json();
+        if (!data.success) { showAlert(`❌ ${data.error}`, 'error'); return; }
+
+        igCurrentDbId = data.dbId;
+        document.getElementById('ig-topic-badge').textContent = data.topic || '';
+        document.getElementById('ig-image-preview').src = data.imageUrl;
+        document.getElementById('ig-image-link').href = data.imageUrl;
+        document.getElementById('ig-caption').value = data.caption || '';
+        document.getElementById('ig-preview').style.display = 'block';
+        document.getElementById('ig-posted-msg').style.display = 'none';
+        showAlert('✅ Post generiert!', 'success');
+    } catch (err) {
+        showAlert('❌ Fehler: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '📸 Generiere Post';
+    }
+}
+
+function copyIgField(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    navigator.clipboard.writeText(el.value || el.textContent);
+    showAlert('📋 Kopiert!', 'success');
+}
+
 async function publishInstagramPost() {
-    showAlert('Generating Instagram post...', 'success');
+    if (!igCurrentDbId) { showAlert('Bitte zuerst einen Post generieren.', 'error'); return; }
+    const btn = document.getElementById('ig-publish-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Wird gepostet...';
     try {
-        const res = await fetch(`${API_URL}/api/instagram/post`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const res = await fetch(`${API_URL}/api/instagram/publish`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ dbId: igCurrentDbId })
+        });
         const data = await res.json();
-        if (data.success) { showAlert('✅ Posted to Instagram!', 'success'); loadInstagramRecentPosts(); }
-        else showAlert(`❌ ${data.error || data.message}`, 'error');
-    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+        if (data.success) {
+            showAlert('✅ Auf Instagram gepostet!', 'success');
+            document.getElementById('ig-posted-msg').style.display = 'inline';
+            loadIgRecentPosts();
+        } else {
+            showAlert(`❌ ${data.error}`, 'error');
+        }
+    } catch (err) {
+        showAlert('❌ Fehler: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '🚀 Direkt auf Instagram posten';
+    }
 }
-async function startInstagramScheduler() {
-    const res = await fetch(`${API_URL}/api/instagram/scheduler/start`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
-    const data = await res.json();
-    showAlert(data.success ? '▶ Instagram scheduler started' : `❌ ${data.error}`, data.success ? 'success' : 'error');
-    loadInstagramStatus();
+
+async function markInstagramAsPosted() {
+    if (!igCurrentDbId) { showAlert('Bitte zuerst einen Post generieren.', 'error'); return; }
+    try {
+        await fetch(`${API_URL}/api/instagram/publish`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ dbId: igCurrentDbId, manualOnly: true })
+        });
+    } catch (_) {}
+    document.getElementById('ig-posted-msg').style.display = 'inline';
+    showAlert('✅ Als gepostet markiert!', 'success');
+    loadIgRecentPosts();
 }
-async function stopInstagramScheduler() {
-    const res = await fetch(`${API_URL}/api/instagram/scheduler/stop`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
-    const data = await res.json();
-    showAlert(data.success ? '⏹ Instagram scheduler stopped' : `❌ ${data.error}`, data.success ? 'success' : 'error');
-    loadInstagramStatus();
-}
-async function loadInstagramRecentPosts() {
-    const el = document.getElementById('instagram-recent-posts');
+
+async function loadIgRecentPosts() {
+    const el = document.getElementById('ig-recent-posts');
+    if (!el) return;
     try {
         const res = await fetch(`${API_URL}/api/instagram/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
         const data = await res.json();
-        if (!data.posts?.length) { el.innerHTML = '<p style="color:#6b7280">No posts yet.</p>'; return; }
-        el.innerHTML = data.posts.map(p => `<div style="padding:10px;border-bottom:1px solid #e5e7eb">
-            <strong>📸 Instagram</strong> — ${p.caption?.substring(0,100)}...<br>
-            <small style="color:#6b7280">${new Date(p.posted_at).toLocaleString()} ${p.post_url ? `| <a href="${p.post_url}" target="_blank">View</a>` : ''}</small>
-        </div>`).join('');
-    } catch { el.innerHTML = '<p style="color:#ef4444">Error loading posts</p>'; }
+        if (!data.posts?.length) { el.innerHTML = '<p style="color:#6b7280;">Noch keine Posts.</p>'; return; }
+        el.innerHTML = data.posts.map(p => `
+            <div style="display:flex;gap:12px;padding:12px;border-bottom:1px solid #e5e7eb;align-items:flex-start;">
+                ${p.image_url ? `<img src="${p.image_url}" style="width:60px;height:60px;border-radius:6px;object-fit:cover;flex-shrink:0;">` : ''}
+                <div>
+                    <strong>${p.title || 'Instagram Post'}</strong>
+                    <span style="background:${p.status==='posted'?'#d1fae5':'#fef3c7'};color:${p.status==='posted'?'#065f46':'#92400e'};padding:2px 8px;border-radius:10px;font-size:11px;margin-left:8px;">${p.status}</span><br>
+                    <small style="color:#6b7280;">${p.caption?.substring(0,80)}...</small><br>
+                    <small style="color:#9ca3af;">${p.created_at ? new Date(p.created_at).toLocaleString('de-DE') : ''}</small>
+                </div>
+            </div>`).join('');
+    } catch { el.innerHTML = '<p style="color:#ef4444">Fehler beim Laden.</p>'; }
 }
 
 // ─── WORDPRESS ────────────────────────────────────────────────────────────────
