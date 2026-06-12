@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unsubscribe — TravelSmarter</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f9fafb; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .card { background: white; border-radius: 16px; padding: 48px 40px; max-width: 480px; width: 100%; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+        .logo { font-size: 28px; font-weight: 700; color: #1a2744; margin-bottom: 8px; }
+        .logo span { color: #ff6b4a; }
+        .icon { font-size: 56px; margin: 24px 0; }
+        h1 { font-size: 22px; color: #1f2937; margin-bottom: 12px; }
+        p { color: #6b7280; line-height: 1.6; margin-bottom: 20px; font-size: 15px; }
+        .btn { display: inline-block; padding: 12px 28px; border-radius: 8px; font-weight: 600; font-size: 15px; cursor: pointer; border: none; text-decoration: none; transition: opacity 0.2s; }
+        .btn:hover { opacity: 0.85; }
+        .btn-primary { background: #ff6b4a; color: white; }
+        .btn-secondary { background: #f3f4f6; color: #374151; margin-left: 10px; }
+        .success { display: none; }
+        .error-msg { display: none; color: #ef4444; font-size: 14px; margin-top: 12px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="logo">Travel<span>Smarter</span></div>
+
+        <!-- Confirm state -->
+        <div id="confirm-state">
+            <div class="icon">✉️</div>
+            <h1>Unsubscribe from emails?</h1>
+            <p>You'll stop receiving our travel hacking tips, flight deal alerts, and weekly guides.<br>You can resubscribe anytime from your account settings.</p>
+            <button class="btn btn-primary" onclick="doUnsubscribe()">Yes, unsubscribe me</button>
+            <a href="index.html" class="btn btn-secondary">Keep my subscription</a>
+            <div class="error-msg" id="error-msg">Something went wrong. Please try again.</div>
+        </div>
+
+        <!-- Success state -->
+        <div id="success-state" class="success">
+            <div class="icon">👋</div>
+            <h1>You've been unsubscribed</h1>
+            <p>We're sorry to see you go! You won't receive any more marketing emails from TravelSmarter.</p>
+            <p style="font-size:13px;color:#9ca3af;">Changed your mind? You can resubscribe from your <a href="account.html" style="color:#667eea;">account settings</a>.</p>
+            <a href="index.html" class="btn btn-primary">Back to TravelSmarter</a>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:5000'
+            : 'https://api.travelsmarterapp.com';
+
+        const token = new URLSearchParams(window.location.search).get('token');
+
+        async function doUnsubscribe() {
+            if (!token) {
+                document.getElementById('error-msg').style.display = 'block';
+                document.getElementById('error-msg').textContent = 'Invalid unsubscribe link. Please contact support.';
+                return;
+            }
+            try {
+                const res = await fetch(`${API_URL}/api/auth/unsubscribe?token=${token}`);
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('confirm-state').style.display = 'none';
+                    document.getElementById('success-state').style.display = 'block';
+                } else {
+                    document.getElementById('error-msg').style.display = 'block';
+                    document.getElementById('error-msg').textContent = data.error || 'Something went wrong.';
+                }
+            } catch (err) {
+                document.getElementById('error-msg').style.display = 'block';
+                document.getElementById('error-msg').textContent = 'Connection error. Please try again.';
+            }
+        }
+    </script>
+</body>
+</html>
