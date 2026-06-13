@@ -190,9 +190,18 @@ function createModuleCard(module) {
     };
   }
 
-  const lockIcon = module.locked ? `
-    <div style="position: absolute; top: 10px; right: 10px; font-size: 24px;">🔒</div>
-  ` : '';
+  // Tier badge
+  const tierInfo = module.id <= 4
+    ? { label: 'Free', color: '#10b981' }
+    : module.id <= 10
+      ? { label: 'Smart Traveler', color: '#667eea' }
+      : { label: 'Elite', color: '#f59e0b' };
+
+  const tierBadge = `
+    <div style="position:absolute;top:10px;right:10px;background:${tierInfo.color};color:white;font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px;white-space:nowrap;">
+      ${tierInfo.label === 'Elite' ? '⭐ ' : ''}${tierInfo.label}
+    </div>
+  `;
 
   const upgradeButton = module.locked ? `
     <button onclick="goToPricing()" style="
@@ -218,7 +227,7 @@ function createModuleCard(module) {
   ` : '';
 
   card.innerHTML = `
-    ${lockIcon}
+    ${tierBadge}
     <div style="font-size: 32px; margin-bottom: 10px;">${module.icon}</div>
     <h3 style="margin-bottom: 8px; color: #1f2937; font-size: 1.1em;">${module.title}</h3>
     <p style="color: #6b7280; font-size: 0.9em; margin-bottom: 10px;">
