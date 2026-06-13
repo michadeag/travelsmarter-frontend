@@ -3211,6 +3211,36 @@ function copyRedditField(id) {
     navigator.clipboard.writeText(text).then(() => showAlert('📋 Kopiert!', 'success'));
 }
 
+// ─── HACK DIGEST ──────────────────────────────────────────────────────────────
+async function triggerHackDigest() {
+    const btn = document.getElementById('digest-btn');
+    const result = document.getElementById('digest-result');
+    btn.disabled = true;
+    btn.textContent = '⏳ Wird gesendet...';
+    result.style.display = 'none';
+
+    try {
+        const res = await fetch(`${API_URL}/api/admin/trigger-hack-digest`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            result.style.display = 'block';
+            result.style.color = '#10b981';
+            result.innerHTML = `✅ Digest gestartet!<br>
+                <strong>${data.usersTargeted}</strong> User erhalten <strong>${data.hacks.length}</strong> Emails über 3 Tage.<br>
+                <span style="color:#6b7280">Hacks: ${data.hacks.join(', ')}</span>`;
+            btn.textContent = '✅ Gesendet';
+        } else {
+            throw new Error(data.error || 'Unbekannter Fehler');
+        }
+    } catch (err) {
+        result.style.display = 'block';
+        result.style.color = '#ef4444';
+        result.textContent = '❌ Fehler: ' + err.message;
+        btn.disabled = false;
+        btn.textContent = '✨ Send Hack Digest Now';
+    }
+}
+
 // ─── PARTNER DEALS ────────────────────────────────────────────────────────────
 async function loadPartnerDeals() {
     const el = document.getElementById('partner-deals-list');
