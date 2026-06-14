@@ -42,6 +42,7 @@ function initDashboard() {
     loadEmailTemplates();
     loadRecentActivities();
     loadSettings();
+    loadPageviews();
 
     // Set admin name
     const adminName = localStorage.getItem('adminName') || 'Admin';
@@ -85,7 +86,7 @@ function switchTab(tabName) {
     document.getElementById('page-title').textContent = titles[tabName] || tabName;
 
     // Auto-load data when switching to platform tabs
-    if (tabName === 'analytics') loadAnalytics();
+    if (tabName === 'analytics') { loadAnalytics(); loadPageviews(); }
     if (tabName === 'twitter') { loadTwitterStatus(); loadTwitterRecentPosts(); }
     if (tabName === 'reddit') { initRedditTab(); }
     if (tabName === 'linkedin') { initLinkedInTab(); }
@@ -1702,6 +1703,38 @@ async function loadAnalytics() {
             </tr>`).join('');
     } catch (err) {
         console.error('Analytics error:', err);
+    }
+}
+
+// ─── PAGEVIEW TRAFFIC ─────────────────────────────────────────────────────────
+async function loadPageviews() {
+    try {
+        const res = await fetch(`${API_URL}/api/analytics/pageviews?page=welcome.html`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        if (!res.ok) return;
+        const { data } = await res.json();
+
+        const todayEl = document.getElementById('pv-today');
+        const weekEl = document.getElementById('pv-week');
+        const totalEl = document.getElementById('pv-total');
+        const byDayEl = document.getElementById('pv-by-day');
+
+        if (todayEl) todayEl.textContent = data.today;
+        if (weekEl) weekEl.textContent = data.last7Days;
+        if (totalEl) totalEl.textContent = data.total;
+
+        if (byDayEl) {
+            if (data.byDay.length === 0) {
+                byDayEl.innerHTML = '<tr><td colspan="2" style="text-align:center;padding:20px;">Noch keine Daten</td></tr>';
+            } else {
+                byDayEl.innerHTML = data.byDay.map(r =>
+                    `<tr><td>${new Date(r.day).toLocaleDateString('de-DE')}</td><td>${r.count}</td></tr>`
+                ).join('');
+            }
+        }
+    } catch (err) {
+        console.error('Pageview load error:', err);
     }
 }
 
