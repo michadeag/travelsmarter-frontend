@@ -607,6 +607,7 @@
                 <a class="nav-link" data-tab="partner-deals">🤝 Partner Deals</a>
                 <a class="nav-link" data-tab="blogger">📰 Blogger</a>
                 <a class="nav-link" data-tab="medium">✍️ Medium</a>
+                <a class="nav-link" data-tab="youtube">▶️ YouTube</a>
                 <a class="nav-link" data-tab="settings">⚙️ Settings</a>
             </nav>
         </div>
@@ -1847,6 +1848,54 @@
                 <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
                     <h4 style="margin-bottom:12px;">📋 Generierte Artikel</h4>
                     <div id="medium-recent-posts" style="font-size:13px;color:#6b7280;">Wird geladen...</div>
+                </div>
+            </div>
+
+            <!-- YOUTUBE TAB -->
+            <div id="youtube" class="tab-content">
+                <h3 style="margin-bottom: 20px;">▶️ YouTube Comment Assistant</h3>
+                <p style="color:#6b7280; margin-bottom: 20px;">Finde relevante YouTube-Videos und generiere passende Kommentare mit Link zu TravelSmarter.</p>
+
+                <div class="search-bar" style="margin-bottom: 30px;">
+                    <input type="text" id="yt-search-input" placeholder="z.B. travel hacking, credit card miles, flight deals..." style="flex:1;">
+                    <button class="btn btn-primary" onclick="ytSearch()">🔍 Videos suchen</button>
+                </div>
+
+                <div id="yt-status" style="display:none; padding:12px; background:#dbeafe; border-radius:8px; margin-bottom:20px; color:#1e40af;"></div>
+
+                <div id="yt-results" style="display:none;">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Video</th>
+                                    <th>Kanal</th>
+                                    <th style="text-align:right;">Views</th>
+                                    <th style="text-align:right;">Kommentare</th>
+                                    <th>Aktion</th>
+                                </tr>
+                            </thead>
+                            <tbody id="yt-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Comment Modal -->
+                <div id="yt-comment-modal" class="modal">
+                    <div class="modal-content" style="max-width:640px;">
+                        <div class="modal-header">
+                            <h3>💬 Generierter Kommentar</h3>
+                            <button class="close-modal" onclick="closeYtModal()">✕</button>
+                        </div>
+                        <p id="yt-modal-video-title" style="color:#6b7280; font-size:0.9em; margin-bottom:16px;"></p>
+                        <textarea id="yt-comment-text" style="width:100%; min-height:140px; padding:12px; border:1px solid #e5e7eb; border-radius:8px; font-size:0.97em; font-family:inherit; resize:vertical;"></textarea>
+                        <div style="margin-top:8px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                            <button class="btn btn-primary" onclick="copyYtComment()">📋 Kopieren</button>
+                            <a id="yt-modal-link" href="#" target="_blank" class="btn btn-secondary">▶️ Video öffnen</a>
+                            <button class="btn" style="background:#f3f4f6; color:#374151;" onclick="regenerateComment()">🔄 Neu generieren</button>
+                            <span id="yt-copy-confirm" style="color:#10b981; font-size:0.9em; display:none;">✓ Kopiert!</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 

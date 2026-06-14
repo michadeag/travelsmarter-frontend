@@ -1738,6 +1738,126 @@ async function loadPageviews() {
     }
 }
 
+// ─── YOUTUBE COMMENT ASSISTANT ───────────────────────────────────────────────
+
+let currentYtVideo = null;
+
+async function ytSearch() {
+    const q = document.getElementById('yt-search-input').value.trim();
+    if (!q) return;
+
+    const statusEl = document.getElementById('yt-status');
+    const resultsEl = document.getElementById('yt-results');
+    const tbody = document.getElementById('yt-table-body');
+
+    statusEl.style.display = 'block';
+    statusEl.textContent = '🔍 Suche läuft...';
+    resultsEl.style.display = 'none';
+
+    try {
+        const res = await fetch(`${API_URL}/api/youtube/search?q=${encodeURIComponent(q)}`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const data = await res.json();
+
+        if (!data.success) {
+            statusEl.style.background = '#fee2e2';
+            statusEl.style.color = '#991b1b';
+            statusEl.textContent = '❌ ' + (data.message || 'Fehler bei der Suche');
+            return;
+        }
+
+        if (data.data.length === 0) {
+            statusEl.textContent = 'Keine Videos gefunden.';
+            return;
+        }
+
+        statusEl.style.display = 'none';
+        resultsEl.style.display = 'block';
+
+        tbody.innerHTML = data.data.map(v => `
+            <tr>
+                <td>
+                    <a href="${v.url}" target="_blank" style="color:#667eea; font-weight:600; text-decoration:none;">
+                        ${v.title.length > 60 ? v.title.slice(0, 60) + '…' : v.title}
+                    </a>
+                    <div style="font-size:0.8em; color:#9ca3af; margin-top:2px;">${new Date(v.publishedAt).toLocaleDateString('de-DE')}</div>
+                </td>
+                <td style="color:#6b7280; font-size:0.9em;">${v.channel}</td>
+                <td style="text-align:right; font-weight:600;">${v.views.toLocaleString('de-DE')}</td>
+                <td style="text-align:right;">${v.comments.toLocaleString('de-DE')}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary" onclick="openYtCommentModal(${JSON.stringify(v).replace(/"/g, '&quot;')})">
+                        💬 Kommentar
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+
+    } catch (err) {
+        statusEl.style.background = '#fee2e2';
+        statusEl.style.color = '#991b1b';
+        statusEl.textContent = '❌ Netzwerkfehler: ' + err.message;
+    }
+}
+
+async function openYtCommentModal(video) {
+    currentYtVideo = video;
+    document.getElementById('yt-modal-video-title').textContent = '▶️ ' + video.title;
+    document.getElementById('yt-modal-link').href = video.url;
+    document.getElementById('yt-comment-text').value = 'Kommentar wird generiert...';
+    document.getElementById('yt-copy-confirm').style.display = 'none';
+    document.getElementById('yt-comment-modal').classList.add('active');
+    await generateYtComment(video);
+}
+
+async function generateYtComment(video) {
+    const textarea = document.getElementById('yt-comment-text');
+    textarea.value = 'Kommentar wird generiert...';
+    try {
+        const res = await fetch(`${API_URL}/api/youtube/generate-comment`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getAuthToken()}`
+            },
+            body: JSON.stringify({
+                title: video.title,
+                channel: video.channel,
+                description: video.description
+            })
+        });
+        const data = await res.json();
+        textarea.value = data.success ? data.data.comment : '❌ ' + data.message;
+    } catch (err) {
+        textarea.value = '❌ Fehler: ' + err.message;
+    }
+}
+
+async function regenerateComment() {
+    if (currentYtVideo) await generateYtComment(currentYtVideo);
+}
+
+function closeYtModal() {
+    document.getElementById('yt-comment-modal').classList.remove('active');
+    currentYtVideo = null;
+}
+
+function copyYtComment() {
+    const text = document.getElementById('yt-comment-text').value;
+    navigator.clipboard.writeText(text).then(() => {
+        const confirm = document.getElementById('yt-copy-confirm');
+        confirm.style.display = 'inline';
+        setTimeout(() => confirm.style.display = 'none', 2000);
+    });
+}
+
+// Trigger search on Enter key
+document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('yt-search-input');
+    if (input) input.addEventListener('keydown', e => { if (e.key === 'Enter') ytSearch(); });
+});
+
 // ─── TWITTER ─────────────────────────────────────────────────────────────────
 
 // Best posting times for travel content based on engagement research
