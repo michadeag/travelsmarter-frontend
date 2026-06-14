@@ -75,6 +75,44 @@ function displayModules(data) {
     grid.appendChild(card);
   });
 
+  // Add Community + Partner Deals cards (Elite only)
+  const isEliteUser = userTier && userTier.toLowerCase() === 'elite';
+
+  const communityCard = createSpecialCard({
+    icon: '💬',
+    title: 'Travel Community',
+    description: 'Connect with fellow travel hackers. Share tips, ask questions, celebrate wins.',
+    badge: '⭐ Elite',
+    badgeColor: '#f59e0b',
+    accessible: isEliteUser,
+    onClick: () => {
+      if (isEliteUser) {
+        document.getElementById('community-section')?.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        window.location.href = 'sales-page.html';
+      }
+    }
+  });
+
+  const partnerCard = createSpecialCard({
+    icon: '🤝',
+    title: 'Partner Deals',
+    description: 'Save up to 50% on travel essentials — Wise, Airalo, NordVPN, Booking.com and more.',
+    badge: '⭐ Elite',
+    badgeColor: '#f59e0b',
+    accessible: isEliteUser,
+    onClick: () => {
+      if (isEliteUser) {
+        window.location.href = 'partner-deals.html';
+      } else {
+        window.location.href = 'sales-page.html';
+      }
+    }
+  });
+
+  grid.appendChild(communityCard);
+  grid.appendChild(partnerCard);
+
   container.innerHTML = '';
   container.appendChild(grid);
 
@@ -152,9 +190,18 @@ function createModuleCard(module) {
     };
   }
 
-  const lockIcon = module.locked ? `
-    <div style="position: absolute; top: 10px; right: 10px; font-size: 24px;">🔒</div>
-  ` : '';
+  // Tier badge
+  const tierInfo = module.id <= 4
+    ? { label: 'Free', color: '#10b981' }
+    : module.id <= 10
+      ? { label: 'Smart Traveler', color: '#667eea' }
+      : { label: 'Elite', color: '#f59e0b' };
+
+  const tierBadge = `
+    <div style="position:absolute;top:10px;right:10px;background:${tierInfo.color};color:white;font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px;white-space:nowrap;">
+      ${tierInfo.label === 'Elite' ? '⭐ ' : ''}${tierInfo.label}
+    </div>
+  `;
 
   const upgradeButton = module.locked ? `
     <button onclick="goToPricing()" style="
@@ -180,7 +227,7 @@ function createModuleCard(module) {
   ` : '';
 
   card.innerHTML = `
-    ${lockIcon}
+    ${tierBadge}
     <div style="font-size: 32px; margin-bottom: 10px;">${module.icon}</div>
     <h3 style="margin-bottom: 8px; color: #1f2937; font-size: 1.1em;">${module.title}</h3>
     <p style="color: #6b7280; font-size: 0.9em; margin-bottom: 10px;">
@@ -194,6 +241,40 @@ function createModuleCard(module) {
     card.onclick = () => viewModule(module.id);
   }
 
+  return card;
+}
+
+/**
+ * Create a special feature card (Community, Partner Deals)
+ */
+function createSpecialCard({ icon, title, description, badge, badgeColor, accessible, onClick }) {
+  const card = document.createElement('div');
+  card.style.cssText = `
+    background: ${accessible ? 'white' : 'linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%)'};
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    ${!accessible ? 'opacity: 0.65; filter: grayscale(60%);' : ''}
+  `;
+
+  if (accessible) {
+    card.onmouseover = () => { card.style.transform = 'translateY(-4px)'; card.style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)'; };
+    card.onmouseout = () => { card.style.transform = 'translateY(0)'; card.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; };
+  }
+
+  card.innerHTML = `
+    <div style="position:absolute;top:10px;right:10px;background:${accessible ? badgeColor : '#9ca3af'};color:white;font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px;">${badge}</div>
+    <div style="font-size:32px;margin-bottom:10px;">${icon}</div>
+    <h3 style="margin-bottom:8px;color:#1f2937;font-size:1.1em;">${title}</h3>
+    <p style="color:#6b7280;font-size:0.9em;margin-bottom:10px;line-height:1.5;">${description}</p>
+    ${!accessible ? `<button onclick="goToPricing()" style="width:100%;padding:10px;margin-top:5px;background:#667eea;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.9em;">⭐ Upgrade to Elite</button>` : ''}
+  `;
+
+  card.onclick = onClick;
   return card;
 }
 

@@ -73,7 +73,9 @@ class APIService {
                 options.body = JSON.stringify(body);
             }
 
+            console.log(`[API] ${method} ${url}`, { body, includeAuth });
             const response = await fetch(url, options);
+            console.log(`[API Response] ${response.status} ${response.statusText}`);
 
             if (response.status === 401) {
                 // Token expired, clear and redirect to login

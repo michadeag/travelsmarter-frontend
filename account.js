@@ -1,21 +1,9 @@
 // User Account Dashboard
-// Determine API URL based on environment
-let API_URL;
-if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    API_URL = 'http://localhost:5000';
-} else {
-    API_URL = 'https://api.travelsmarterapp.com';
-}
-
-// Get auth token
-function getAuthToken() {
-    return localStorage.getItem('userToken') || localStorage.getItem('token');
-}
+// Uses api-service.js for consistent API communication
 
 // Check if user is logged in
 function checkAuth() {
-    const token = getAuthToken();
-    if (!token) {
+    if (!api.isLoggedIn()) {
         window.location.href = 'auth.html';
         return false;
     }
@@ -47,14 +35,11 @@ function showAlert(message, type = 'success') {
 // Load user profile
 async function loadProfile() {
     try {
-        const response = await fetch(`${API_URL}/api/auth/me`, {
-            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
-        });
+        const response = await api.request('GET', '/auth/me');
 
-        if (!response.ok) throw new Error('Failed to load profile');
+        if (!response || !response.user) throw new Error('Failed to load profile');
 
-        const data = await response.json();
-        const user = data.user;
+        const user = response.user;
 
         document.getElementById('profile-name').textContent = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'N/A';
         document.getElementById('profile-email').textContent = user.email;
@@ -74,14 +59,11 @@ async function loadProfile() {
 // Load user subscription
 async function loadSubscription() {
     try {
-        const response = await fetch(`${API_URL}/api/subscriptions/current`, {
-            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
-        });
+        const response = await api.request('GET', '/subscriptions/current');
 
-        if (!response.ok) throw new Error('Failed to load subscription');
+        if (!response || !response.subscription) throw new Error('Failed to load subscription');
 
-        const data = await response.json();
-        const subscription = data.subscription;
+        const subscription = response.subscription;
 
         const tierNames = {
             'free': 'Free',
@@ -124,14 +106,11 @@ async function loadSubscription() {
 // Load payment history
 async function loadPaymentHistory() {
     try {
-        const response = await fetch(`${API_URL}/api/subscriptions/current`, {
-            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
-        });
+        const response = await api.request('GET', '/subscriptions/current');
 
-        if (!response.ok) throw new Error('Failed to load payment history');
+        if (!response || !response.subscription) throw new Error('Failed to load payment history');
 
-        const data = await response.json();
-        const subscription = data.subscription;
+        const subscription = response.subscription;
 
         // For now, show the current subscription as a recent payment
         // In a real app, you'd query a separate payment history endpoint
@@ -166,14 +145,11 @@ async function loadPaymentHistory() {
 // Load saved hacks
 async function loadSavedHacks() {
     try {
-        const response = await fetch(`${API_URL}/api/hacks/saved`, {
-            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
-        });
+        const response = await api.getSavedHacks();
 
-        if (!response.ok) throw new Error('Failed to load saved hacks');
+        if (!response || !response.savedHacks) throw new Error('Failed to load saved hacks');
 
-        const data = await response.json();
-        const hacks = data.savedHacks || [];
+        const hacks = response.savedHacks || [];
 
         const grid = document.getElementById('hacks-grid');
 
@@ -249,22 +225,10 @@ async function saveProfileChanges() {
 
     try {
         console.log('Updating profile with:', { firstName, lastName });
-        const response = await fetch(`${API_URL}/api/auth/update-profile`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${getAuthToken()}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                firstName: firstName,
-                lastName: lastName
-            })
-        });
-
-        const data = await response.json();
+        const data = await api.updateProfile(firstName, lastName);
         console.log('Profile update response:', data);
 
-        if (response.ok) {
+        if (data.success || data.user) {
             showAlert('Profile updated successfully', 'success');
             closeEditProfileModal();
             loadProfile();
@@ -295,24 +259,12 @@ async function savePasswordChange() {
 
     try {
         console.log('Changing password...');
-        const response = await fetch(`${API_URL}/api/auth/change-password`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${getAuthToken()}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                currentPassword: currentPassword,
-                newPassword: newPassword
-            })
-        });
+        const data = await api.changePassword(currentPassword, newPassword);
 
-        const data = await response.json();
-        console.log('Password change response:', data);
-
-        if (response.ok) {
+        if (data.success) {
             showAlert('Password changed successfully', 'success');
             closeChangePasswordModal();
+            document.getElementById('change-password-modal').reset?.();
         } else {
             showAlert(data.message || 'Failed to change password', 'error');
         }
@@ -325,20 +277,14 @@ async function savePasswordChange() {
 // Cancel subscription
 async function confirmCancel() {
     try {
-        const response = await fetch(`${API_URL}/api/subscriptions/cancel`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${getAuthToken()}`,
-                'Content-Type': 'application/json'
-            }
-        });
+        const data = await api.request('POST', '/subscriptions/cancel');
 
-        if (response.ok) {
+        if (data.success) {
             showAlert('Subscription cancelled successfully', 'success');
             closeCancelModal();
             loadSubscription();
         } else {
-            const error = await response.json();
+            const error = data;
             showAlert(error.message || 'Failed to cancel subscription', 'error');
         }
     } catch (error) {
@@ -354,8 +300,7 @@ function goToPricing() {
 
 // Logout
 function logout() {
-    localStorage.removeItem('userToken');
-    localStorage.removeItem('token');
+    api.logout();
     window.location.href = 'auth.html';
 }
 
@@ -375,17 +320,14 @@ function formatDate(dateString) {
 // Load user's deal filters
 async function loadDealFilters() {
     try {
-        const response = await fetch(`${API_URL}/api/user/deal-filters`, {
-            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
-        });
+        const response = await api.request('GET', '/user/deal-filters');
 
-        if (!response.ok) {
+        if (!response || !response.filters) {
             // If not Elite or endpoint doesn't exist, just return
             return;
         }
 
-        const data = await response.json();
-        const filters = data.filters;
+        const filters = response.filters;
 
         // Display filter values
         const tripTypeNames = {
@@ -438,21 +380,12 @@ async function saveFiltersChanges() {
     }
 
     try {
-        const response = await fetch(`${API_URL}/api/user/deal-filters`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${getAuthToken()}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                trip_type: tripType,
-                min_savings_threshold: minSavings
-            })
+        const data = await api.request('POST', '/user/deal-filters', {
+            trip_type: tripType,
+            min_savings_threshold: minSavings
         });
 
-        const data = await response.json();
-
-        if (response.ok) {
+        if (data.success) {
             showAlert('Deal preferences saved successfully', 'success');
             closeEditFiltersModal();
             loadDealFilters();

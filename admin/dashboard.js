@@ -4,11 +4,9 @@
 // Determine correct API URL based on current domain
 let API_URL;
 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    // Local development
     API_URL = 'http://localhost:5000';
 } else {
-    // Production - use your live backend API
-    API_URL = 'https://api.travelsmarterapp.com';
+    API_URL = localStorage.getItem('apiUrl') || 'https://api.travelsmarterapp.com';
 }
 
 console.log('Admin Dashboard using API:', API_URL);
@@ -72,36 +70,33 @@ function setupEventListeners() {
 
 // TAB SWITCHING
 function switchTab(tabName) {
-    // Hide all tabs
-    document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.remove('active');
-    });
-
-    // Remove active from all nav links
-    document.querySelectorAll('.nav-link').forEach(link => {
-        link.classList.remove('active');
-    });
-
-    // Show selected tab
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
     document.getElementById(tabName).classList.add('active');
-
-    // Add active to clicked nav link
     document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
 
-    // Update page title
     const titles = {
-        dashboard: 'Dashboard',
-        users: 'Users Management',
-        subscriptions: 'Subscriptions',
-        deals: 'Deals Management',
-        hacks: 'Hacks & Modules',
-        promos: 'Promo Codes',
-        'email-templates': 'Email Templates',
-        analytics: 'Analytics',
-        settings: 'Settings'
+        dashboard: 'Dashboard', users: 'Users Management', subscriptions: 'Subscriptions',
+        deals: 'Deals Management', hacks: 'Hacks & Modules', promos: 'Promo Codes',
+        'email-templates': 'Email Templates', analytics: 'Analytics', settings: 'Settings',
+        reddit: '🤖 Reddit', linkedin: '💼 LinkedIn', pinterest: '📌 Pinterest',
+        instagram: '📸 Instagram', wordpress: '📝 WordPress', quora: '❓ Quora', blogger: '📰 Blogger', slideshare: '📊 SlideShare'
     };
+    document.getElementById('page-title').textContent = titles[tabName] || tabName;
 
-    document.getElementById('page-title').textContent = titles[tabName] || 'Dashboard';
+    // Auto-load data when switching to platform tabs
+    if (tabName === 'analytics') loadAnalytics();
+    if (tabName === 'twitter') { loadTwitterStatus(); loadTwitterRecentPosts(); }
+    if (tabName === 'reddit') { initRedditTab(); }
+    if (tabName === 'linkedin') { initLinkedInTab(); }
+    if (tabName === 'pinterest') { initPinterestTab(); }
+    if (tabName === 'instagram') { initInstagramTab(); }
+    if (tabName === 'wordpress') { initWordPressTab(); }
+    if (tabName === 'quora') { initQuoraTab(); }
+    if (tabName === 'slideshare') { initSlideShareTab(); }
+    if (tabName === 'partner-deals') { loadPartnerDeals(); }
+    if (tabName === 'blogger') { initBloggerTab(); }
+    if (tabName === 'medium') { initMediumTab(); }
 }
 
 // ALERTS
@@ -935,31 +930,49 @@ function displayActivities(activities) {
 async function loadSettings() {
     try {
         // Try to fetch from backend API
+        console.log('🔍 Loading settings from:', `${API_URL}/api/admin/settings`);
         const response = await fetch(`${API_URL}/api/admin/settings`, {
             headers: { 'Authorization': `Bearer ${getAuthToken()}` }
         });
 
+        console.log('📡 Settings API response status:', response.status);
+
         if (response.ok) {
             const data = await response.json();
+            console.log('📊 Settings API response data:', data);
             const settings = data.data || {};
 
+            console.log('🔧 Found settings:', Object.keys(settings));
+
             // Populate form fields with settings values
-            if (settings.sendgrid_api_key?.value) {
-                document.getElementById('sendgrid-key').value = settings.sendgrid_api_key.value;
+            if (settings.anthropic_api_key?.value) {
+                const el = document.getElementById('anthropic-api-key');
+                if (el) el.value = settings.anthropic_api_key.value;
             }
+            if (settings.sendgrid_api_key?.value) {
+                console.log('✅ Setting SendGrid key');
+                document.getElementById('sendgrid-key').value = settings.sendgrid_api_key.value;
+            } else {
+                console.warn('⚠️ No SendGrid API key value found');
+            }
+
             if (settings.sender_email?.value) {
+                console.log('✅ Setting sender email');
                 document.getElementById('sender-email').value = settings.sender_email.value;
             }
             if (settings.stripe_secret_key?.value) {
+                console.log('✅ Setting Stripe secret key');
                 document.getElementById('stripe-key').value = settings.stripe_secret_key.value;
             }
             if (settings.stripe_publishable_key?.value) {
+                console.log('✅ Setting Stripe publishable key');
                 const pubKeyField = document.getElementById('stripe-pub-key');
                 if (pubKeyField) {
                     pubKeyField.value = settings.stripe_publishable_key.value;
                 }
             }
             if (settings.stripe_webhook_secret?.value) {
+                console.log('✅ Setting webhook secret');
                 document.getElementById('webhook-secret').value = settings.stripe_webhook_secret.value;
             }
 
@@ -978,8 +991,13 @@ async function loadSettings() {
                 sendDigest.checked = settings.send_daily_digest?.value === 'true';
             }
 
-            console.log('✅ Settings loaded from backend');
-            return; // Success, don't need localStorage fallback
+            console.log('✅ Settings loaded successfully from backend database');
+            loadSocialSettings();
+            return;
+        } else {
+            console.warn('⚠️ Settings API returned status:', response.status, response.statusText);
+            const errorData = await response.json().catch(() => ({}));
+            console.warn('Error details:', errorData);
         }
     } catch (error) {
         console.warn('Backend API unavailable, trying localStorage fallback:', error.message);
@@ -1061,7 +1079,8 @@ async function saveSettings() {
         localStorage.setItem('admin_send_digest', sendDigest.toString());
 
         console.log('✅ Settings saved to localStorage');
-        showAlert('Settings saved successfully! Stripe key is ready for checkout.', 'success');
+        await saveSocialSettings();
+        showAlert('Settings saved successfully!', 'success');
 
         // Optional: Try to sync to backend (non-blocking)
         try {
@@ -1072,6 +1091,7 @@ async function saveSettings() {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
+                    'anthropic_api_key': document.getElementById('anthropic-api-key')?.value?.trim() || '',
                     'sendgrid_api_key': sendgridKey,
                     'sender_email': senderEmail,
                     'stripe_secret_key': stripeKey,
@@ -1238,6 +1258,7 @@ function openTemplateModal() {
 
 function closeTemplateModal() {
     document.getElementById('template-modal').classList.remove('active');
+    document.getElementById('modal-template-id').value = '';
     document.getElementById('modal-template-day').value = '';
     document.getElementById('modal-template-subject').value = '';
     document.getElementById('modal-template-content').value = '';
@@ -1284,6 +1305,7 @@ async function saveEmailSequence() {
 }
 
 async function saveEmailTemplate() {
+    const templateId = document.getElementById('modal-template-id').value;
     const sequenceId = document.getElementById('modal-template-sequence').value;
     const day = document.getElementById('modal-template-day').value;
     const subject = document.getElementById('modal-template-subject').value;
@@ -1294,14 +1316,12 @@ async function saveEmailTemplate() {
         return;
     }
 
-    try {
-        const isEditing = window.editingTemplateId ? true : false;
-        const method = isEditing ? 'PUT' : 'POST';
-        const url = isEditing
-            ? `${API_URL}/api/email-templates/templates/${window.editingTemplateId}`
-            : `${API_URL}/api/email-templates/templates`;
+    const isEdit = !!templateId;
+    const method = isEdit ? 'PUT' : 'POST';
+    const endpoint = isEdit ? `${API_URL}/api/email-templates/templates/${templateId}` : `${API_URL}/api/email-templates/templates`;
 
-        const response = await fetch(url, {
+    try {
+        const response = await fetch(endpoint, {
             method: method,
             headers: {
                 'Authorization': `Bearer ${getAuthToken()}`,
@@ -1317,19 +1337,18 @@ async function saveEmailTemplate() {
         });
 
         if (response.ok) {
-            const successMessage = isEditing ? 'Template updated successfully' : 'Template created successfully';
-            showAlert(successMessage, 'success');
+            const action = isEdit ? 'updated' : 'created';
+            showAlert(`Template ${action} successfully`, 'success');
             closeTemplateModal();
-            window.editingTemplateId = null;
             loadEmailTemplates();
         } else {
             const error = await response.json();
-            showAlert(error.message || 'Failed to save template', 'error');
+            showAlert(error.message || `Failed to ${isEdit ? 'update' : 'create'} template`, 'error');
             console.error('API error:', error);
         }
     } catch (error) {
-        console.error('Error saving template:', error);
-        showAlert('Error saving template: ' + error.message, 'error');
+        console.error(`Error ${isEdit ? 'updating' : 'creating'} template:`, error);
+        showAlert(`Error ${isEdit ? 'updating' : 'creating'} template: ` + error.message, 'error');
     }
 }
 
@@ -1397,7 +1416,7 @@ async function deleteTemplate(templateId) {
 
 async function editTemplate(templateId) {
     try {
-        // Fetch template details - use the direct endpoint with ID
+        // Fetch template details
         const response = await fetch(`${API_URL}/api/email-templates/templates/${templateId}`, {
             headers: { 'Authorization': `Bearer ${getAuthToken()}` }
         });
@@ -1407,27 +1426,40 @@ async function editTemplate(templateId) {
             const template = data.data;
 
             if (template) {
-                // Store the template ID for update operation
                 window.editingTemplateId = templateId;
-
-                // Populate the modal with template data
                 document.getElementById('modal-template-day').value = template.day || '';
                 document.getElementById('modal-template-subject').value = template.subject || '';
                 document.getElementById('modal-template-content').value = template.html_content || template.content || '';
                 document.getElementById('modal-template-sequence').value = template.sequence_id || '';
-
-                // Change button text and modal title to indicate editing (use h3 not h2!)
                 document.getElementById('template-modal-title').textContent = 'Edit Email Template';
                 document.getElementById('template-save-btn').textContent = 'Update Template';
-
-                // Open the modal
                 openTemplateModal();
             } else {
                 showAlert('Template not found', 'error');
             }
         } else {
             showAlert('Failed to load template', 'error');
+            return;
         }
+
+        const data = await response.json();
+        const template = data.data;
+
+        // Populate form fields
+        document.getElementById('modal-template-day').value = template.day || 0;
+        document.getElementById('modal-template-subject').value = template.subject || '';
+        document.getElementById('modal-template-content').value = template.html_content || template.content || '';
+        document.getElementById('modal-template-sequence').value = template.sequence_id || '';
+
+        // Change modal title and button to Edit
+        document.getElementById('template-modal-title').textContent = 'Edit Email Template';
+        document.getElementById('template-save-btn').textContent = 'Update Template';
+
+        // Store the template ID for saving
+        document.getElementById('modal-template-id').value = templateId;
+
+        // Open the modal
+        document.getElementById('template-modal').classList.add('active');
     } catch (error) {
         console.error('Error loading template:', error);
         showAlert('Error loading template: ' + error.message, 'error');
@@ -1625,4 +1657,1680 @@ async function deleteHack(hackId) {
 function closeHackManagementModal() {
     document.getElementById('hack-management-modal').classList.remove('active');
     currentEditingHackId = null;
+}
+
+// ─── SETTINGS: Platform Tab Switcher ────────────────────────────────────────
+function switchPlatformTab(platform) {
+    document.querySelectorAll('.platform-settings').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.platform-tab').forEach(btn => {
+        btn.style.background = '#e5e7eb';
+        btn.style.color = '#374151';
+    });
+    const el = document.getElementById(`settings-${platform}`);
+    if (el) el.style.display = 'block';
+    const btn = document.querySelector(`.platform-tab[data-platform="${platform}"]`);
+    if (btn) { btn.style.background = '#667eea'; btn.style.color = 'white'; }
+}
+
+// ─── ANALYTICS ───────────────────────────────────────────────────────────────
+async function loadAnalytics() {
+    try {
+        const res = await fetch(`${API_URL}/api/admin/analytics/summary`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Failed');
+
+        const u = data.users;
+        document.getElementById('an-total-users').textContent = u.total.toLocaleString();
+        document.getElementById('an-signups-month').textContent = u.signupsThisMonth;
+        document.getElementById('an-signups-last').textContent = `Last month: ${u.signupsLastMonth}`;
+        document.getElementById('an-signup-change').textContent = u.signupChange !== null ? `${u.signupChange > 0 ? '+' : ''}${u.signupChange}% vs last month` : 'First month';
+        document.getElementById('an-paid').textContent = u.paid;
+        document.getElementById('an-elite').textContent = `Elite: ${u.elite}`;
+        document.getElementById('an-total-posts').textContent = data.social.totalPosts.toLocaleString();
+        document.getElementById('an-cta-posts').textContent = `with CTA: ${data.social.totalCTA}`;
+
+        const icons = { twitter:'🐦', reddit:'🤖', linkedin:'💼', pinterest:'📌', instagram:'📸', wordpress:'📝', blogger:'📰', quora:'❓', medium:'✍️', slideshare:'📊' };
+        const tbody = document.getElementById('analytics-platforms');
+        tbody.innerHTML = Object.entries(data.social.platforms).map(([key, p]) => `
+            <tr>
+                <td>${icons[key] || ''} ${key.charAt(0).toUpperCase() + key.slice(1)}</td>
+                <td>${p.total}</td>
+                <td>${p.thisMonth}</td>
+                <td>${p.withCTA}</td>
+            </tr>`).join('');
+    } catch (err) {
+        console.error('Analytics error:', err);
+    }
+}
+
+// ─── TWITTER ─────────────────────────────────────────────────────────────────
+
+// Best posting times for travel content based on engagement research
+const TWITTER_BEST_TIMES = {
+    1: ['09:00'],
+    2: ['09:00', '18:00'],
+    3: ['09:00', '13:00', '18:00'],
+    4: ['08:00', '12:00', '15:00', '19:00'],
+    5: ['08:00', '11:00', '13:00', '17:00', '20:00']
+};
+
+function updateTwitterTimes() {
+    const count = parseInt(document.getElementById('twitter-posts-per-day')?.value || 3);
+    const times = TWITTER_BEST_TIMES[count];
+    const el = document.getElementById('twitter-times-display');
+    if (el) el.textContent = times.join(' · ');
+}
+
+function getTwitterTimes() {
+    const count = parseInt(document.getElementById('twitter-posts-per-day')?.value || 3);
+    return TWITTER_BEST_TIMES[count];
+}
+
+async function loadTwitterStatus() {
+    const card = document.getElementById('twitter-status-card');
+    try {
+        const res = await fetch(`${API_URL}/api/twitter/status`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const jobs = data.jobs || [];
+        const isRunning = (data.scheduledJobs || 0) > 0;
+        card.innerHTML = `
+            <p><strong>Status:</strong> ${data.configured ? '✅ Configured' : '❌ Not configured — add credentials in Settings'}</p>
+            ${data.configured ? `<p><strong>Scheduler:</strong> ${isRunning ? `▶ Running (${data.scheduledJobs} job${data.scheduledJobs > 1 ? 's' : ''})` : '⏹ Stopped'}</p><p><strong>Total Posts:</strong> ${data.totalPosts || 0}</p>` : ''}`;
+        renderTwitterUpcoming(jobs, isRunning);
+    } catch { card.innerHTML = '<p>❌ Could not reach backend</p>'; }
+}
+
+function renderTwitterUpcoming(jobs, isRunning) {
+    const el = document.getElementById('twitter-upcoming');
+    if (!el) return;
+    if (!isRunning || !jobs.length) {
+        el.innerHTML = '<p style="color:#6b7280">Scheduler is stopped. Start it to see upcoming posts.</p>';
+        return;
+    }
+    const now = new Date();
+    const upcoming = [];
+    // Deduplicate times from jobs
+    const uniqueTimes = [...new Set(jobs.filter(j => j.time && j.time !== 'N/A').map(j => j.time))];
+    for (let d = 0; d < 3; d++) {
+        const date = new Date(now);
+        date.setDate(date.getDate() + d);
+        uniqueTimes.forEach(time => {
+            const [h, m] = time.split(':');
+            const postTime = new Date(date);
+            postTime.setHours(parseInt(h), parseInt(m), 0, 0);
+            if (postTime > now) upcoming.push(postTime);
+        });
+    }
+    upcoming.sort((a, b) => a - b);
+    const next5 = upcoming.slice(0, 5);
+    if (!next5.length) {
+        el.innerHTML = '<p style="color:#6b7280">No upcoming times available.</p>';
+        return;
+    }
+    el.innerHTML = next5.map(t => `
+        <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #f3f4f6;">
+            <span style="font-size:1.2em">🐦</span>
+            <div>
+                <strong>${t.toLocaleDateString('de-DE', {weekday:'short', day:'numeric', month:'short'})}</strong>
+                <span style="color:#667eea;margin-left:8px;font-weight:600">${t.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'})}</span>
+                <span style="color:#6b7280;margin-left:8px;font-size:0.85em">Travel tip (auto-generated)</span>
+            </div>
+        </div>`).join('');
+}
+
+async function publishTwitterPost() {
+    showAlert('Posting travel tip...', 'success');
+    try {
+        const res = await fetch(`${API_URL}/api/twitter/post-random`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (data.success) { showAlert('✅ Posted to Twitter!', 'success'); loadTwitterRecentPosts(); }
+        else showAlert(`❌ ${data.error || data.message}`, 'error');
+    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+}
+
+async function startTwitterScheduler() {
+    const times = getTwitterTimes();
+    try {
+        // Always stop first to avoid duplicate jobs
+        await fetch(`${API_URL}/api/twitter/scheduler/stop`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const res = await fetch(`${API_URL}/api/twitter/scheduler/start`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ schedule: 'multiple', times })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showAlert(`▶ Scheduler started — ${times.length} post${times.length > 1 ? 's' : ''}/day at ${times.join(', ')}`, 'success');
+            loadTwitterStatus();
+        } else showAlert(`❌ ${data.error || data.message}`, 'error');
+    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+}
+
+async function stopTwitterScheduler() {
+    const res = await fetch(`${API_URL}/api/twitter/scheduler/stop`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+    const data = await res.json();
+    showAlert(data.success ? '⏹ Twitter scheduler stopped' : `❌ ${data.error || data.message}`, data.success ? 'success' : 'error');
+    loadTwitterStatus();
+}
+
+async function loadTwitterRecentPosts() {
+    const el = document.getElementById('twitter-recent-posts');
+    try {
+        const res = await fetch(`${API_URL}/api/twitter/posts?limit=10`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.success || !data.posts.length) {
+            el.innerHTML = '<p style="color:#6b7280">No posts yet. Posts will appear here after the first scheduled tweet.</p>';
+            return;
+        }
+        el.innerHTML = data.posts.map(p => {
+            const date = new Date(p.posted_at).toLocaleString();
+            const tweetUrl = p.tweet_id ? `https://twitter.com/i/web/status/${p.tweet_id}` : null;
+            return `<div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px;margin-bottom:8px">
+                <p style="margin:0 0 6px;font-size:14px">${p.body}</p>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <span style="font-size:12px;color:#6b7280">${date}</span>
+                    ${tweetUrl ? `<a href="${tweetUrl}" target="_blank" style="font-size:12px;color:#1d9bf0">View on X ↗</a>` : ''}
+                </div>
+            </div>`;
+        }).join('');
+    } catch { el.innerHTML = '<p style="color:#ef4444">Error loading posts</p>'; }
+}
+
+// ─── REDDIT ──────────────────────────────────────────────────────────────────
+async function loadRedditStatus() {
+    const card = document.getElementById('reddit-status-card');
+    try {
+        const res = await fetch(`${API_URL}/api/reddit/status`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const s = data.status || {};
+        card.innerHTML = `<p><strong>Status:</strong> ${s.configured ? '✅ Configured' : '❌ Not configured — add credentials in Settings'}</p>
+            ${s.configured ? `<p><strong>Scheduler:</strong> ${s.schedulerRunning ? '▶ Running' : '⏹ Stopped'}</p><p><strong>Total Posts:</strong> ${s.totalPosts || 0}</p>` : ''}`;
+    } catch { card.innerHTML = '<p>❌ Could not reach backend</p>'; }
+}
+async function publishRedditPost() {
+    showAlert('Generating Reddit post...', 'success');
+    try {
+        const res = await fetch(`${API_URL}/api/reddit/post`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (data.success) { showAlert(`✅ Posted to r/${data.subreddit}`, 'success'); loadRedditRecentPosts(); }
+        else showAlert(`❌ ${data.error || data.message}`, 'error');
+    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+}
+async function startRedditScheduler() {
+    const res = await fetch(`${API_URL}/api/reddit/scheduler/start`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+    const data = await res.json();
+    showAlert(data.success ? '▶ Reddit scheduler started' : `❌ ${data.error}`, data.success ? 'success' : 'error');
+    loadRedditStatus();
+}
+async function stopRedditScheduler() {
+    const res = await fetch(`${API_URL}/api/reddit/scheduler/stop`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+    const data = await res.json();
+    showAlert(data.success ? '⏹ Reddit scheduler stopped' : `❌ ${data.error}`, data.success ? 'success' : 'error');
+    loadRedditStatus();
+}
+async function loadRedditRecentPosts() {
+    const el = document.getElementById('reddit-recent-posts');
+    try {
+        const res = await fetch(`${API_URL}/api/reddit/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.posts?.length) { el.innerHTML = '<p style="color:#6b7280">No posts yet.</p>'; return; }
+        el.innerHTML = data.posts.map(p => `<div style="padding:10px;border-bottom:1px solid #e5e7eb">
+            <strong>r/${p.subreddit}</strong> — ${p.title?.substring(0,80)}...<br>
+            <small style="color:#6b7280">${new Date(p.posted_at).toLocaleString()} ${p.reddit_url ? `| <a href="${p.reddit_url}" target="_blank">View</a>` : ''}</small>
+        </div>`).join('');
+    } catch { el.innerHTML = '<p style="color:#ef4444">Error loading posts</p>'; }
+}
+
+// ─── LINKEDIN ─────────────────────────────────────────────────────────────────
+async function loadLinkedInStatus() {
+    const card = document.getElementById('linkedin-status-card');
+    try {
+        const res = await fetch(`${API_URL}/api/linkedin/status`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const s = data.status || {};
+        card.innerHTML = `<p><strong>Status:</strong> ${s.configured ? '✅ Configured' : '❌ Not configured — add credentials in Settings'}</p>
+            ${s.configured ? `<p><strong>Scheduler:</strong> ${s.schedulerRunning ? '▶ Running' : '⏹ Stopped'}</p><p><strong>Total Posts:</strong> ${s.totalPosts || 0}</p>` : ''}`;
+    } catch { card.innerHTML = '<p>❌ Could not reach backend</p>'; }
+}
+async function publishLinkedInPost() {
+    showAlert('Generating LinkedIn post...', 'success');
+    try {
+        const res = await fetch(`${API_URL}/api/linkedin/post-article`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (data.success) { showAlert('✅ Posted to LinkedIn!', 'success'); loadLinkedInRecentPosts(); }
+        else showAlert(`❌ ${data.error || data.message}`, 'error');
+    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
+}
+async function startLinkedInScheduler() {
+    const res = await fetch(`${API_URL}/api/linkedin/scheduler/start`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+    const data = await res.json();
+    showAlert(data.success ? '▶ LinkedIn scheduler started' : `❌ ${data.error}`, data.success ? 'success' : 'error');
+    loadLinkedInStatus();
+}
+async function stopLinkedInScheduler() {
+    const res = await fetch(`${API_URL}/api/linkedin/scheduler/stop`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+    const data = await res.json();
+    showAlert(data.success ? '⏹ LinkedIn scheduler stopped' : `❌ ${data.error}`, data.success ? 'success' : 'error');
+    loadLinkedInStatus();
+}
+async function loadLinkedInRecentPosts() {
+    const el = document.getElementById('linkedin-recent-posts');
+    try {
+        const res = await fetch(`${API_URL}/api/linkedin/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.posts?.length) { el.innerHTML = '<p style="color:#6b7280">No posts yet.</p>'; return; }
+        el.innerHTML = data.posts.map(p => `<div style="padding:10px;border-bottom:1px solid #e5e7eb">
+            <strong>LinkedIn</strong> — ${p.content?.substring(0,100)}...<br>
+            <small style="color:#6b7280">${new Date(p.posted_at).toLocaleString()} ${p.post_url ? `| <a href="${p.post_url}" target="_blank">View</a>` : ''}</small>
+        </div>`).join('');
+    } catch { el.innerHTML = '<p style="color:#ef4444">Error loading posts</p>'; }
+}
+
+// ─── PINTEREST ───────────────────────────────────────────────────────────────
+let _pinterestCurrentPin = null;
+
+async function initPinterestTab() {
+    try {
+        const res = await fetch(`${API_URL}/api/pinterest/topics`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const sel = document.getElementById('pinterest-topic-select');
+        if (sel && data.success) {
+            sel.innerHTML = '<option value="">— Nächstes Thema (automatisch) —</option>';
+            data.topics.forEach(t => {
+                sel.innerHTML += `<option value="${t.index}"${t.isNext ? ' style="font-weight:700"' : ''}>${t.isNext ? '▶ ' : ''}${t.title}</option>`;
+            });
+        }
+    } catch (e) { console.warn('Pinterest topics:', e.message); }
+    loadPinterestStatus();
+    loadPinterestRecentPosts();
+}
+
+async function loadPinterestStatus() {
+    const card = document.getElementById('pinterest-status-card');
+    try {
+        const res = await fetch(`${API_URL}/api/pinterest/status`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const s = data.status || {};
+        card.innerHTML = `
+            <div style="display:flex;gap:24px;flex-wrap:wrap;">
+                <div><strong>Pinterest:</strong> ${s.connected ? '✅ Verbunden' : '❌ Nicht verbunden'}</div>
+                <div><strong>Ideogram:</strong> ${s.ideogramConfigured ? '✅ Bereit' : '❌ API Key fehlt'}</div>
+                <div><strong>Board:</strong> ${s.boardName ? `✅ ${s.boardName}` : '❌ Kein Board gewählt'}</div>
+                <div><strong>Boards geladen:</strong> ${s.boardsLoaded || 0}</div>
+                <div><strong>Gepostete Pins:</strong> ${s.totalPosts || 0}</div>
+            </div>`;
+    } catch { card.innerHTML = '<p>❌ Backend nicht erreichbar</p>'; }
+}
+
+async function generatePinterestPin() {
+    const btn = document.getElementById('pinterest-generate-btn');
+    const topicIdx = document.getElementById('pinterest-topic-select')?.value;
+    btn.disabled = true;
+    btn.textContent = '⏳ Generiere Bild + Text... (20-40 Sek.)';
+    document.getElementById('pinterest-result-card').style.display = 'none';
+    try {
+        const res = await fetch(`${API_URL}/api/pinterest/generate`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topicIndex: topicIdx !== '' ? parseInt(topicIdx) : undefined })
+        });
+        const data = await res.json();
+        if (!data.success) { showAlert(`❌ ${data.error}`, 'error'); return; }
+
+        _pinterestCurrentPin = data;
+
+        // Fill fields
+        document.getElementById('pinterest-title-field').value = data.title;
+        document.getElementById('pinterest-desc-field').value = data.description;
+        document.getElementById('pinterest-tags-field').value = data.tags;
+        document.getElementById('pinterest-link-field').value = data.link;
+        document.getElementById('pinterest-board-badge').textContent = data.board?.name || 'Travel';
+        document.getElementById('pinterest-post-url').value = '';
+
+        // Image
+        const img = document.getElementById('pinterest-image-preview');
+        const link = document.getElementById('pinterest-image-link');
+        img.src = data.imageUrl;
+        link.href = data.imageUrl;
+
+        document.getElementById('pinterest-result-card').style.display = 'block';
+        document.getElementById('pinterest-result-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) { showAlert('❌ ' + err.message, 'error'); }
+    btn.disabled = false;
+    btn.textContent = '📌 Generieren';
+}
+
+function copyPinterestField(fieldId) {
+    const el = document.getElementById(fieldId);
+    if (!el) return;
+    navigator.clipboard.writeText(el.value)
+        .then(() => showAlert('✅ Kopiert!', 'success'))
+        .catch(() => { el.select(); document.execCommand('copy'); showAlert('✅ Kopiert!', 'success'); });
+}
+
+async function markPinterestAsPosted() {
+    if (!_pinterestCurrentPin?.dbId) { showAlert('Zuerst einen Pin generieren', 'error'); return; }
+    const pinUrl = document.getElementById('pinterest-post-url').value.trim();
+    try {
+        const res = await fetch(`${API_URL}/api/pinterest/log-manual`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ dbId: _pinterestCurrentPin.dbId, pinUrl })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showAlert('✅ Als gepostet markiert!', 'success');
+            document.getElementById('pinterest-result-card').style.display = 'none';
+            _pinterestCurrentPin = null;
+            loadPinterestStatus();
+            loadPinterestRecentPosts();
+        } else showAlert(`❌ ${data.error}`, 'error');
+    } catch (err) { showAlert('❌ ' + err.message, 'error'); }
+}
+
+async function loadPinterestRecentPosts() {
+    const el = document.getElementById('pinterest-recent-posts');
+    if (!el) return;
+    try {
+        const res = await fetch(`${API_URL}/api/pinterest/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.posts?.length) { el.innerHTML = '<p>Noch keine Pins gepostet.</p>'; return; }
+        el.innerHTML = data.posts.map(p => `
+            <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #f0f0f0;align-items:flex-start;">
+                ${p.image_url ? `<img src="${p.image_url}" style="width:50px;height:75px;object-fit:cover;border-radius:4px;flex-shrink:0;">` : ''}
+                <div style="flex:1;min-width:0;">
+                    <div style="display:flex;gap:6px;margin-bottom:2px;">
+                        <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${p.status==='posted'?'#dcfce7':'#f3f4f6'};color:${p.status==='posted'?'#16a34a':'#6b7280'};">
+                            ${p.status === 'posted' ? '✅ gepostet' : '📝 entwurf'}
+                        </span>
+                        ${p.board_name ? `<span style="font-size:11px;padding:2px 8px;background:#fce7e7;color:#e60023;border-radius:10px;">📋 ${p.board_name}</span>` : ''}
+                        ${p.included_cta ? '<span style="font-size:11px;padding:2px 8px;background:#fef3c7;color:#92400e;border-radius:10px;">CTA</span>' : ''}
+                    </div>
+                    <strong style="font-size:13px;">${p.title?.substring(0, 70)}</strong>
+                    <div style="font-size:11px;color:#9ca3af;margin-top:2px;">
+                        ${new Date(p.posted_at).toLocaleString('de-DE')}
+                        ${p.pin_id ? `· <a href="${p.pin_id}" target="_blank" style="color:#e60023;">Ansehen ↗</a>` : ''}
+                    </div>
+                </div>
+            </div>`).join('');
+    } catch { el.innerHTML = '<p style="color:#ef4444">Fehler beim Laden.</p>'; }
+}
+
+// ─── INSTAGRAM ────────────────────────────────────────────────────────────────
+let igCurrentDbId = null;
+
+async function initInstagramTab() {
+    // Load topics into dropdown
+    try {
+        const res = await fetch(`${API_URL}/api/instagram/topics`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const sel = document.getElementById('ig-topic-select');
+        if (sel && data.success) {
+            sel.innerHTML = '<option value="">🎲 Automatisch (nächstes Topic)</option>';
+            data.topics.forEach(t => { sel.innerHTML += `<option value="${t.index}">${t.name}</option>`; });
+        }
+    } catch (e) { console.warn('IG topics:', e.message); }
+    loadIgRecentPosts();
+}
+
+async function generateInstagramPost() {
+    const btn = event.target;
+    const topicIndex = document.getElementById('ig-topic-select').value;
+    btn.disabled = true;
+    btn.textContent = '⏳ Generiere... (ca. 60s)';
+    document.getElementById('ig-preview').style.display = 'none';
+    igCurrentDbId = null;
+
+    try {
+        const res = await fetch(`${API_URL}/api/instagram/generate`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topicIndex: topicIndex !== '' ? parseInt(topicIndex) : undefined })
+        });
+        const data = await res.json();
+        if (!data.success) { showAlert(`❌ ${data.error}`, 'error'); return; }
+
+        igCurrentDbId = data.dbId;
+        document.getElementById('ig-topic-badge').textContent = data.topic || '';
+        document.getElementById('ig-image-preview').src = data.imageUrl;
+        document.getElementById('ig-image-link').href = data.imageUrl;
+        document.getElementById('ig-caption').value = data.caption || '';
+        document.getElementById('ig-preview').style.display = 'block';
+        document.getElementById('ig-posted-msg').style.display = 'none';
+        showAlert('✅ Post generiert!', 'success');
+    } catch (err) {
+        showAlert('❌ Fehler: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '📸 Generiere Post';
+    }
+}
+
+function copyIgField(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    navigator.clipboard.writeText(el.value || el.textContent);
+    showAlert('📋 Kopiert!', 'success');
+}
+
+async function publishInstagramPost() {
+    if (!igCurrentDbId) { showAlert('Bitte zuerst einen Post generieren.', 'error'); return; }
+    const btn = document.getElementById('ig-publish-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Wird gepostet...';
+    try {
+        const res = await fetch(`${API_URL}/api/instagram/publish`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ dbId: igCurrentDbId })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showAlert('✅ Auf Instagram gepostet!', 'success');
+            document.getElementById('ig-posted-msg').style.display = 'inline';
+            loadIgRecentPosts();
+        } else {
+            showAlert(`❌ ${data.error}`, 'error');
+        }
+    } catch (err) {
+        showAlert('❌ Fehler: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '🚀 Direkt auf Instagram posten';
+    }
+}
+
+async function markInstagramAsPosted() {
+    if (!igCurrentDbId) { showAlert('Bitte zuerst einen Post generieren.', 'error'); return; }
+    try {
+        await fetch(`${API_URL}/api/instagram/publish`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ dbId: igCurrentDbId, manualOnly: true })
+        });
+    } catch (_) {}
+    document.getElementById('ig-posted-msg').style.display = 'inline';
+    showAlert('✅ Als gepostet markiert!', 'success');
+    loadIgRecentPosts();
+}
+
+async function loadIgRecentPosts() {
+    const el = document.getElementById('ig-recent-posts');
+    if (!el) return;
+    try {
+        const res = await fetch(`${API_URL}/api/instagram/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.posts?.length) { el.innerHTML = '<p style="color:#6b7280;">Noch keine Posts.</p>'; return; }
+        el.innerHTML = data.posts.map(p => `
+            <div style="display:flex;gap:12px;padding:12px;border-bottom:1px solid #e5e7eb;align-items:flex-start;">
+                ${p.image_url ? `<img src="${p.image_url}" style="width:60px;height:60px;border-radius:6px;object-fit:cover;flex-shrink:0;cursor:pointer;" onclick="reloadIgPost(${JSON.stringify(p).replace(/"/g,'&quot;')})">` : ''}
+                <div style="flex:1;">
+                    <strong>${p.title || 'Instagram Post'}</strong>
+                    <span style="background:${p.status==='posted'?'#d1fae5':'#fef3c7'};color:${p.status==='posted'?'#065f46':'#92400e'};padding:2px 8px;border-radius:10px;font-size:11px;margin-left:8px;">${p.status}</span><br>
+                    <small style="color:#6b7280;">${p.caption?.substring(0,80)}...</small><br>
+                    <small style="color:#9ca3af;">${p.created_at ? new Date(p.created_at).toLocaleString('de-DE') : ''}</small>
+                </div>
+                <button onclick='reloadIgPost(${JSON.stringify(p).replace(/'/g,"&#39;")})' style="background:#E1306C;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;white-space:nowrap;flex-shrink:0;">
+                    🔄 Neu laden
+                </button>
+            </div>`).join('');
+    } catch { el.innerHTML = '<p style="color:#ef4444">Fehler beim Laden.</p>'; }
+}
+
+function reloadIgPost(p) {
+    igCurrentDbId = p.id;
+    document.getElementById('ig-topic-badge').textContent = p.title || '';
+    document.getElementById('ig-image-preview').src = p.image_url || '';
+    document.getElementById('ig-image-link').href = p.image_url || '#';
+    document.getElementById('ig-caption').value = p.caption || '';
+    document.getElementById('ig-preview').style.display = 'block';
+    document.getElementById('ig-posted-msg').style.display = 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    showAlert('✅ Post geladen — bereit zum Posten!', 'success');
+}
+
+// ─── WORDPRESS ────────────────────────────────────────────────────────────────
+async function initWordPressTab() {
+    // Load topics into dropdown
+    try {
+        const res = await fetch(`${API_URL}/api/wordpress/topics`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const sel = document.getElementById('wordpress-topic-select');
+        if (sel && data.success) {
+            sel.innerHTML = '<option value="">— Nächstes Thema (automatisch) —</option>';
+            data.topics.forEach(t => { sel.innerHTML += `<option value="${t.index}">${t.title}</option>`; });
+        }
+    } catch (e) { console.warn('WP topics:', e.message); }
+    loadWordPressStatus();
+    loadWordPressRecentPosts();
+}
+
+async function loadWordPressStatus() {
+    const card = document.getElementById('wordpress-status-card');
+    try {
+        const res = await fetch(`${API_URL}/api/wordpress/status`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const s = data.status || {};
+        card.innerHTML = `
+            <div style="display:flex;gap:24px;flex-wrap:wrap;">
+                <div><strong>Status:</strong> ${s.configured ? '✅ Verbunden' : '❌ Nicht konfiguriert — URL + Credentials in Settings eintragen'}</div>
+                ${s.configured ? `<div><strong>Site:</strong> ${s.siteUrl || '—'}</div>` : ''}
+                <div><strong>Scheduler:</strong> ${s.schedulerRunning ? '▶ Läuft' : '⏹ Gestoppt'}</div>
+                <div><strong>Posts gesamt:</strong> ${s.totalPosts || 0}</div>
+            </div>`;
+    } catch { card.innerHTML = '<p>❌ Backend nicht erreichbar</p>'; }
+}
+
+async function testWordPressConnection() {
+    const el = document.getElementById('wordpress-test-result');
+    el.textContent = '⏳ Teste Verbindung...';
+    try {
+        const res = await fetch(`${API_URL}/api/wordpress/test-connection`, {
+            method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+            el.innerHTML = `<span style="color:#16a34a;">✅ Verbunden als <strong>${data.name}</strong> auf ${data.url}</span>`;
+            loadWordPressStatus();
+        } else {
+            el.innerHTML = `<span style="color:#dc2626;">❌ ${data.error}</span>`;
+        }
+    } catch (err) { el.innerHTML = `<span style="color:#dc2626;">❌ ${err.message}</span>`; }
+}
+
+async function publishWordPressPost() {
+    const btn = document.getElementById('wp-publish-btn');
+    const result = document.getElementById('wp-publish-result');
+    const topicIdx = document.getElementById('wordpress-topic-select')?.value;
+    btn.disabled = true;
+    btn.textContent = '⏳ Generiere & veröffentliche... (30-60 Sek.)';
+    result.textContent = '';
+    try {
+        const res = await fetch(`${API_URL}/api/wordpress/publish`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topicIndex: topicIdx !== '' ? parseInt(topicIdx) : undefined })
+        });
+        const data = await res.json();
+        if (data.success) {
+            result.innerHTML = `✅ Veröffentlicht: <a href="${data.wpUrl}" target="_blank" style="color:#21759b;">${data.title}</a>`;
+            loadWordPressRecentPosts();
+            loadWordPressStatus();
+        } else {
+            result.innerHTML = `<span style="color:#dc2626;">❌ ${data.error}</span>`;
+        }
+    } catch (err) { result.innerHTML = `<span style="color:#dc2626;">❌ ${err.message}</span>`; }
+    btn.disabled = false;
+    btn.textContent = '📝 Artikel generieren & veröffentlichen';
+}
+
+async function startWordPressScheduler() {
+    const res = await fetch(`${API_URL}/api/wordpress/scheduler/start`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+    const data = await res.json();
+    showAlert(data.success ? `▶ Scheduler gestartet — ${data.schedule}` : `❌ ${data.error || data.reason}`, data.success ? 'success' : 'error');
+    loadWordPressStatus();
+}
+
+async function stopWordPressScheduler() {
+    const res = await fetch(`${API_URL}/api/wordpress/scheduler/stop`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+    const data = await res.json();
+    showAlert(data.success ? '⏹ Scheduler gestoppt' : `❌ ${data.error || data.reason}`, data.success ? 'success' : 'error');
+    loadWordPressStatus();
+}
+
+async function loadWordPressRecentPosts() {
+    const el = document.getElementById('wordpress-recent-posts');
+    if (!el) return;
+    try {
+        const res = await fetch(`${API_URL}/api/wordpress/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.posts?.length) { el.innerHTML = '<p>Noch keine Artikel veröffentlicht.</p>'; return; }
+        el.innerHTML = data.posts.map(p => `
+            <div style="padding:10px 0;border-bottom:1px solid #f0f0f0;">
+                <strong>${p.title?.substring(0, 80)}</strong>
+                ${p.included_cta ? '<span style="margin-left:6px;font-size:11px;background:#dcfce7;color:#166534;padding:2px 7px;border-radius:10px;">CTA</span>' : ''}
+                <div style="font-size:12px;color:#9ca3af;margin-top:2px;">
+                    ${new Date(p.posted_at).toLocaleString('de-DE')} · ${p.category || ''}
+                    ${p.wp_url ? `· <a href="${p.wp_url}" target="_blank" style="color:#21759b;">Ansehen ↗</a>` : ''}
+                </div>
+            </div>`).join('');
+    } catch { el.innerHTML = '<p style="color:#ef4444">Fehler beim Laden.</p>'; }
+}
+
+// ─── QUORA ────────────────────────────────────────────────────────────────────
+let _quoraCurrentPost = null;
+
+async function initQuoraTab() {
+    try {
+        const res = await fetch(`${API_URL}/api/quora/topics`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const sel = document.getElementById('quora-topic-select');
+        if (sel && data.success) {
+            sel.innerHTML = '<option value="">— Nächstes Thema (automatisch) —</option>';
+            data.topics.forEach(t => {
+                sel.innerHTML += `<option value="${t.index}"${t.isNext ? ' style="font-weight:700"' : ''}>${t.isNext ? '▶ ' : ''}${t.title}</option>`;
+            });
+        }
+    } catch (e) { console.warn('Quora topics:', e.message); }
+    loadQuoraStatus();
+    loadQuoraRecentPostsNew();
+}
+
+async function loadQuoraStatus() {
+    const card = document.getElementById('quora-status-card');
+    try {
+        const res = await fetch(`${API_URL}/api/quora/status`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const s = data.status || {};
+        card.innerHTML = `
+            <div style="display:flex;gap:24px;flex-wrap:wrap;">
+                <div><strong>Gepostete Antworten:</strong> ${s.totalPosts || 0}</div>
+                <div><strong>Nächste Frage:</strong> <em style="color:#6b7280;">${(s.nextQuestion || '').substring(0, 60)}…</em></div>
+            </div>`;
+    } catch { card.innerHTML = '<p>❌ Backend nicht erreichbar</p>'; }
+}
+
+async function generateQuoraPost() {
+    const btn = document.getElementById('quora-generate-btn');
+    const topicIdx = document.getElementById('quora-topic-select')?.value;
+    btn.disabled = true;
+    btn.textContent = '⏳ Generiere...';
+    document.getElementById('quora-result-card').style.display = 'none';
+    try {
+        const res = await fetch(`${API_URL}/api/quora/generate`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topicIndex: topicIdx !== '' ? parseInt(topicIdx) : undefined })
+        });
+        const data = await res.json();
+        if (!data.success) { showAlert(`❌ ${data.error}`, 'error'); return; }
+
+        _quoraCurrentPost = data;
+        document.getElementById('quora-question-field').value = data.question;
+        document.getElementById('quora-answer-field').value = data.answer;
+        document.getElementById('quora-post-url').value = '';
+
+        const spacesEl = document.getElementById('quora-spaces-badges');
+        spacesEl.innerHTML = (data.spaces || []).map(s =>
+            `<span style="padding:5px 14px;background:#fef3c7;border:1px solid #d97706;border-radius:20px;font-size:12px;font-weight:600;color:#92400e;">📚 ${s}</span>`
+        ).join('');
+
+        document.getElementById('quora-result-card').style.display = 'block';
+        document.getElementById('quora-result-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) { showAlert('❌ ' + err.message, 'error'); }
+    btn.disabled = false;
+    btn.textContent = '❓ Generieren';
+}
+
+function copyQuoraField(fieldId) {
+    const el = document.getElementById(fieldId);
+    if (!el) return;
+    navigator.clipboard.writeText(el.value)
+        .then(() => showAlert('✅ In die Zwischenablage kopiert!', 'success'))
+        .catch(() => { el.select(); document.execCommand('copy'); showAlert('✅ Kopiert!', 'success'); });
+}
+
+async function markQuoraAsPosted() {
+    if (!_quoraCurrentPost?.dbId) { showAlert('Zuerst eine Antwort generieren', 'error'); return; }
+    const postUrl = document.getElementById('quora-post-url').value.trim();
+    try {
+        const res = await fetch(`${API_URL}/api/quora/log-manual`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ dbId: _quoraCurrentPost.dbId, postUrl })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showAlert('✅ Als gepostet markiert!', 'success');
+            document.getElementById('quora-result-card').style.display = 'none';
+            _quoraCurrentPost = null;
+            loadQuoraStatus();
+            loadQuoraRecentPostsNew();
+        } else showAlert(`❌ ${data.error}`, 'error');
+    } catch (err) { showAlert('❌ ' + err.message, 'error'); }
+}
+
+async function loadQuoraRecentPostsNew() {
+    const el = document.getElementById('quora-recent-posts');
+    if (!el) return;
+    try {
+        const res = await fetch(`${API_URL}/api/quora/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.posts?.length) { el.innerHTML = '<p>Noch keine Antworten gepostet.</p>'; return; }
+        el.innerHTML = data.posts.map(p => `
+            <div style="padding:10px 0;border-bottom:1px solid #f0f0f0;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+                    <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${p.status==='posted'?'#dcfce7':'#f3f4f6'};color:${p.status==='posted'?'#16a34a':'#6b7280'};">
+                        ${p.status === 'posted' ? '✅ gepostet' : '📝 entwurf'}
+                    </span>
+                    <span style="font-size:11px;color:#9ca3af;">${p.category || ''}</span>
+                    ${p.included_cta ? '<span style="font-size:11px;padding:2px 8px;background:#fef3c7;color:#92400e;border-radius:10px;">CTA</span>' : ''}
+                </div>
+                <strong style="font-size:13px;">${p.question?.substring(0, 80)}</strong>
+                <div style="font-size:11px;color:#9ca3af;margin-top:2px;">
+                    ${new Date(p.posted_at).toLocaleString('de-DE')}
+                    ${p.space_suggestions ? `· ${p.space_suggestions}` : ''}
+                    ${p.post_url ? `· <a href="${p.post_url}" target="_blank" style="color:#b92b27;">Ansehen ↗</a>` : ''}
+                </div>
+            </div>`).join('');
+    } catch { el.innerHTML = '<p style="color:#ef4444">Fehler beim Laden.</p>'; }
+}
+
+// ─── SLIDESHARE ───────────────────────────────────────────────────────────────
+let _slideshareCurrentPost = null;
+
+async function initSlideShareTab() {
+    try {
+        const res = await fetch(`${API_URL}/api/slideshare/topics`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const sel = document.getElementById('slideshare-topic-select');
+        if (sel && data.success) {
+            sel.innerHTML = '<option value="">— Nächstes Thema (automatisch) —</option>';
+            data.topics.forEach(t => {
+                sel.innerHTML += `<option value="${t.index}"${t.isNext ? ' style="font-weight:700"' : ''}>${t.isNext ? '▶ ' : ''}${t.title}</option>`;
+            });
+        }
+    } catch (e) { console.warn('SlideShare topics:', e.message); }
+    loadSlideShareStatus();
+    loadSlideShareRecentPosts();
+    loadGoodies();
+}
+
+async function loadSlideShareStatus() {
+    const card = document.getElementById('slideshare-status-card');
+    try {
+        const res = await fetch(`${API_URL}/api/slideshare/status`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const s = data.status || {};
+        card.innerHTML = `
+            <div style="display:flex;gap:24px;flex-wrap:wrap;">
+                <div><strong>Präsentationen gepostet:</strong> ${s.totalPosts || 0}</div>
+                <div><strong>Nächstes Thema:</strong> <em style="color:#6b7280;">${(s.nextTopic || '').substring(0, 60)}</em></div>
+            </div>`;
+    } catch { card.innerHTML = '<p>❌ Backend nicht erreichbar</p>'; }
+}
+
+async function generateSlideShare() {
+    const btn = document.getElementById('slideshare-generate-btn');
+    const topicIdx = document.getElementById('slideshare-topic-select')?.value;
+    btn.disabled = true;
+    btn.textContent = '⏳ Generiere... (15-30 Sek.)';
+    document.getElementById('slideshare-result-card').style.display = 'none';
+    try {
+        const res = await fetch(`${API_URL}/api/slideshare/generate`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topicIndex: topicIdx !== '' ? parseInt(topicIdx) : undefined })
+        });
+        const data = await res.json();
+        if (!data.success) { showAlert(`❌ ${data.error}`, 'error'); return; }
+
+        _slideshareCurrentPost = data;
+        document.getElementById('slideshare-gamma-field').value = data.gammaPrompt;
+        document.getElementById('slideshare-title-field').value = data.ssTitle;
+        document.getElementById('slideshare-desc-field').value = data.ssDescription;
+        document.getElementById('slideshare-tags-field').value = data.ssTags;
+        document.getElementById('slideshare-post-url').value = '';
+
+        document.getElementById('slideshare-result-card').style.display = 'block';
+        document.getElementById('slideshare-result-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) { showAlert('❌ ' + err.message, 'error'); }
+    btn.disabled = false;
+    btn.textContent = '📊 Generieren';
+}
+
+function copySlideShareField(fieldId) {
+    const el = document.getElementById(fieldId);
+    if (!el) return;
+    navigator.clipboard.writeText(el.value)
+        .then(() => showAlert('✅ Kopiert!', 'success'))
+        .catch(() => { el.select(); document.execCommand('copy'); showAlert('✅ Kopiert!', 'success'); });
+}
+
+async function markSlideShareAsPosted() {
+    if (!_slideshareCurrentPost?.dbId) { showAlert('Zuerst eine Präsentation generieren', 'error'); return; }
+    const postUrl = document.getElementById('slideshare-post-url').value.trim();
+    const saveAsGoodie = document.getElementById('slideshare-save-goodie')?.checked;
+    const goodieTitle = document.getElementById('slideshare-goodie-title')?.value.trim();
+    const goodieDesc = document.getElementById('slideshare-goodie-desc')?.value.trim();
+    const goodieCat = document.getElementById('slideshare-goodie-category')?.value.trim();
+    try {
+        const res = await fetch(`${API_URL}/api/slideshare/log-manual`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                dbId: _slideshareCurrentPost.dbId,
+                postUrl,
+                saveAsGoodie: saveAsGoodie && !!postUrl,
+                goodieTitle: goodieTitle || _slideshareCurrentPost.topic,
+                goodieDescription: goodieDesc,
+                goodieCategory: goodieCat || _slideshareCurrentPost.category,
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showAlert(data.goodieId ? '✅ Gepostet & als Goodie gespeichert!' : '✅ Als gepostet markiert!', 'success');
+            document.getElementById('slideshare-result-card').style.display = 'none';
+            document.getElementById('slideshare-save-goodie').checked = false;
+            document.getElementById('slideshare-goodie-fields').style.display = 'none';
+            _slideshareCurrentPost = null;
+            loadSlideShareStatus();
+            loadSlideShareRecentPosts();
+            loadGoodies();
+        } else showAlert(`❌ ${data.error}`, 'error');
+    } catch (err) { showAlert('❌ ' + err.message, 'error'); }
+}
+
+// Toggle goodie fields on checkbox
+document.addEventListener('change', e => {
+    if (e.target.id === 'slideshare-save-goodie') {
+        const fields = document.getElementById('slideshare-goodie-fields');
+        if (fields) fields.style.display = e.target.checked ? 'block' : 'none';
+        if (e.target.checked && _slideshareCurrentPost) {
+            const t = document.getElementById('slideshare-goodie-title');
+            if (t && !t.value) t.value = _slideshareCurrentPost.topic || '';
+        }
+    }
+});
+
+function showAddGoodieForm() {
+    const f = document.getElementById('add-goodie-form');
+    if (f) f.style.display = f.style.display === 'none' ? 'block' : 'none';
+}
+
+async function saveGoodie() {
+    const title = document.getElementById('goodie-title')?.value.trim();
+    if (!title) { showAlert('Titel ist Pflicht', 'error'); return; }
+    try {
+        const res = await fetch(`${API_URL}/api/slideshare/goodies`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                title,
+                description: document.getElementById('goodie-description')?.value.trim(),
+                slideshareUrl: document.getElementById('goodie-slideshare-url')?.value.trim(),
+                pdfUrl: document.getElementById('goodie-pdf-url')?.value.trim(),
+                category: document.getElementById('goodie-category')?.value.trim() || 'travel',
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showAlert('✅ Goodie gespeichert!', 'success');
+            document.getElementById('add-goodie-form').style.display = 'none';
+            ['goodie-title','goodie-description','goodie-slideshare-url','goodie-pdf-url','goodie-category'].forEach(id => {
+                const el = document.getElementById(id); if (el) el.value = '';
+            });
+            loadGoodies();
+        } else showAlert(`❌ ${data.error}`, 'error');
+    } catch (err) { showAlert('❌ ' + err.message, 'error'); }
+}
+
+async function deleteGoodie(id) {
+    if (!confirm('Goodie löschen?')) return;
+    try {
+        const res = await fetch(`${API_URL}/api/slideshare/goodies/${id}`, {
+            method: 'DELETE', headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const data = await res.json();
+        if (data.success) { showAlert('🗑️ Gelöscht', 'success'); loadGoodies(); }
+        else showAlert(`❌ ${data.error}`, 'error');
+    } catch (err) { showAlert('❌ ' + err.message, 'error'); }
+}
+
+async function loadGoodies() {
+    const el = document.getElementById('goodies-list');
+    if (!el) return;
+    try {
+        const res = await fetch(`${API_URL}/api/slideshare/goodies`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.goodies?.length) { el.innerHTML = '<p>Noch keine Goodies. Erstelle dein erstes oben!</p>'; return; }
+        el.innerHTML = data.goodies.map(g => `
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:12px 0;border-bottom:1px solid #f0f0f0;">
+                <div style="flex:1;">
+                    <div style="display:flex;gap:6px;margin-bottom:4px;">
+                        <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${g.active?'#dcfce7':'#f3f4f6'};color:${g.active?'#16a34a':'#6b7280'};">
+                            ${g.active ? '✅ aktiv' : '⏸ inaktiv'}
+                        </span>
+                        <span style="font-size:11px;color:#9ca3af;">${g.category || ''}</span>
+                        <span style="font-size:11px;color:#9ca3af;">📥 ${g.download_count || 0} Downloads</span>
+                    </div>
+                    <strong style="font-size:13px;">${g.title}</strong>
+                    ${g.description ? `<div style="font-size:12px;color:#6b7280;margin-top:2px;">${g.description.substring(0,100)}</div>` : ''}
+                    <div style="font-size:11px;color:#9ca3af;margin-top:4px;">
+                        ${g.slideshare_url ? `<a href="${g.slideshare_url}" target="_blank" style="color:#0077b5;">SlideShare ↗</a>` : ''}
+                        ${g.pdf_url ? ` · <a href="${g.pdf_url}" target="_blank" style="color:#dc2626;">PDF ↗</a>` : ''}
+                    </div>
+                </div>
+                <button onclick="deleteGoodie('${g.id}')"
+                    style="margin-left:12px;padding:5px 10px;background:#fef2f2;border:1px solid #fca5a5;color:#dc2626;border-radius:5px;cursor:pointer;font-size:12px;">
+                    🗑️
+                </button>
+            </div>`).join('');
+    } catch { el.innerHTML = '<p style="color:#ef4444">Fehler beim Laden.</p>'; }
+}
+
+async function loadSlideShareRecentPosts() {
+    const el = document.getElementById('slideshare-recent-posts');
+    if (!el) return;
+    try {
+        const res = await fetch(`${API_URL}/api/slideshare/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.posts?.length) { el.innerHTML = '<p>Noch keine Präsentationen gepostet.</p>'; return; }
+        el.innerHTML = data.posts.map(p => `
+            <div style="padding:10px 0;border-bottom:1px solid #f0f0f0;">
+                <div style="display:flex;gap:6px;margin-bottom:2px;">
+                    <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${p.status==='posted'?'#dcfce7':'#f3f4f6'};color:${p.status==='posted'?'#16a34a':'#6b7280'};">
+                        ${p.status === 'posted' ? '✅ gepostet' : '📝 entwurf'}
+                    </span>
+                    <span style="font-size:11px;color:#9ca3af;">${p.category || ''}</span>
+                </div>
+                <strong style="font-size:13px;">${p.ss_title?.substring(0, 80) || p.title}</strong>
+                <div style="font-size:11px;color:#9ca3af;margin-top:2px;">
+                    ${new Date(p.posted_at).toLocaleString('de-DE')}
+                    ${p.post_url ? `· <a href="${p.post_url}" target="_blank" style="color:#0077b5;">Ansehen ↗</a>` : ''}
+                </div>
+            </div>`).join('');
+    } catch { el.innerHTML = '<p style="color:#ef4444">Fehler beim Laden.</p>'; }
+}
+
+// ─── BLOGGER ──────────────────────────────────────────────────────────────────
+async function initBloggerTab() {
+    try {
+        const res = await fetch(`${API_URL}/api/blogger/topics`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const sel = document.getElementById('blogger-topic-select');
+        if (sel && data.success) {
+            sel.innerHTML = '<option value="">— Nächstes Thema (automatisch) —</option>';
+            data.topics.forEach(t => { sel.innerHTML += `<option value="${t.index}">${t.title}</option>`; });
+        }
+    } catch (e) { console.warn('Blogger topics:', e.message); }
+    loadBloggerStatus();
+    loadBloggerRecentPosts();
+}
+
+async function loadBloggerStatus() {
+    const card = document.getElementById('blogger-status-card');
+    try {
+        const res = await fetch(`${API_URL}/api/blogger/status`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const s = data.status || {};
+        card.innerHTML = `
+            <div style="display:flex;gap:24px;flex-wrap:wrap;">
+                <div><strong>Google:</strong> ${s.connected ? '✅ Verbunden' : '❌ Nicht verbunden'}</div>
+                <div><strong>Blog:</strong> ${s.blogId ? `✅ ID ${s.blogId}` : '❌ Nicht ausgewählt'}</div>
+                <div><strong>Scheduler:</strong> ${s.schedulerRunning ? '▶ Läuft' : '⏹ Gestoppt'}</div>
+                <div><strong>Posts gesamt:</strong> ${s.totalPosts || 0}</div>
+            </div>`;
+    } catch { card.innerHTML = '<p>❌ Backend nicht erreichbar</p>'; }
+}
+
+async function connectBlogger() {
+    const el = document.getElementById('blogger-connect-status');
+    try {
+        const res = await fetch(`${API_URL}/api/blogger/auth-url`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.success) { el.innerHTML = `<span style="color:#dc2626;">❌ ${data.error}</span>`; return; }
+        const popup = window.open(data.authUrl, 'blogger-auth', 'width=600,height=700');
+        el.innerHTML = `<span style="color:#6b7280;">Fenster geöffnet... Nach der Autorisierung hier klicken:</span>
+            <button onclick="loadBloggerStatus();loadBloggerBlogs();" style="margin-left:8px;padding:5px 12px;background:#16a34a;color:#fff;border:none;border-radius:4px;cursor:pointer;">✅ Verbunden</button>`;
+    } catch (err) { el.innerHTML = `<span style="color:#dc2626;">❌ ${err.message}</span>`; }
+}
+
+async function loadBloggerBlogs() {
+    const el = document.getElementById('blogger-blogs');
+    el.innerHTML = '<span style="color:#6b7280;">Lade Blogs...</span>';
+    try {
+        const res = await fetch(`${API_URL}/api/blogger/blogs`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.blogs?.length) { el.innerHTML = '<p style="color:#6b7280;">Keine Blogs gefunden — zuerst verbinden.</p>'; return; }
+        el.innerHTML = data.blogs.map(b =>
+            `<button onclick="selectBloggerBlog('${b.id}','${b.name.replace(/'/g,"\\'")}','${b.url}')"
+                style="margin:4px;padding:8px 16px;background:#fff3e0;border:1px solid #f57c00;border-radius:6px;cursor:pointer;color:#f57c00;font-weight:600;">
+                📰 ${b.name}
+            </button>`
+        ).join('');
+    } catch (err) { el.innerHTML = `<span style="color:#dc2626;">❌ ${err.message}</span>`; }
+}
+
+async function selectBloggerBlog(blogId, blogName, blogUrl) {
+    try {
+        const res = await fetch(`${API_URL}/api/blogger/select-blog`, {
+            method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ blogId, blogName })
+        });
+        const data = await res.json();
+        if (data.success) { showAlert(`✅ Blog ausgewählt: ${blogName}`, 'success'); loadBloggerStatus(); }
+        else showAlert(`❌ ${data.error}`, 'error');
+    } catch (err) { showAlert('❌ ' + err.message, 'error'); }
+}
+
+async function publishBloggerPost() {
+    const btn = document.getElementById('blogger-publish-btn');
+    const result = document.getElementById('blogger-publish-result');
+    const topicIdx = document.getElementById('blogger-topic-select')?.value;
+    btn.disabled = true;
+    btn.textContent = '⏳ Generiere + Bild + veröffentliche... (30-60 Sek.)';
+    result.textContent = '';
+    try {
+        const res = await fetch(`${API_URL}/api/blogger/publish`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topicIndex: topicIdx !== '' ? parseInt(topicIdx) : undefined })
+        });
+        const data = await res.json();
+        if (data.success) {
+            result.innerHTML = `✅ Veröffentlicht: <a href="${data.bloggerUrl}" target="_blank" style="color:#f57c00;">${data.title}</a>`;
+            loadBloggerRecentPosts(); loadBloggerStatus();
+        } else {
+            result.innerHTML = `<span style="color:#dc2626;">❌ ${data.error}</span>`;
+        }
+    } catch (err) { result.innerHTML = `<span style="color:#dc2626;">❌ ${err.message}</span>`; }
+    btn.disabled = false;
+    btn.textContent = '📰 Artikel generieren & veröffentlichen';
+}
+
+async function startBloggerScheduler() {
+    const res = await fetch(`${API_URL}/api/blogger/scheduler/start`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+    const data = await res.json();
+    showAlert(data.success ? `▶ Scheduler gestartet — ${data.schedule}` : `❌ ${data.error || data.reason}`, data.success ? 'success' : 'error');
+    loadBloggerStatus();
+}
+
+async function stopBloggerScheduler() {
+    const res = await fetch(`${API_URL}/api/blogger/scheduler/stop`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+    const data = await res.json();
+    showAlert(data.success ? '⏹ Scheduler gestoppt' : `❌ ${data.error || data.reason}`, data.success ? 'success' : 'error');
+    loadBloggerStatus();
+}
+
+async function loadBloggerRecentPosts() {
+    const el = document.getElementById('blogger-recent-posts');
+    if (!el) return;
+    try {
+        const res = await fetch(`${API_URL}/api/blogger/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.posts?.length) { el.innerHTML = '<p>Noch keine Artikel veröffentlicht.</p>'; return; }
+        el.innerHTML = data.posts.map(p => `
+            <div style="padding:10px 0;border-bottom:1px solid #f0f0f0;">
+                <strong>${p.title?.substring(0,80)}</strong>
+                <div style="font-size:12px;color:#9ca3af;margin-top:2px;">
+                    ${new Date(p.posted_at).toLocaleString('de-DE')} · ${p.category || ''}
+                    ${p.blogger_url ? `· <a href="${p.blogger_url}" target="_blank" style="color:#f57c00;">Ansehen ↗</a>` : ''}
+                </div>
+            </div>`).join('');
+    } catch { el.innerHTML = '<p style="color:#ef4444">Fehler beim Laden.</p>'; }
+}
+
+// ─── SETTINGS: Load & Save Social Media Credentials ──────────────────────────
+async function loadSocialSettings() {
+    try {
+        const res = await fetch(`${API_URL}/api/admin/settings`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        if (!res.ok) return;
+        const data = await res.json();
+        const s = data.data || {};
+        const set = (id, key) => { const el = document.getElementById(id); if (el && s[key]?.value) el.value = s[key].value; };
+        const chk = (id, key) => { const el = document.getElementById(id); if (el) el.checked = s[key]?.value === 'true'; };
+        set('twitter-api-key', 'twitter_api_key');
+        set('twitter-api-secret', 'twitter_api_secret');
+        set('twitter-bearer-token', 'twitter_bearer_token');
+        set('twitter-access-token', 'twitter_access_token');
+        set('twitter-access-secret', 'twitter_access_secret');
+        set('twitter-frequency', 'twitter_frequency_hours');
+        chk('twitter-auto', 'twitter_auto_posting');
+        set('reddit-client-id', 'reddit_client_id');
+        set('reddit-client-secret', 'reddit_client_secret');
+        set('reddit-username', 'reddit_username');
+        set('reddit-password', 'reddit_password');
+        set('reddit-frequency', 'reddit_frequency_hours');
+        chk('reddit-auto', 'reddit_auto_posting');
+        set('pinterest-app-id', 'pinterest_app_id');
+        set('pinterest-app-secret', 'pinterest_app_secret');
+        set('pinterest-access-token', 'pinterest_access_token');
+        set('pinterest-board-id', 'pinterest_board_id');
+        set('ideogram-api-key', 'ideogram_api_key');
+        set('pinterest-frequency', 'pinterest_frequency_hours');
+        chk('pinterest-auto', 'pinterest_auto_posting');
+        set('instagram-access-token', 'instagram_access_token');
+        set('instagram-account-id', 'instagram_account_id');
+        set('instagram-frequency', 'instagram_frequency_hours');
+        chk('instagram-auto', 'instagram_auto_posting');
+        set('linkedin-client-id', 'linkedin_client_id');
+        set('linkedin-client-secret', 'linkedin_client_secret');
+        set('linkedin-access-token', 'linkedin_access_token');
+        set('linkedin-org-id', 'linkedin_org_id');
+        set('linkedin-person-urn', 'linkedin_person_urn');
+        set('linkedin-frequency', 'linkedin_frequency_hours');
+        chk('linkedin-auto', 'linkedin_auto_posting');
+        set('wordpress-site-url', 'wordpress_site_url');
+        set('wordpress-username', 'wordpress_username');
+        set('wordpress-app-password', 'wordpress_app_password');
+        set('wordpress-frequency', 'wordpress_frequency_hours');
+        chk('wordpress-auto', 'wordpress_auto_posting');
+        set('google-client-id', 'google_client_id');
+        set('google-client-secret', 'google_client_secret');
+        set('blogger-frequency', 'blogger_frequency_hours');
+        chk('blogger-auto', 'blogger_auto_posting');
+    } catch (err) { console.warn('Could not load social settings:', err.message); }
+}
+
+async function saveSocialSettings() {
+    const val = id => document.getElementById(id)?.value?.trim() || '';
+    const chk = id => document.getElementById(id)?.checked ? 'true' : 'false';
+    const settings = {
+        twitter_api_key: val('twitter-api-key'),
+        twitter_api_secret: val('twitter-api-secret'),
+        twitter_bearer_token: val('twitter-bearer-token'),
+        twitter_access_token: val('twitter-access-token'),
+        twitter_access_secret: val('twitter-access-secret'),
+        twitter_frequency_hours: val('twitter-frequency') || '4',
+        twitter_auto_posting: chk('twitter-auto'),
+        reddit_client_id: val('reddit-client-id'),
+        reddit_client_secret: val('reddit-client-secret'),
+        reddit_username: val('reddit-username'),
+        reddit_password: val('reddit-password'),
+        reddit_frequency_hours: val('reddit-frequency') || '6',
+        reddit_auto_posting: chk('reddit-auto'),
+        pinterest_app_id: val('pinterest-app-id'),
+        pinterest_app_secret: val('pinterest-app-secret'),
+        pinterest_access_token: val('pinterest-access-token'),
+        pinterest_board_id: val('pinterest-board-id'),
+        ideogram_api_key: val('ideogram-api-key'),
+        pinterest_frequency_hours: val('pinterest-frequency') || '4',
+        pinterest_auto_posting: chk('pinterest-auto'),
+        instagram_access_token: val('instagram-access-token'),
+        instagram_account_id: val('instagram-account-id'),
+        instagram_frequency_hours: val('instagram-frequency') || '8',
+        instagram_auto_posting: chk('instagram-auto'),
+        linkedin_client_id: val('linkedin-client-id'),
+        linkedin_client_secret: val('linkedin-client-secret'),
+        linkedin_access_token: val('linkedin-access-token'),
+        linkedin_org_id: val('linkedin-org-id'),
+        linkedin_person_urn: val('linkedin-person-urn'),
+        linkedin_frequency_hours: val('linkedin-frequency') || '12',
+        linkedin_auto_posting: chk('linkedin-auto'),
+        wordpress_site_url: val('wordpress-site-url'),
+        wordpress_username: val('wordpress-username'),
+        wordpress_app_password: val('wordpress-app-password'),
+        wordpress_frequency_hours: val('wordpress-frequency') || '48',
+        wordpress_auto_posting: chk('wordpress-auto'),
+        google_client_id: val('google-client-id'),
+        google_client_secret: val('google-client-secret'),
+        blogger_frequency_hours: val('blogger-frequency') || '24',
+        blogger_auto_posting: chk('blogger-auto'),
+    };
+    await fetch(`${API_URL}/api/admin/settings/batch/update`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings)
+    });
+    // Reload services with new credentials
+    for (const platform of ['twitter', 'pinterest', 'reddit', 'linkedin', 'instagram', 'wordpress', 'blogger']) {
+        fetch(`${API_URL}/api/${platform}/reload-settings`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } }).catch(() => {});
+    }
+}
+
+// ─── LINKEDIN OAUTH ───────────────────────────────────────────────────────────
+async function getLinkedInAuthUrl() {
+    try {
+        const res = await fetch(`${API_URL}/api/linkedin/auth-url`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+        const popup = window.open(data.url, 'LinkedIn Auth', 'width=600,height=700');
+        const status = document.getElementById('linkedin-auth-status');
+        status.textContent = '⏳ Warte auf Autorisierung...';
+        const check = setInterval(() => {
+            if (popup.closed) {
+                clearInterval(check);
+                status.textContent = '✅ Verbunden — bitte Seite neu laden um den Status zu sehen.';
+            }
+        }, 1000);
+    } catch (e) { alert('Fehler: ' + e.message); }
+}
+
+async function fetchLinkedInUrn() {
+    try {
+        const res = await fetch(`${API_URL}/api/linkedin/fetch-urn`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+        document.getElementById('linkedin-person-urn').value = data.personUrn;
+        showAlert(`✅ Person URN: ${data.personUrn} — bitte Save All Settings klicken.`, 'success');
+    } catch (e) { alert('Fehler: ' + e.message); }
+}
+
+// ─── PINTEREST OAUTH ──────────────────────────────────────────────────────────
+async function getPinterestAuthUrl() {
+    try {
+        const res = await fetch(`${API_URL}/api/pinterest/auth-url`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+        const popup = window.open(data.url, 'Pinterest Auth', 'width=600,height=700');
+        const status = document.getElementById('pinterest-auth-status');
+        status.textContent = '⏳ Warte auf Autorisierung...';
+        const check = setInterval(() => {
+            if (popup.closed) {
+                clearInterval(check);
+                status.textContent = '✅ Fenster geschlossen — bitte Boards laden um zu prüfen ob es geklappt hat.';
+            }
+        }, 1000);
+    } catch (e) { alert('Fehler: ' + e.message); }
+}
+
+async function loadPinterestBoards() {
+    const el = document.getElementById('pinterest-boards-list');
+    el.innerHTML = '⏳ Lade Boards...';
+    try {
+        const res = await fetch(`${API_URL}/api/pinterest/boards`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+        el.innerHTML = data.boards.map(b => `
+            <div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #f0f0f0;">
+                <span style="flex:1;font-size:13px;">${b.name}</span>
+                <code style="font-size:11px;color:#6b7280;">${b.id}</code>
+                <button onclick="selectPinterestBoard('${b.id}')" style="font-size:12px;padding:3px 10px;border:1px solid #667eea;border-radius:4px;cursor:pointer;background:#fff;color:#667eea;">Auswählen</button>
+            </div>`).join('');
+    } catch (e) { el.innerHTML = `<span style="color:red;">${e.message}</span>`; }
+}
+
+function selectPinterestBoard(id) {
+    document.getElementById('pinterest-board-id').value = id;
+    showAlert('Board ID eingetragen — bitte Save Settings klicken.', 'success');
+}
+
+// ─── MEDIUM ───────────────────────────────────────────────────────────────────
+let mediumCurrentArticle = null;
+
+async function initMediumTab() {
+    try {
+        const res = await fetch(`${API_URL}/api/medium/topics`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const sel = document.getElementById('medium-topic-select');
+        if (sel && data.success) {
+            sel.innerHTML = '<option value="">— Nächstes Thema (automatisch) —</option>';
+            data.topics.forEach(t => {
+                sel.innerHTML += `<option value="${t.index}">${t.isNext ? '▶ ' : ''}${t.title}</option>`;
+            });
+        }
+    } catch (e) { console.warn('Medium topics:', e.message); }
+    loadMediumRecentPosts();
+}
+
+async function generateMediumArticle() {
+    const btn = document.getElementById('medium-generate-btn');
+    const result = document.getElementById('medium-generator-result');
+    const topicIdx = document.getElementById('medium-topic-select')?.value;
+    btn.disabled = true;
+    btn.textContent = '⏳ Generiere... (30-60 Sek.)';
+    result.style.display = 'none';
+    try {
+        const res = await fetch(`${API_URL}/api/medium/generate`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topicIndex: topicIdx !== '' ? parseInt(topicIdx) : null })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+        mediumCurrentArticle = data;
+        document.getElementById('medium-title-text').textContent = data.title;
+        document.getElementById('medium-tags-text').textContent = data.tags?.join(', ') || '';
+        document.getElementById('medium-body-text').value = data.body;
+        const imgSection = document.getElementById('medium-image-section');
+        if (data.imageUrl) {
+            document.getElementById('medium-cover-img').src = data.imageUrl;
+            document.getElementById('medium-image-download').href = data.imageUrl;
+            imgSection.style.display = 'block';
+        } else { imgSection.style.display = 'none'; }
+        result.style.display = 'block';
+        loadMediumRecentPosts();
+    } catch (e) { alert('Fehler: ' + e.message); }
+    btn.disabled = false;
+    btn.textContent = '✍️ Generiere Artikel...';
+}
+
+async function markMediumAsPosted() {
+    if (!mediumCurrentArticle) return alert('Kein Artikel generiert.');
+    const mediumUrl = document.getElementById('medium-posted-url')?.value || '';
+    try {
+        const res = await fetch(`${API_URL}/api/medium/log-manual`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                dbId: mediumCurrentArticle.dbId,
+                title: mediumCurrentArticle.title,
+                body: mediumCurrentArticle.body,
+                tags: mediumCurrentArticle.tags,
+                category: mediumCurrentArticle.category,
+                mediumUrl,
+                includeCTA: mediumCurrentArticle.includeCTA
+            })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+        showAlert('✅ Artikel als gepostet markiert!', 'success');
+        document.getElementById('medium-posted-url').value = '';
+        document.getElementById('medium-generator-result').style.display = 'none';
+        mediumCurrentArticle = null;
+        loadMediumRecentPosts();
+    } catch (e) { alert('Fehler: ' + e.message); }
+}
+
+async function loadMediumRecentPosts() {
+    const el = document.getElementById('medium-recent-posts');
+    if (!el) return;
+    try {
+        const res = await fetch(`${API_URL}/api/medium/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.success || !data.posts.length) { el.innerHTML = '<p>Noch keine Artikel gepostet.</p>'; return; }
+        el.innerHTML = data.posts.map(p => `
+            <div style="padding:10px 0;border-bottom:1px solid #f0f0f0;">
+                <strong>${p.title}</strong>
+                <span style="margin-left:8px;font-size:11px;padding:2px 8px;border-radius:10px;background:${p.status==='posted'?'#dcfce7':'#fef9c3'};color:${p.status==='posted'?'#166534':'#854d0e'};">${p.status}</span>
+                <div style="font-size:12px;color:#9ca3af;margin-top:2px;">${new Date(p.posted_at).toLocaleString('de-DE')} · ${p.category}
+                ${p.medium_url ? `· <a href="${p.medium_url}" target="_blank" style="color:#1d9bf0;">Ansehen ↗</a>` : ''}</div>
+            </div>`).join('');
+    } catch (e) { el.innerHTML = '<p>Fehler beim Laden.</p>'; }
+}
+
+function copyMediumField(id) {
+    const el = document.getElementById(id);
+    const text = el.tagName === 'TEXTAREA' ? el.value : el.textContent;
+    navigator.clipboard.writeText(text).then(() => showAlert('📋 Kopiert!', 'success'));
+}
+
+// ── LINKEDIN COPY-PASTE GENERATOR ──────────────────────────────────────────
+
+let linkedInCurrentPost = null;
+
+async function initLinkedInTab() {
+    try {
+        const res = await fetch(`${API_URL}/api/linkedin/topics`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const sel = document.getElementById('linkedin-topic-select');
+        if (sel && data.success && data.topics) {
+            sel.innerHTML = '<option value="">— Nächstes Thema (automatisch) —</option>';
+            data.topics.forEach(t => {
+                sel.innerHTML += `<option value="${t.index}">${t.isNext ? '▶ ' : ''}${t.title}</option>`;
+            });
+        }
+    } catch (e) { console.warn('LinkedIn topics:', e.message); }
+    loadLinkedInRecentPostsNew();
+}
+
+async function generateLinkedInPost() {
+    const btn = document.getElementById('linkedin-generate-btn');
+    const result = document.getElementById('linkedin-generator-result');
+    const topicIdx = document.getElementById('linkedin-topic-select')?.value;
+    btn.disabled = true;
+    btn.textContent = '⏳ Generiere... (15-30 Sek.)';
+    result.style.display = 'none';
+    try {
+        const res = await fetch(`${API_URL}/api/linkedin/generate`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topicIndex: topicIdx !== '' ? parseInt(topicIdx) : null })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+        linkedInCurrentPost = data;
+        document.getElementById('linkedin-post-text').value = data.text;
+        result.style.display = 'block';
+        loadLinkedInRecentPostsNew();
+    } catch (e) { alert('Fehler: ' + e.message); }
+    btn.disabled = false;
+    btn.textContent = '💼 Post generieren';
+}
+
+async function markLinkedInAsPosted() {
+    if (!linkedInCurrentPost) return alert('Kein Post generiert.');
+    const url = document.getElementById('linkedin-posted-url')?.value || '';
+    try {
+        const res = await fetch(`${API_URL}/api/linkedin/log-manual`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                dbId: linkedInCurrentPost.dbId,
+                text: linkedInCurrentPost.text,
+                category: linkedInCurrentPost.category,
+                linkedinUrl: url,
+                includeCTA: linkedInCurrentPost.includeCTA
+            })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+        showAlert('✅ Post als gepostet markiert!', 'success');
+        document.getElementById('linkedin-posted-url').value = '';
+        document.getElementById('linkedin-generator-result').style.display = 'none';
+        linkedInCurrentPost = null;
+        loadLinkedInRecentPostsNew();
+    } catch (e) { alert('Fehler: ' + e.message); }
+}
+
+async function loadLinkedInRecentPostsNew() {
+    const el = document.getElementById('linkedin-recent-posts');
+    if (!el) return;
+    try {
+        const res = await fetch(`${API_URL}/api/linkedin/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.success || !data.posts.length) { el.innerHTML = '<p>Noch keine Posts gepostet.</p>'; return; }
+        el.innerHTML = data.posts.map(p => `
+            <div style="padding:10px 0;border-bottom:1px solid #f0f0f0;">
+                <div style="font-size:13px;color:#374151;">${(p.body||'').substring(0,120)}…</div>
+                <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${p.status==='posted'?'#dcfce7':'#fef9c3'};color:${p.status==='posted'?'#166534':'#854d0e'};">${p.status}</span>
+                <span style="font-size:12px;color:#9ca3af;margin-left:8px;">${new Date(p.posted_at).toLocaleString('de-DE')} · ${p.category||''}</span>
+                ${p.linkedin_post_id ? `<a href="${p.linkedin_post_id}" target="_blank" style="margin-left:8px;font-size:12px;color:#0077b5;">Ansehen ↗</a>` : ''}
+            </div>`).join('');
+    } catch (e) { el.innerHTML = '<p>Fehler beim Laden.</p>'; }
+}
+
+function copyLinkedInField(id) {
+    const el = document.getElementById(id);
+    const text = el.tagName === 'TEXTAREA' ? el.value : el.textContent;
+    navigator.clipboard.writeText(text).then(() => showAlert('📋 Kopiert!', 'success'));
+}
+
+// ── REDDIT COPY-PASTE GENERATOR ────────────────────────────────────────────
+
+let redditCurrentPost = null;
+
+async function initRedditTab() {
+    try {
+        const res = await fetch(`${API_URL}/api/reddit/topics`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        const sel = document.getElementById('reddit-topic-select');
+        if (sel && data.success && data.topics) {
+            sel.innerHTML = '<option value="">— Nächstes Thema (automatisch) —</option>';
+            data.topics.forEach(t => {
+                sel.innerHTML += `<option value="${t.index}">${t.isNext ? '▶ ' : ''}${t.title}</option>`;
+            });
+        }
+    } catch (e) { console.warn('Reddit topics:', e.message); }
+    loadRedditRecentPostsNew();
+}
+
+async function generateRedditPost() {
+    const btn = document.getElementById('reddit-generate-btn');
+    const result = document.getElementById('reddit-generator-result');
+    const topicIdx = document.getElementById('reddit-topic-select')?.value;
+    btn.disabled = true;
+    btn.textContent = '⏳ Generiere... (15-30 Sek.)';
+    result.style.display = 'none';
+    try {
+        const res = await fetch(`${API_URL}/api/reddit/generate`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topicIndex: topicIdx !== '' ? parseInt(topicIdx) : null })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+        redditCurrentPost = data;
+
+        const [primary, ...alts] = data.subreddits || ['travel'];
+        document.getElementById('reddit-title-text').textContent = data.title;
+        document.getElementById('reddit-body-text').value = data.body;
+        document.getElementById('reddit-subreddit-badge').textContent = `r/${primary}`;
+        document.getElementById('reddit-post-link').href = `https://www.reddit.com/r/${primary}/submit?title=${encodeURIComponent(data.title)}`;
+        document.getElementById('reddit-subreddit-alts').textContent = alts.length
+            ? `Alternativen: ${alts.map(s => 'r/' + s).join(', ')}`
+            : '';
+        result.style.display = 'block';
+        loadRedditRecentPostsNew();
+    } catch (e) { alert('Fehler: ' + e.message); }
+    btn.disabled = false;
+    btn.textContent = '🤖 Post generieren';
+}
+
+async function markRedditAsPosted() {
+    if (!redditCurrentPost) return alert('Kein Post generiert.');
+    const url = document.getElementById('reddit-posted-url')?.value || '';
+    try {
+        const res = await fetch(`${API_URL}/api/reddit/log-manual`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                dbId: redditCurrentPost.dbId,
+                title: redditCurrentPost.title,
+                body: redditCurrentPost.body,
+                subreddit: (redditCurrentPost.subreddits || ['travel'])[0],
+                category: redditCurrentPost.category,
+                redditUrl: url,
+                includeCTA: redditCurrentPost.includeCTA
+            })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+        showAlert('✅ Post als gepostet markiert!', 'success');
+        document.getElementById('reddit-posted-url').value = '';
+        document.getElementById('reddit-generator-result').style.display = 'none';
+        redditCurrentPost = null;
+        loadRedditRecentPostsNew();
+    } catch (e) { alert('Fehler: ' + e.message); }
+}
+
+async function loadRedditRecentPostsNew() {
+    const el = document.getElementById('reddit-recent-posts');
+    if (!el) return;
+    try {
+        const res = await fetch(`${API_URL}/api/reddit/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.success || !data.posts.length) { el.innerHTML = '<p>Noch keine Posts gepostet.</p>'; return; }
+        el.innerHTML = data.posts.map(p => `
+            <div style="padding:10px 0;border-bottom:1px solid #f0f0f0;">
+                <strong style="font-size:14px;">${p.title || ''}</strong>
+                <span style="margin-left:8px;font-size:12px;color:#ff4500;">r/${p.subreddit || ''}</span>
+                <span style="margin-left:8px;font-size:11px;padding:2px 8px;border-radius:10px;background:${p.status==='posted'?'#dcfce7':'#fef9c3'};color:${p.status==='posted'?'#166534':'#854d0e'};">${p.status}</span>
+                <div style="font-size:12px;color:#9ca3af;margin-top:2px;">${new Date(p.posted_at).toLocaleString('de-DE')} · ${p.category||''}
+                ${p.reddit_url ? `· <a href="${p.reddit_url}" target="_blank" style="color:#ff4500;">Ansehen ↗</a>` : ''}</div>
+            </div>`).join('');
+    } catch (e) { el.innerHTML = '<p>Fehler beim Laden.</p>'; }
+}
+
+function copyRedditField(id) {
+    const el = document.getElementById(id);
+    const text = el.tagName === 'TEXTAREA' ? el.value : el.textContent;
+    navigator.clipboard.writeText(text).then(() => showAlert('📋 Kopiert!', 'success'));
+}
+
+// ─── HACK DIGEST ──────────────────────────────────────────────────────────────
+async function triggerHackDigest() {
+    const btn = document.getElementById('digest-btn');
+    const result = document.getElementById('digest-result');
+    btn.disabled = true;
+    btn.textContent = '⏳ Wird gesendet...';
+    result.style.display = 'none';
+
+    try {
+        const res = await fetch(`${API_URL}/api/admin/trigger-hack-digest`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            result.style.display = 'block';
+            result.style.color = '#10b981';
+            result.innerHTML = `✅ Digest gestartet!<br>
+                <strong>${data.usersTargeted}</strong> User erhalten <strong>${data.hacks.length}</strong> Emails über 3 Tage.<br>
+                <span style="color:#6b7280">Hacks: ${data.hacks.join(', ')}</span>`;
+            btn.textContent = '✅ Gesendet';
+        } else {
+            throw new Error(data.error || 'Unbekannter Fehler');
+        }
+    } catch (err) {
+        result.style.display = 'block';
+        result.style.color = '#ef4444';
+        result.textContent = '❌ Fehler: ' + err.message;
+        btn.disabled = false;
+        btn.textContent = '✨ Send Hack Digest Now';
+    }
+}
+
+// ─── PARTNER DEALS ────────────────────────────────────────────────────────────
+async function loadPartnerDeals() {
+    const el = document.getElementById('partner-deals-list');
+    try {
+        const res = await fetch(`${API_URL}/api/partner-deals/admin`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.deals?.length) { el.innerHTML = '<p style="color:#999;">Noch keine Deals.</p>'; return; }
+        el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead><tr style="background:#f9fafb;">
+                <th style="padding:10px;text-align:left;border-bottom:1px solid #e5e7eb;">Titel</th>
+                <th style="padding:10px;text-align:left;border-bottom:1px solid #e5e7eb;">Kategorie</th>
+                <th style="padding:10px;text-align:left;border-bottom:1px solid #e5e7eb;">Badge</th>
+                <th style="padding:10px;text-align:center;border-bottom:1px solid #e5e7eb;">Klicks</th>
+                <th style="padding:10px;text-align:center;border-bottom:1px solid #e5e7eb;">Aktiv</th>
+                <th style="padding:10px;border-bottom:1px solid #e5e7eb;"></th>
+            </tr></thead>
+            <tbody>${data.deals.map(d => `
+                <tr style="border-bottom:1px solid #f3f4f6;">
+                    <td style="padding:10px;font-weight:600;color:#1a2744;">${d.title}</td>
+                    <td style="padding:10px;color:#6b7280;">${d.category}</td>
+                    <td style="padding:10px;"><span style="background:#ff6b4a;color:white;padding:2px 8px;border-radius:10px;font-size:11px;">${d.discount_badge || '—'}</span></td>
+                    <td style="padding:10px;text-align:center;">${d.click_count}</td>
+                    <td style="padding:10px;text-align:center;">${d.is_active ? '✅' : '❌'}</td>
+                    <td style="padding:10px;text-align:right;">
+                        <button onclick="toggleDeal('${d.id}', ${!d.is_active})" style="background:#f3f4f6;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px;margin-right:6px;">${d.is_active ? 'Deaktivieren' : 'Aktivieren'}</button>
+                        <button onclick="deletePartnerDeal('${d.id}')" style="background:#fee2e2;color:#dc2626;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px;">Löschen</button>
+                    </td>
+                </tr>`).join('')}
+            </tbody>
+        </table>`;
+    } catch (err) { el.innerHTML = '<p style="color:#ef4444;">Fehler beim Laden.</p>'; }
+}
+
+async function savePartnerDeal() {
+    const title = document.getElementById('deal-title').value.trim();
+    const affiliateUrl = document.getElementById('deal-url').value.trim();
+    if (!title || !affiliateUrl) { showAlert('Titel und URL sind Pflichtfelder.', 'error'); return; }
+    try {
+        const res = await fetch(`${API_URL}/api/partner-deals`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                title,
+                affiliateUrl,
+                description: document.getElementById('deal-desc').value,
+                category: document.getElementById('deal-category').value,
+                discountBadge: document.getElementById('deal-badge').value,
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showAlert('✅ Deal gespeichert!', 'success');
+            ['deal-title','deal-url','deal-desc','deal-badge'].forEach(id => document.getElementById(id).value = '');
+            loadPartnerDeals();
+        } else { showAlert(`❌ ${data.error}`, 'error'); }
+    } catch (err) { showAlert('❌ Fehler: ' + err.message, 'error'); }
+}
+
+async function toggleDeal(id, active) {
+    await fetch(`${API_URL}/api/partner-deals/${id}`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: active })
+    });
+    loadPartnerDeals();
+}
+
+async function deletePartnerDeal(id) {
+    if (!confirm('Deal wirklich löschen?')) return;
+    await fetch(`${API_URL}/api/partner-deals/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+    showAlert('✅ Deal gelöscht.', 'success');
+    loadPartnerDeals();
 }

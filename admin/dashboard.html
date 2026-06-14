@@ -596,6 +596,17 @@
                 <a class="nav-link" data-tab="promos">🎟️ Promo Codes</a>
                 <a class="nav-link" data-tab="email-templates">📧 Email Templates</a>
                 <a class="nav-link" data-tab="analytics">📈 Analytics</a>
+                <a class="nav-link" data-tab="twitter">🐦 Twitter</a>
+                <a class="nav-link" data-tab="reddit">🤖 Reddit</a>
+                <a class="nav-link" data-tab="linkedin">💼 LinkedIn</a>
+                <a class="nav-link" data-tab="pinterest">📌 Pinterest</a>
+                <a class="nav-link" data-tab="instagram">📸 Instagram</a>
+                <a class="nav-link" data-tab="wordpress">📝 WordPress</a>
+                <a class="nav-link" data-tab="quora">❓ Quora</a>
+                <a class="nav-link" data-tab="slideshare">📊 SlideShare</a>
+                <a class="nav-link" data-tab="partner-deals">🤝 Partner Deals</a>
+                <a class="nav-link" data-tab="blogger">📰 Blogger</a>
+                <a class="nav-link" data-tab="medium">✍️ Medium</a>
                 <a class="nav-link" data-tab="settings">⚙️ Settings</a>
             </nav>
         </div>
@@ -787,6 +798,16 @@
                     </div>
                 </div>
 
+                <!-- Weekly Hack Digest -->
+                <div style="background:#f0f4ff;border:2px solid #667eea;border-radius:12px;padding:24px;margin-top:30px;margin-bottom:10px;">
+                    <h3 style="margin:0 0 8px;color:#1a2744;">📧 Weekly Hack Digest</h3>
+                    <p style="color:#6b7280;margin:0 0 16px;font-size:14px;">
+                        Sends the 3 most recently updated hacks to all <strong>Smart Traveler + Elite</strong> users — one per day over 3 days. Emails go out at 9:00 AM each day.
+                    </p>
+                    <button class="btn btn-primary" onclick="triggerHackDigest()" id="digest-btn">✨ Send Hack Digest Now</button>
+                    <div id="digest-result" style="margin-top:14px;font-size:14px;display:none;"></div>
+                </div>
+
                 <!-- Hacks Management Section -->
                 <h3 style="margin-top: 40px; margin-bottom: 20px;">📚 Hack Management</h3>
                 <button class="btn btn-primary" onclick="openAddHackModal()" style="margin-bottom: 20px;">+ Add New Hack</button>
@@ -943,28 +964,28 @@
 
             <!-- ANALYTICS TAB -->
             <div id="analytics" class="tab-content">
-                <h3>Platform Analytics</h3>
+                <h3>Analytics</h3>
 
-                <div class="cards-grid" style="margin-top: 20px;">
-                    <div class="card">
-                        <h3>Signups (This Month)</h3>
-                        <div class="number">+234</div>
-                        <div class="change">+18.5% vs last month</div>
+                <div class="stats-overview" style="margin-top: 20px;">
+                    <div class="stat-card">
+                        <h4>Total Users</h4>
+                        <div class="value" id="an-total-users">Loading...</div>
+                        <div class="change" id="an-signup-change">—</div>
                     </div>
-                    <div class="card">
-                        <h3>Trial Conversions</h3>
-                        <div class="number">28%</div>
-                        <div class="change">Free → Paid</div>
+                    <div class="stat-card secondary">
+                        <h4>Signups This Month</h4>
+                        <div class="value" id="an-signups-month">Loading...</div>
+                        <div class="change" id="an-signups-last">vs last month</div>
                     </div>
-                    <div class="card">
-                        <h3>Churn Rate</h3>
-                        <div class="number">4.2%</div>
-                        <div class="change">Monthly churn</div>
+                    <div class="stat-card accent">
+                        <h4>Paid Users</h4>
+                        <div class="value" id="an-paid">Loading...</div>
+                        <div class="change" id="an-elite">Elite: —</div>
                     </div>
-                    <div class="card">
-                        <h3>Avg LTV</h3>
-                        <div class="number">€456</div>
-                        <div class="change">Lifetime value per user</div>
+                    <div class="stat-card danger">
+                        <h4>Total Social Posts</h4>
+                        <div class="value" id="an-total-posts">Loading...</div>
+                        <div class="change" id="an-cta-posts">with CTA: —</div>
                     </div>
                 </div>
 
@@ -1002,50 +1023,830 @@
                     </table>
                 </div>
 
-                <h3 style="margin-top: 30px; margin-bottom: 20px;">Traffic Sources</h3>
+                <h3 style="margin-top: 30px; margin-bottom: 15px;">Social Media Performance</h3>
                 <div class="table-container">
                     <table>
                         <thead>
                             <tr>
-                                <th>Source</th>
-                                <th>Visits</th>
-                                <th>Signups</th>
-                                <th>Conversion Rate</th>
+                                <th>Platform</th>
+                                <th>Total Posts</th>
+                                <th>This Month</th>
+                                <th>With CTA</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>YouTube</td>
-                                <td>12,450</td>
-                                <td>456</td>
-                                <td>3.7%</td>
-                            </tr>
-                            <tr>
-                                <td>Reddit</td>
-                                <td>8,234</td>
-                                <td>234</td>
-                                <td>2.8%</td>
-                            </tr>
-                            <tr>
-                                <td>Email</td>
-                                <td>5,678</td>
-                                <td>892</td>
-                                <td>15.7%</td>
-                            </tr>
-                            <tr>
-                                <td>Google</td>
-                                <td>3,456</td>
-                                <td>156</td>
-                                <td>4.5%</td>
-                            </tr>
-                            <tr>
-                                <td>Referral</td>
-                                <td>2,123</td>
-                                <td>345</td>
-                                <td>16.3%</td>
-                            </tr>
+                        <tbody id="analytics-platforms">
+                            <tr><td colspan="4" style="text-align:center;padding:20px;">Loading...</td></tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- TWITTER TAB -->
+            <div id="twitter" class="tab-content">
+                <h3>🐦 Twitter / X Auto-Posting</h3>
+
+                <!-- Status -->
+                <div id="twitter-status-card" style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
+                    <p>Loading...</p>
+                </div>
+
+                <!-- Manual Post -->
+                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
+                    <h4>Manual Post</h4>
+                    <button class="btn btn-primary" onclick="publishTwitterPost()" style="margin-top:10px;">🐦 Post Travel Tip Now</button>
+                </div>
+
+                <!-- Scheduler Config -->
+                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
+                    <h4>Auto-Scheduler</h4>
+                    <div style="margin-top:15px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+                        <div>
+                            <label style="font-weight:600;display:block;margin-bottom:6px;">Posts per day</label>
+                            <select id="twitter-posts-per-day" onchange="updateTwitterTimes()" style="padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:1em;">
+                                <option value="1">1 post/day</option>
+                                <option value="2">2 posts/day</option>
+                                <option value="3" selected>3 posts/day</option>
+                                <option value="4">4 posts/day</option>
+                                <option value="5">5 posts/day</option>
+                            </select>
+                        </div>
+                        <div style="flex:1;min-width:200px;">
+                            <label style="font-weight:600;display:block;margin-bottom:6px;">Posting times <span style="color:#6b7280;font-weight:400;font-size:0.85em">(auto-optimized for travel content)</span></label>
+                            <div id="twitter-times-display" style="font-size:0.95em;color:#374151;padding:8px 12px;background:#f9fafb;border-radius:6px;border:1px solid #e5e7eb;">09:00 · 13:00 · 18:00</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:15px;display:flex;gap:10px;">
+                        <button class="btn btn-primary" onclick="startTwitterScheduler()">▶ Start Scheduler</button>
+                        <button class="btn btn-danger" onclick="stopTwitterScheduler()">⏹ Stop Scheduler</button>
+                    </div>
+
+                    <!-- Upcoming posts -->
+                    <div style="margin-top:20px;">
+                        <h4 style="margin-bottom:10px;">📅 Upcoming Scheduled Posts</h4>
+                        <div id="twitter-upcoming" style="color:#6b7280;font-size:0.9em;">Start the scheduler to see upcoming posts.</div>
+                    </div>
+                </div>
+
+                <!-- Recent Posts -->
+                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
+                    <h4>Recent Posts</h4>
+                    <div id="twitter-recent-posts"><p>Loading...</p></div>
+                </div>
+            </div>
+
+            <!-- REDDIT TAB -->
+            <div id="reddit" class="tab-content">
+                <h3 style="margin-bottom:6px;">🤖 Reddit Content Generator</h3>
+                <p style="color:#6b7280;margin-bottom:24px;font-size:14px;">Post generieren → im empfohlenen Subreddit einfügen → als gepostet markieren</p>
+                <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap;">
+                    <button onclick="generateRedditPost()" id="reddit-generate-btn"
+                        style="background:#ff4500;color:#fff;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:600;font-size:15px;">
+                        🤖 Post generieren
+                    </button>
+                    <select id="reddit-topic-select" style="padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;min-width:260px;">
+                        <option value="">— Nächstes Thema (automatisch) —</option>
+                    </select>
+                </div>
+                <div id="reddit-generator-result" style="display:none;">
+                    <div style="background:#fff3ed;border:1px solid #fed7aa;padding:14px 18px;border-radius:10px;margin-bottom:16px;">
+                        <strong style="color:#c2410c;">📌 Empfohlener Subreddit:</strong>
+                        <span id="reddit-subreddit-badge" style="margin-left:8px;font-size:15px;font-weight:700;color:#ff4500;"></span>
+                        <div id="reddit-subreddit-alts" style="margin-top:6px;font-size:13px;color:#6b7280;"></div>
+                        <a id="reddit-post-link" href="#" target="_blank"
+                            style="display:inline-block;margin-top:8px;background:#ff4500;color:#fff;padding:7px 16px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;">
+                            ↗ Subreddit öffnen
+                        </a>
+                    </div>
+                    <div style="background:white;padding:20px;border-radius:12px;margin-bottom:16px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <strong>📌 Titel</strong>
+                            <button onclick="copyRedditField('reddit-title-text')" style="font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:4px;cursor:pointer;background:#fff;">📋 Kopieren</button>
+                        </div>
+                        <div id="reddit-title-text" style="background:#f8f9fa;padding:12px 16px;border-radius:6px;font-size:15px;font-weight:600;border:1px solid #e5e7eb;"></div>
+                    </div>
+                    <div style="background:white;padding:20px;border-radius:12px;margin-bottom:16px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <strong>📄 Post Text (Markdown)</strong>
+                            <button onclick="copyRedditField('reddit-body-text')" style="font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:4px;cursor:pointer;background:#fff;">📋 Kopieren</button>
+                        </div>
+                        <textarea id="reddit-body-text" rows="16" style="width:100%;padding:14px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-family:monospace;resize:vertical;box-sizing:border-box;line-height:1.6;"></textarea>
+                    </div>
+                    <div style="background:#fef3c7;border:1px solid #fde68a;padding:14px 18px;border-radius:10px;margin-bottom:16px;font-size:13px;color:#92400e;">
+                        <strong>💡 Reddit-Tipps:</strong>
+                        <ul style="margin:6px 0 0 16px;line-height:1.8;">
+                            <li>Erst 5–10 Min im Subreddit aktiv sein (Kommentare liken), dann posten</li>
+                            <li>Kein Link im Titel — Reddit filtert das oft raus</li>
+                            <li>Text Post (nicht Link Post) hat bessere Sichtbarkeit</li>
+                            <li>Besten Zeitpunkt: Mo–Do, 9–11 Uhr oder 19–21 Uhr UTC</li>
+                        </ul>
+                    </div>
+                    <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:16px 20px;border-radius:12px;margin-bottom:16px;">
+                        <strong style="color:#166534;">✅ Nachdem du auf Reddit gepostet hast:</strong>
+                        <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;">
+                            <input type="text" id="reddit-posted-url" placeholder="Reddit Post URL (optional)" style="flex:1;min-width:220px;padding:9px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
+                            <button onclick="markRedditAsPosted()" style="background:#16a34a;color:#fff;border:none;padding:10px 22px;border-radius:6px;cursor:pointer;font-weight:600;font-size:14px;">Als gepostet markieren</button>
+                        </div>
+                    </div>
+                </div>
+                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
+                    <h4 style="margin-bottom:12px;">📋 Generierte Posts</h4>
+                    <div id="reddit-recent-posts" style="font-size:13px;color:#6b7280;">Wird geladen...</div>
+                </div>
+            </div>
+
+            <!-- LINKEDIN TAB -->
+            <div id="linkedin" class="tab-content">
+                <h3 style="margin-bottom:6px;">💼 LinkedIn Content Generator</h3>
+                <p style="color:#6b7280;margin-bottom:24px;font-size:14px;">Post generieren → in LinkedIn einfügen → als gepostet markieren</p>
+                <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap;">
+                    <button onclick="generateLinkedInPost()" id="linkedin-generate-btn"
+                        style="background:#0077b5;color:#fff;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:600;font-size:15px;">
+                        💼 Post generieren
+                    </button>
+                    <select id="linkedin-topic-select" style="padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;min-width:260px;">
+                        <option value="">— Nächstes Thema (automatisch) —</option>
+                    </select>
+                </div>
+                <div id="linkedin-generator-result" style="display:none;">
+                    <div style="background:white;padding:20px;border-radius:12px;margin-bottom:16px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <strong>📝 LinkedIn Post</strong>
+                            <button onclick="copyLinkedInField('linkedin-post-text')" style="font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:4px;cursor:pointer;background:#fff;">📋 Kopieren</button>
+                        </div>
+                        <textarea id="linkedin-post-text" rows="12" style="width:100%;padding:14px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;line-height:1.6;"></textarea>
+                    </div>
+                    <div style="background:#eff6ff;border:1px solid #bfdbfe;padding:16px 20px;border-radius:12px;margin-bottom:16px;">
+                        <strong style="color:#1e40af;">📌 So postest du auf LinkedIn:</strong>
+                        <ol style="margin:8px 0 0 16px;font-size:13px;color:#374151;line-height:1.8;">
+                            <li>Kopiere den Text oben</li>
+                            <li>Gehe zu <a href="https://www.linkedin.com/feed/" target="_blank" style="color:#0077b5;">linkedin.com</a> → "Beitrag starten"</li>
+                            <li>Füge den Text ein und klicke "Veröffentlichen"</li>
+                        </ol>
+                    </div>
+                    <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:16px 20px;border-radius:12px;margin-bottom:16px;">
+                        <strong style="color:#166534;">✅ Nachdem du auf LinkedIn gepostet hast:</strong>
+                        <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;">
+                            <input type="text" id="linkedin-posted-url" placeholder="LinkedIn Post URL (optional)" style="flex:1;min-width:220px;padding:9px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
+                            <button onclick="markLinkedInAsPosted()" style="background:#16a34a;color:#fff;border:none;padding:10px 22px;border-radius:6px;cursor:pointer;font-weight:600;font-size:14px;">Als gepostet markieren</button>
+                        </div>
+                    </div>
+                </div>
+                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
+                    <h4 style="margin-bottom:12px;">📋 Generierte Posts</h4>
+                    <div id="linkedin-recent-posts" style="font-size:13px;color:#6b7280;">Wird geladen...</div>
+                </div>
+            </div>
+
+            <!-- PINTEREST TAB -->
+            <div id="pinterest" class="tab-content">
+                <h3 style="margin-bottom:6px;">📌 Pinterest Copy-Paste Workflow</h3>
+                <p style="color:#6b7280;margin-bottom:24px;font-size:14px;">Claude generiert Pin + Bild → du postest manuell auf Pinterest → hier als gepostet markieren</p>
+
+                <div id="pinterest-status-card" style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                    <p style="color:#6b7280;">Wird geladen...</p>
+                </div>
+
+                <!-- Generate -->
+                <div style="background:white;padding:24px;border-radius:12px;margin-bottom:20px;">
+                    <h4 style="margin:0 0 16px;">Pin generieren</h4>
+                    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                        <select id="pinterest-topic-select" style="padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;min-width:240px;">
+                            <option value="">— Nächstes Thema (automatisch) —</option>
+                        </select>
+                        <button id="pinterest-generate-btn" onclick="generatePinterestPin()"
+                            style="padding:10px 22px;background:#e60023;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;">
+                            📌 Generieren
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Result -->
+                <div id="pinterest-result-card" style="display:none;background:white;padding:24px;border-radius:12px;margin-bottom:20px;">
+
+                    <!-- Image preview -->
+                    <div style="margin-bottom:20px;">
+                        <label style="font-weight:700;font-size:13px;color:#374151;display:block;margin-bottom:8px;">🖼️ GENERIERTES BILD (Rechtsklick → Bild speichern)</label>
+                        <a id="pinterest-image-link" href="#" target="_blank">
+                            <img id="pinterest-image-preview" src="" alt="Pin Bild"
+                                style="max-width:300px;border-radius:8px;border:2px solid #e60023;cursor:pointer;display:block;">
+                        </a>
+                        <div style="margin-top:6px;font-size:12px;color:#6b7280;">Klick auf Bild öffnet es in voller Größe zum Speichern</div>
+                    </div>
+
+                    <!-- Board -->
+                    <div style="margin-bottom:20px;">
+                        <label style="font-weight:700;font-size:13px;color:#374151;display:block;margin-bottom:6px;">📋 EMPFOHLENES BOARD</label>
+                        <div id="pinterest-board-badge" style="display:inline-block;padding:6px 16px;background:#fce7e7;border:1px solid #e60023;border-radius:20px;font-size:13px;font-weight:700;color:#e60023;"></div>
+                    </div>
+
+                    <!-- Title -->
+                    <div style="margin-bottom:16px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                            <label style="font-weight:700;font-size:13px;color:#374151;">📝 TITEL</label>
+                            <button onclick="copyPinterestField('pinterest-title-field')"
+                                style="padding:4px 12px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">📋 Kopieren</button>
+                        </div>
+                        <textarea id="pinterest-title-field" rows="2"
+                            style="width:100%;padding:10px;border:2px solid #e60023;border-radius:8px;font-size:14px;font-family:inherit;resize:vertical;box-sizing:border-box;background:#fff8f8;"
+                            readonly></textarea>
+                    </div>
+
+                    <!-- Description -->
+                    <div style="margin-bottom:16px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                            <label style="font-weight:700;font-size:13px;color:#374151;">✍️ BESCHREIBUNG</label>
+                            <button onclick="copyPinterestField('pinterest-desc-field')"
+                                style="padding:4px 12px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">📋 Kopieren</button>
+                        </div>
+                        <textarea id="pinterest-desc-field" rows="4"
+                            style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;line-height:1.6;box-sizing:border-box;"
+                            readonly></textarea>
+                    </div>
+
+                    <!-- Link -->
+                    <div style="margin-bottom:16px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                            <label style="font-weight:700;font-size:13px;color:#374151;">🔗 DESTINATION LINK</label>
+                            <button onclick="copyPinterestField('pinterest-link-field')"
+                                style="padding:4px 12px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">📋 Kopieren</button>
+                        </div>
+                        <textarea id="pinterest-link-field" rows="1"
+                            style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:monospace;resize:none;box-sizing:border-box;"
+                            readonly></textarea>
+                    </div>
+
+                    <!-- Tags -->
+                    <div style="margin-bottom:20px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                            <label style="font-weight:700;font-size:13px;color:#374151;">🏷️ TAGS</label>
+                            <button onclick="copyPinterestField('pinterest-tags-field')"
+                                style="padding:4px 12px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">📋 Kopieren</button>
+                        </div>
+                        <textarea id="pinterest-tags-field" rows="2"
+                            style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:monospace;resize:vertical;box-sizing:border-box;"
+                            readonly></textarea>
+                    </div>
+
+                    <!-- Steps -->
+                    <div style="background:#fef9f0;border:1px solid #f59e0b;border-radius:8px;padding:16px;margin-bottom:20px;">
+                        <strong style="font-size:13px;">📋 So postest du auf Pinterest:</strong>
+                        <ol style="margin:8px 0 0 0;padding-left:20px;font-size:13px;color:#374151;line-height:1.8;">
+                            <li>Bild speichern (Rechtsklick → Bild speichern)</li>
+                            <li>Auf <strong>pinterest.com</strong> → <strong>"Erstellen → Pin erstellen"</strong></li>
+                            <li>Bild hochladen → Titel einfügen → Beschreibung einfügen</li>
+                            <li>Destination Link einfügen → Tags hinzufügen</li>
+                            <li>Empfohlenes Board auswählen → <strong>"Veröffentlichen"</strong></li>
+                            <li>Hier unten als gepostet markieren</li>
+                        </ol>
+                    </div>
+
+                    <!-- Mark as posted -->
+                    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                        <input type="text" id="pinterest-post-url" placeholder="Pinterest Pin-URL (optional)"
+                            style="flex:1;min-width:200px;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:13px;">
+                        <button onclick="markPinterestAsPosted()"
+                            style="padding:10px 20px;background:#16a34a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;">
+                            ✅ Als gepostet markieren
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent posts -->
+                <div style="background:white;padding:24px;border-radius:12px;">
+                    <h4 style="margin:0 0 16px;">Letzte Pins</h4>
+                    <div id="pinterest-recent-posts" style="font-size:13px;color:#6b7280;">Wird geladen...</div>
+                </div>
+            </div>
+
+            <!-- INSTAGRAM TAB -->
+            <div id="instagram" class="tab-content">
+                <h3>📸 Instagram</h3>
+
+                <!-- Topic Selector + Generate -->
+                <div style="background:white;padding:24px;border-radius:12px;margin-top:20px;">
+                    <h4 style="margin:0 0 16px;">Neuen Post generieren</h4>
+                    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                        <select id="ig-topic-select" style="padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;min-width:220px;">
+                            <option value="">🎲 Automatisch (nächstes Topic)</option>
+                        </select>
+                        <button onclick="generateInstagramPost()" style="background:#E1306C;color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;">
+                            📸 Generiere Post
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Preview -->
+                <div id="ig-preview" style="display:none;margin-top:20px;">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                        <div style="background:white;padding:20px;border-radius:12px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                                <h4 style="margin:0;">📷 Bild</h4>
+                                <span id="ig-topic-badge" style="background:#E1306C;color:white;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;"></span>
+                            </div>
+                            <a id="ig-image-link" href="#" target="_blank">
+                                <img id="ig-image-preview" src="" alt="Instagram Image"
+                                    style="width:100%;border-radius:8px;cursor:pointer;object-fit:cover;max-height:400px;">
+                            </a>
+                            <p style="font-size:11px;color:#999;margin-top:6px;text-align:center;">Klicken für Vollgröße</p>
+                        </div>
+                        <div style="background:white;padding:20px;border-radius:12px;display:flex;flex-direction:column;gap:12px;">
+                            <h4 style="margin:0;">✍️ Caption</h4>
+                            <textarea id="ig-caption" rows="12"
+                                style="width:100%;padding:12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;line-height:1.5;resize:vertical;box-sizing:border-box;"></textarea>
+                            <button onclick="copyIgField('ig-caption')"
+                                style="background:#f3f4f6;border:1px solid #e5e7eb;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">
+                                📋 Caption kopieren
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="background:#fef3c7;border:1px solid #fbbf24;border-radius:12px;padding:20px;margin-top:20px;">
+                        <h4 style="margin:0 0 12px;color:#92400e;">📋 So postest du auf Instagram</h4>
+                        <ol style="margin:0;padding-left:20px;color:#78350f;font-size:14px;line-height:1.8;">
+                            <li>Klicke auf das Bild → "Speichern unter" → als PNG speichern</li>
+                            <li>Öffne Instagram → "+" → Bild hochladen</li>
+                            <li>Format: <strong>4:5 Hochformat</strong> (ideal für Feed)</li>
+                            <li>Caption kopieren und einfügen</li>
+                            <li>Posten → dann hier "Als gepostet markieren"</li>
+                        </ol>
+                    </div>
+
+                    <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                        <button onclick="markInstagramAsPosted()"
+                            style="background:#10b981;color:white;border:none;padding:12px 24px;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;">
+                            ✅ Als gepostet markieren
+                        </button>
+                        <span id="ig-posted-msg" style="display:none;color:#10b981;font-weight:600;">✅ Gepostet!</span>
+                    </div>
+                </div>
+
+                <!-- Recent Posts -->
+                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
+                    <h4 style="margin:0 0 12px;">Letzte Posts</h4>
+                    <div id="ig-recent-posts"><p style="color:#999;">Noch keine Posts.</p></div>
+                </div>
+            </div>
+
+            <!-- PARTNER DEALS TAB -->
+            <div id="partner-deals" class="tab-content">
+                <h3>🤝 Partner Deals</h3>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;">
+                    <p style="color:#6b7280;">Verwalte Affiliate-Deals für Elite-User.</p>
+                    <a href="../partner-deals.html" target="_blank" style="background:#1a2744;color:white;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">👁 Vorschau</a>
+                </div>
+
+                <!-- Add Deal Form -->
+                <div style="background:white;border-radius:12px;padding:24px;margin-top:20px;">
+                    <h4 style="margin-bottom:16px;">➕ Neuen Deal hinzufügen</h4>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div>
+                            <label style="font-size:13px;font-weight:600;color:#374151;">Titel *</label>
+                            <input id="deal-title" placeholder="z.B. Wise Travel Card" style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;margin-top:4px;font-size:14px;">
+                        </div>
+                        <div>
+                            <label style="font-size:13px;font-weight:600;color:#374151;">Kategorie</label>
+                            <select id="deal-category" style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;margin-top:4px;font-size:14px;">
+                                <option value="travel_card">💳 Travel Card</option>
+                                <option value="flights">✈️ Flights</option>
+                                <option value="hotels">🏨 Hotels</option>
+                                <option value="insurance">🛡️ Insurance</option>
+                                <option value="esim">📱 eSIM</option>
+                                <option value="vpn">🔒 VPN</option>
+                                <option value="car_rental">🚗 Car Rental</option>
+                                <option value="luggage">🧳 Luggage</option>
+                                <option value="other">🌍 Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:13px;font-weight:600;color:#374151;">Affiliate URL *</label>
+                            <input id="deal-url" placeholder="https://..." style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;margin-top:4px;font-size:14px;">
+                        </div>
+                        <div>
+                            <label style="font-size:13px;font-weight:600;color:#374151;">Rabatt Badge</label>
+                            <input id="deal-badge" placeholder="z.B. 50% OFF" style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;margin-top:4px;font-size:14px;">
+                        </div>
+                        <div style="grid-column:1/-1;">
+                            <label style="font-size:13px;font-weight:600;color:#374151;">Beschreibung</label>
+                            <textarea id="deal-desc" rows="2" placeholder="Kurze Beschreibung des Deals..." style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;margin-top:4px;font-size:14px;resize:vertical;"></textarea>
+                        </div>
+                    </div>
+                    <button onclick="savePartnerDeal()" style="background:#ff6b4a;color:white;border:none;padding:10px 24px;border-radius:8px;font-weight:600;cursor:pointer;margin-top:16px;">
+                        💾 Deal speichern
+                    </button>
+                </div>
+
+                <!-- Deals List -->
+                <div style="background:white;border-radius:12px;padding:24px;margin-top:20px;">
+                    <h4 style="margin-bottom:16px;">Alle Deals</h4>
+                    <div id="partner-deals-list"><p style="color:#999;">Lädt...</p></div>
+                </div>
+            </div>
+
+            <!-- WORDPRESS TAB -->
+            <div id="wordpress" class="tab-content">
+                <h3 style="margin-bottom:6px;">📝 WordPress Auto-Publishing</h3>
+                <p style="color:#6b7280;margin-bottom:24px;font-size:14px;">Vollautomatisch — Claude generiert Artikel und postet direkt auf deine WordPress-Seite</p>
+
+                <div id="wordpress-status-card" style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                    <p style="color:#6b7280;">Wird geladen...</p>
+                </div>
+
+                <div style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                    <h4 style="margin-bottom:14px;">🔧 Verbindung testen</h4>
+                    <button onclick="testWordPressConnection()" style="background:#21759b;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:600;">
+                        🔗 Verbindung testen
+                    </button>
+                    <div id="wordpress-test-result" style="margin-top:10px;font-size:13px;"></div>
+                </div>
+
+                <div style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                    <h4 style="margin-bottom:14px;">✍️ Manuell veröffentlichen</h4>
+                    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                        <button onclick="publishWordPressPost()" id="wp-publish-btn"
+                            style="background:#21759b;color:#fff;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:600;font-size:15px;">
+                            📝 Artikel generieren & veröffentlichen
+                        </button>
+                        <select id="wordpress-topic-select" style="padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;min-width:260px;">
+                            <option value="">— Nächstes Thema (automatisch) —</option>
+                        </select>
+                    </div>
+                    <div id="wp-publish-result" style="margin-top:12px;font-size:13px;"></div>
+                </div>
+
+                <div style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                    <h4 style="margin-bottom:8px;">⏰ Auto-Scheduler</h4>
+                    <p style="color:#6b7280;font-size:13px;margin-bottom:12px;">Postet automatisch alle 2 Tage um 10:00 Uhr UTC</p>
+                    <button onclick="startWordPressScheduler()" style="background:#16a34a;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:600;">▶ Scheduler starten</button>
+                    <button onclick="stopWordPressScheduler()" style="background:#dc2626;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:600;margin-left:10px;">⏹ Stoppen</button>
+                </div>
+
+                <div style="background:white;padding:20px;border-radius:12px;">
+                    <h4 style="margin-bottom:12px;">📋 Veröffentlichte Artikel</h4>
+                    <div id="wordpress-recent-posts" style="font-size:13px;color:#6b7280;">Wird geladen...</div>
+                </div>
+            </div>
+
+            <!-- QUORA TAB -->
+            <div id="quora" class="tab-content">
+                <h3 style="margin-bottom:6px;">❓ Quora Copy-Paste Workflow</h3>
+                <p style="color:#6b7280;margin-bottom:24px;font-size:14px;">Claude generiert Frage + Antwort → du postest manuell auf Quora → hier als gepostet markieren</p>
+
+                <div id="quora-status-card" style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                    <p style="color:#6b7280;">Wird geladen...</p>
+                </div>
+
+                <!-- Generate -->
+                <div style="background:white;padding:24px;border-radius:12px;margin-bottom:20px;">
+                    <h4 style="margin:0 0 16px;">Antwort generieren</h4>
+                    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                        <select id="quora-topic-select" style="padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;min-width:240px;">
+                            <option value="">— Nächstes Thema (automatisch) —</option>
+                        </select>
+                        <button id="quora-generate-btn" onclick="generateQuoraPost()"
+                            style="padding:10px 22px;background:#b92b27;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;">
+                            ❓ Generieren
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Result -->
+                <div id="quora-result-card" style="display:none;background:white;padding:24px;border-radius:12px;margin-bottom:20px;">
+                    <!-- Search question -->
+                    <div style="margin-bottom:20px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <label style="font-weight:700;font-size:13px;color:#374151;">🔍 DIESE FRAGE AUF QUORA SUCHEN</label>
+                            <button onclick="copyQuoraField('quora-question-field')"
+                                style="padding:5px 14px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">
+                                📋 Kopieren
+                            </button>
+                        </div>
+                        <textarea id="quora-question-field" rows="2"
+                            style="width:100%;padding:12px;border:2px solid #b92b27;border-radius:8px;font-size:14px;font-family:inherit;resize:vertical;box-sizing:border-box;background:#fff8f8;"
+                            readonly></textarea>
+                    </div>
+
+                    <!-- Spaces -->
+                    <div style="margin-bottom:20px;">
+                        <label style="font-weight:700;font-size:13px;color:#374151;display:block;margin-bottom:6px;">📚 EMPFOHLENE QUORA SPACES</label>
+                        <div id="quora-spaces-badges" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+                    </div>
+
+                    <!-- Answer -->
+                    <div style="margin-bottom:20px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <label style="font-weight:700;font-size:13px;color:#374151;">✍️ DEINE ANTWORT (kopieren & einfügen)</label>
+                            <button onclick="copyQuoraField('quora-answer-field')"
+                                style="padding:5px 14px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">
+                                📋 Kopieren
+                            </button>
+                        </div>
+                        <textarea id="quora-answer-field" rows="14"
+                            style="width:100%;padding:12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;line-height:1.6;box-sizing:border-box;"
+                            readonly></textarea>
+                    </div>
+
+                    <!-- Steps -->
+                    <div style="background:#fef9f0;border:1px solid #f59e0b;border-radius:8px;padding:16px;margin-bottom:20px;">
+                        <strong style="font-size:13px;">📋 So gehst du vor:</strong>
+                        <ol style="margin:8px 0 0 0;padding-left:20px;font-size:13px;color:#374151;line-height:1.8;">
+                            <li>Frage kopieren → auf <strong>quora.com</strong> in die Suchleiste eingeben</li>
+                            <li>Passende Frage aus den Ergebnissen auswählen (oder ähnliche Frage suchen)</li>
+                            <li>Auf <strong>"Antworten"</strong> klicken → Antwort einfügen → posten</li>
+                            <li>Auch in einem der empfohlenen <strong>Spaces</strong> teilen für mehr Reichweite</li>
+                            <li>Hier unten als gepostet markieren</li>
+                        </ol>
+                    </div>
+
+                    <!-- Mark as posted -->
+                    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                        <input type="text" id="quora-post-url" placeholder="Quora Antwort-URL (optional)"
+                            style="flex:1;min-width:200px;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:13px;">
+                        <button onclick="markQuoraAsPosted()"
+                            style="padding:10px 20px;background:#16a34a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;">
+                            ✅ Als gepostet markieren
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent posts -->
+                <div style="background:white;padding:24px;border-radius:12px;">
+                    <h4 style="margin:0 0 16px;">Letzte Antworten</h4>
+                    <div id="quora-recent-posts" style="font-size:13px;color:#6b7280;">Wird geladen...</div>
+                </div>
+            </div>
+
+            <!-- SLIDESHARE TAB -->
+            <div id="slideshare" class="tab-content">
+                <h3 style="margin-bottom:6px;">📊 SlideShare via Gamma</h3>
+                <p style="color:#6b7280;margin-bottom:24px;font-size:14px;">Claude generiert Gamma-Prompt + SlideShare-Metadaten → Gamma erstellt Präsentation → PDF exportieren → auf SlideShare hochladen</p>
+
+                <div id="slideshare-status-card" style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                    <p style="color:#6b7280;">Wird geladen...</p>
+                </div>
+
+                <!-- Generate -->
+                <div style="background:white;padding:24px;border-radius:12px;margin-bottom:20px;">
+                    <h4 style="margin:0 0 16px;">Präsentation generieren</h4>
+                    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                        <select id="slideshare-topic-select" style="padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;min-width:240px;">
+                            <option value="">— Nächstes Thema (automatisch) —</option>
+                        </select>
+                        <button id="slideshare-generate-btn" onclick="generateSlideShare()"
+                            style="padding:10px 22px;background:#0077b5;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;">
+                            📊 Generieren
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Result -->
+                <div id="slideshare-result-card" style="display:none;background:white;padding:24px;border-radius:12px;margin-bottom:20px;">
+
+                    <!-- Gamma Prompt -->
+                    <div style="margin-bottom:20px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <div>
+                                <label style="font-weight:700;font-size:13px;color:#374151;">🤖 GAMMA PROMPT</label>
+                                <span style="font-size:12px;color:#6b7280;margin-left:8px;">→ gamma.app → "Neu" → "KI generieren" → einfügen</span>
+                            </div>
+                            <button onclick="copySlideShareField('slideshare-gamma-field')"
+                                style="padding:5px 14px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">📋 Kopieren</button>
+                        </div>
+                        <textarea id="slideshare-gamma-field" rows="12"
+                            style="width:100%;padding:12px;border:2px solid #0077b5;border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;line-height:1.5;box-sizing:border-box;background:#f0f7ff;"
+                            readonly></textarea>
+                    </div>
+
+                    <!-- Divider -->
+                    <div style="border-top:2px dashed #e5e7eb;margin:24px 0;padding-top:24px;">
+                        <p style="font-weight:700;color:#374151;margin:0 0 16px;">📤 SlideShare Upload-Daten</p>
+                    </div>
+
+                    <!-- SS Title -->
+                    <div style="margin-bottom:16px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                            <label style="font-weight:700;font-size:13px;color:#374151;">📝 TITEL</label>
+                            <button onclick="copySlideShareField('slideshare-title-field')"
+                                style="padding:4px 12px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">📋 Kopieren</button>
+                        </div>
+                        <textarea id="slideshare-title-field" rows="2"
+                            style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;font-family:inherit;resize:vertical;box-sizing:border-box;"
+                            readonly></textarea>
+                    </div>
+
+                    <!-- SS Description -->
+                    <div style="margin-bottom:16px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                            <label style="font-weight:700;font-size:13px;color:#374151;">✍️ BESCHREIBUNG</label>
+                            <button onclick="copySlideShareField('slideshare-desc-field')"
+                                style="padding:4px 12px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">📋 Kopieren</button>
+                        </div>
+                        <textarea id="slideshare-desc-field" rows="5"
+                            style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;line-height:1.6;box-sizing:border-box;"
+                            readonly></textarea>
+                    </div>
+
+                    <!-- SS Tags -->
+                    <div style="margin-bottom:20px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                            <label style="font-weight:700;font-size:13px;color:#374151;">🏷️ TAGS</label>
+                            <button onclick="copySlideShareField('slideshare-tags-field')"
+                                style="padding:4px 12px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">📋 Kopieren</button>
+                        </div>
+                        <textarea id="slideshare-tags-field" rows="2"
+                            style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:monospace;resize:vertical;box-sizing:border-box;"
+                            readonly></textarea>
+                    </div>
+
+                    <!-- Steps -->
+                    <div style="background:#f0f7ff;border:1px solid #0077b5;border-radius:8px;padding:16px;margin-bottom:20px;">
+                        <strong style="font-size:13px;">📋 Workflow (ca. 10 Min.):</strong>
+                        <ol style="margin:8px 0 0 0;padding-left:20px;font-size:13px;color:#374151;line-height:2;">
+                            <li>Gamma Prompt kopieren → <strong>gamma.app</strong> öffnen → "Neu" → "KI generieren" → einfügen → Präsentation erstellen</li>
+                            <li>In Gamma kurz Design prüfen, ggf. 1-2 Slides anpassen</li>
+                            <li>In Gamma: <strong>"Exportieren → PDF"</strong></li>
+                            <li><strong>slideshare.net</strong> → "Upload" → PDF hochladen</li>
+                            <li>Titel, Beschreibung, Tags von oben einfügen → <strong>Veröffentlichen</strong></li>
+                            <li>Hier unten als gepostet markieren</li>
+                        </ol>
+                    </div>
+
+                    <!-- Mark as posted -->
+                    <div style="margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                        <input type="text" id="slideshare-post-url" placeholder="SlideShare URL (z.B. slideshare.net/...)"
+                            style="flex:1;min-width:200px;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:13px;">
+                        <button onclick="markSlideShareAsPosted()"
+                            style="padding:10px 20px;background:#16a34a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;">
+                            ✅ Als gepostet markieren
+                        </button>
+                    </div>
+
+                    <!-- Save as Goodie -->
+                    <div style="background:#f0fdf4;border:1px solid #16a34a;border-radius:8px;padding:16px;">
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                            <input type="checkbox" id="slideshare-save-goodie" style="width:18px;height:18px;cursor:pointer;">
+                            <label for="slideshare-save-goodie" style="font-weight:700;font-size:13px;cursor:pointer;">🎁 Gleichzeitig als Goodie für User speichern</label>
+                        </div>
+                        <div id="slideshare-goodie-fields" style="display:none;">
+                            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                                <input type="text" id="slideshare-goodie-title" placeholder="Goodie Titel (z.B. '10 Flight Hacks Guide')"
+                                    style="flex:2;min-width:200px;padding:9px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
+                                <input type="text" id="slideshare-goodie-category" placeholder="Kategorie (z.B. flights)"
+                                    style="flex:1;min-width:120px;padding:9px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
+                            </div>
+                            <textarea id="slideshare-goodie-desc" rows="2" placeholder="Kurze Beschreibung für User..."
+                                style="width:100%;margin-top:8px;padding:9px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;resize:vertical;"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent -->
+                <div style="background:white;padding:24px;border-radius:12px;margin-bottom:20px;">
+                    <h4 style="margin:0 0 16px;">Letzte Präsentationen</h4>
+                    <div id="slideshare-recent-posts" style="font-size:13px;color:#6b7280;">Wird geladen...</div>
+                </div>
+
+                <!-- Goodies Library -->
+                <div style="background:white;padding:24px;border-radius:12px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                        <h4 style="margin:0;">🎁 Goodies Library</h4>
+                        <button onclick="showAddGoodieForm()"
+                            style="padding:7px 16px;background:#0077b5;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;">
+                            + Goodie manuell hinzufügen
+                        </button>
+                    </div>
+
+                    <!-- Manual add form -->
+                    <div id="add-goodie-form" style="display:none;background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin-bottom:16px;">
+                        <h5 style="margin:0 0 12px;">Neues Goodie hinzufügen</h5>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
+                            <input type="text" id="goodie-title" placeholder="Titel *"
+                                style="flex:2;min-width:180px;padding:9px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
+                            <input type="text" id="goodie-category" placeholder="Kategorie"
+                                style="flex:1;min-width:120px;padding:9px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
+                        </div>
+                        <input type="text" id="goodie-slideshare-url" placeholder="SlideShare URL"
+                            style="width:100%;margin-bottom:8px;padding:9px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                        <input type="text" id="goodie-pdf-url" placeholder="Direkte PDF URL (optional)"
+                            style="width:100%;margin-bottom:8px;padding:9px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                        <textarea id="goodie-description" rows="2" placeholder="Kurze Beschreibung für User..."
+                            style="width:100%;margin-bottom:12px;padding:9px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;resize:vertical;"></textarea>
+                        <div style="display:flex;gap:10px;">
+                            <button onclick="saveGoodie()"
+                                style="padding:8px 20px;background:#16a34a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;">💾 Speichern</button>
+                            <button onclick="document.getElementById('add-goodie-form').style.display='none'"
+                                style="padding:8px 16px;background:#f3f4f6;border:1px solid #ddd;border-radius:6px;cursor:pointer;">Abbrechen</button>
+                        </div>
+                    </div>
+
+                    <div id="goodies-list" style="font-size:13px;color:#6b7280;">Wird geladen...</div>
+                </div>
+            </div>
+
+            <!-- BLOGGER TAB -->
+            <div id="blogger" class="tab-content">
+                <h3 style="margin-bottom:6px;">📰 Blogger Auto-Publishing</h3>
+                <p style="color:#6b7280;margin-bottom:24px;font-size:14px;">Vollautomatisch — Claude generiert Artikel + Bild und postet direkt auf deinen Blogger Blog</p>
+
+                <div id="blogger-status-card" style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                    <p style="color:#6b7280;">Wird geladen...</p>
+                </div>
+
+                <div style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                    <h4 style="margin-bottom:10px;">🔗 Google Account verbinden</h4>
+                    <p style="color:#6b7280;font-size:13px;margin-bottom:12px;">Google Client ID & Secret in Settings speichern, dann hier verbinden.</p>
+                    <button onclick="connectBlogger()" style="background:#4285f4;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:600;">
+                        🔗 Mit Google verbinden
+                    </button>
+                    <div id="blogger-connect-status" style="margin-top:8px;font-size:13px;"></div>
+                </div>
+
+                <div style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                    <h4 style="margin-bottom:10px;">📋 Blog auswählen</h4>
+                    <button onclick="loadBloggerBlogs()" style="background:#e5e7eb;color:#374151;border:none;padding:9px 18px;border-radius:6px;cursor:pointer;font-weight:600;">🔄 Meine Blogs laden</button>
+                    <div id="blogger-blogs" style="margin-top:10px;"></div>
+                </div>
+
+                <div style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                    <h4 style="margin-bottom:14px;">✍️ Manuell veröffentlichen</h4>
+                    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                        <button onclick="publishBloggerPost()" id="blogger-publish-btn"
+                            style="background:#f57c00;color:#fff;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:600;font-size:15px;">
+                            📰 Artikel generieren & veröffentlichen
+                        </button>
+                        <select id="blogger-topic-select" style="padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;min-width:260px;">
+                            <option value="">— Nächstes Thema (automatisch) —</option>
+                        </select>
+                    </div>
+                    <div id="blogger-publish-result" style="margin-top:12px;font-size:13px;"></div>
+                </div>
+
+                <div style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                    <h4 style="margin-bottom:8px;">⏰ Auto-Scheduler</h4>
+                    <p style="color:#6b7280;font-size:13px;margin-bottom:12px;">Postet automatisch alle 2 Tage um 11:00 Uhr UTC</p>
+                    <button onclick="startBloggerScheduler()" style="background:#16a34a;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:600;">▶ Scheduler starten</button>
+                    <button onclick="stopBloggerScheduler()" style="background:#dc2626;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:600;margin-left:10px;">⏹ Stoppen</button>
+                </div>
+
+                <div style="background:white;padding:20px;border-radius:12px;">
+                    <h4 style="margin-bottom:12px;">📋 Veröffentlichte Artikel</h4>
+                    <div id="blogger-recent-posts" style="font-size:13px;color:#6b7280;">Wird geladen...</div>
+                </div>
+            </div>
+
+
+            <!-- MEDIUM TAB -->
+            <div id="medium" class="tab-content">
+                <h3 style="margin-bottom:6px;">✍️ Medium Content Generator</h3>
+                <p style="color:#6b7280;margin-bottom:24px;font-size:14px;">Artikel + Cover-Bild generieren → in Medium einfügen → als gepostet markieren</p>
+                <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap;">
+                    <button onclick="generateMediumArticle()" id="medium-generate-btn"
+                        style="background:#667eea;color:#fff;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:600;font-size:15px;">
+                        ✍️ Generiere Artikel...
+                    </button>
+                    <select id="medium-topic-select" style="padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;min-width:260px;">
+                        <option value="">— Nächstes Thema (automatisch) —</option>
+                    </select>
+                </div>
+                <div id="medium-generator-result" style="display:none;">
+                    <div style="background:white;padding:20px;border-radius:12px;margin-bottom:16px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <strong>📌 Titel</strong>
+                            <button onclick="copyMediumField('medium-title-text')" style="font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:4px;cursor:pointer;background:#fff;">📋 Kopieren</button>
+                        </div>
+                        <div id="medium-title-text" style="background:#f8f9fa;padding:12px 16px;border-radius:6px;font-size:15px;font-weight:600;border:1px solid #e5e7eb;"></div>
+                    </div>
+                    <div style="background:white;padding:20px;border-radius:12px;margin-bottom:16px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <strong>🏷️ Tags</strong>
+                            <button onclick="copyMediumField('medium-tags-text')" style="font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:4px;cursor:pointer;background:#fff;">📋 Kopieren</button>
+                        </div>
+                        <div id="medium-tags-text" style="background:#f8f9fa;padding:10px 16px;border-radius:6px;font-size:13px;color:#555;border:1px solid #e5e7eb;"></div>
+                    </div>
+                    <div id="medium-image-section" style="background:white;padding:20px;border-radius:12px;margin-bottom:16px;display:none;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <strong>🖼️ Cover-Bild</strong>
+                            <a id="medium-image-download" href="#" target="_blank" style="font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:4px;cursor:pointer;background:#fff;text-decoration:none;color:#333;">⬇️ Herunterladen</a>
+                        </div>
+                        <img id="medium-cover-img" src="" style="width:100%;max-width:680px;border-radius:8px;border:1px solid #e5e7eb;" />
+                    </div>
+                    <div style="background:white;padding:20px;border-radius:12px;margin-bottom:16px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <strong>📄 Artikel (Markdown)</strong>
+                            <button onclick="copyMediumField('medium-body-text')" style="font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:4px;cursor:pointer;background:#fff;">📋 Kopieren</button>
+                        </div>
+                        <textarea id="medium-body-text" rows="20" style="width:100%;padding:14px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-family:monospace;resize:vertical;box-sizing:border-box;"></textarea>
+                    </div>
+                    <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:16px 20px;border-radius:12px;margin-bottom:16px;">
+                        <strong style="color:#166534;">✅ Nachdem du in Medium gepostet hast:</strong>
+                        <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;">
+                            <input type="text" id="medium-posted-url" placeholder="Medium Artikel URL (optional)" style="flex:1;min-width:220px;padding:9px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
+                            <button onclick="markMediumAsPosted()" style="background:#16a34a;color:#fff;border:none;padding:10px 22px;border-radius:6px;cursor:pointer;font-weight:600;font-size:14px;">Als gepostet markieren</button>
+                        </div>
+                    </div>
+                </div>
+                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
+                    <h4 style="margin-bottom:12px;">📋 Generierte Artikel</h4>
+                    <div id="medium-recent-posts" style="font-size:13px;color:#6b7280;">Wird geladen...</div>
                 </div>
             </div>
 
@@ -1054,7 +1855,14 @@
                 <h3>Platform Settings</h3>
 
                 <div style="background: white; padding: 20px; border-radius: 12px; margin-top: 20px;">
-                    <h4 style="margin-bottom: 20px;">Email Configuration</h4>
+                    <h4 style="margin-bottom: 20px;">Claude AI (Anthropic)</h4>
+                    <div class="form-group">
+                        <label>Anthropic API Key</label>
+                        <input type="password" id="anthropic-api-key" placeholder="sk-ant-api03-xxxxx...">
+                        <small style="color:#6b7280">Required for all AI content generation (Reddit, LinkedIn, Pinterest, etc.)</small>
+                    </div>
+
+                    <h4 style="margin-top:30px;margin-bottom: 20px;">Email Configuration</h4>
 
                     <div class="form-group">
                         <label>Sendgrid API Key</label>
@@ -1104,6 +1912,122 @@
                     </div>
 
                     <button class="btn btn-primary" onclick="saveSettings()" style="margin-top: 20px;">Save Settings</button>
+                </div>
+
+                <!-- Social Media Settings Tabs -->
+                <div style="background:white;padding:20px;border-radius:12px;margin-top:20px;">
+                    <h4 style="margin-bottom:15px;">Social Media Credentials</h4>
+                    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:20px;border-bottom:1px solid #e5e7eb;padding-bottom:10px;">
+                        <button class="platform-tab" data-platform="twitter" onclick="switchPlatformTab('twitter')" style="padding:8px 14px;border:none;background:#e5e7eb;color:#374151;border-radius:6px;cursor:pointer;font-weight:600;">🐦 Twitter</button>
+                        <button class="platform-tab active" data-platform="reddit" onclick="switchPlatformTab('reddit')" style="padding:8px 14px;border:none;background:#667eea;color:white;border-radius:6px;cursor:pointer;font-weight:600;">🤖 Reddit</button>
+                        <button class="platform-tab" data-platform="pinterest" onclick="switchPlatformTab('pinterest')" style="padding:8px 14px;border:none;background:#e5e7eb;color:#374151;border-radius:6px;cursor:pointer;font-weight:600;">📌 Pinterest</button>
+                        <button class="platform-tab" data-platform="instagram" onclick="switchPlatformTab('instagram')" style="padding:8px 14px;border:none;background:#e5e7eb;color:#374151;border-radius:6px;cursor:pointer;font-weight:600;">📸 Instagram</button>
+                        <button class="platform-tab" data-platform="linkedin" onclick="switchPlatformTab('linkedin')" style="padding:8px 14px;border:none;background:#e5e7eb;color:#374151;border-radius:6px;cursor:pointer;font-weight:600;">💼 LinkedIn</button>
+                        <button class="platform-tab" data-platform="wordpress" onclick="switchPlatformTab('wordpress')" style="padding:8px 14px;border:none;background:#e5e7eb;color:#374151;border-radius:6px;cursor:pointer;font-weight:600;">📝 WordPress</button>
+                        <button class="platform-tab" data-platform="blogger" onclick="switchPlatformTab('blogger')" style="padding:8px 14px;border:none;background:#e5e7eb;color:#374151;border-radius:6px;cursor:pointer;font-weight:600;">📰 Blogger</button>
+                    </div>
+
+                    <!-- Twitter Settings -->
+                    <div class="platform-settings" id="settings-twitter" style="display:none;">
+                        <div class="form-group"><label>API Key (Consumer Key)</label><input type="text" id="twitter-api-key" placeholder="gKa5kcg..."></div>
+                        <div class="form-group"><label>API Secret (Consumer Key Secret)</label><input type="password" id="twitter-api-secret" placeholder="KZH7Oic..."></div>
+                        <div class="form-group"><label>Bearer Token</label><input type="password" id="twitter-bearer-token" placeholder="AAAAAAA..."></div>
+                        <div class="form-group"><label>Access Token</label><input type="text" id="twitter-access-token" placeholder="From developer.twitter.com → Keys and Tokens → Generate"></div>
+                        <div class="form-group"><label>Access Token Secret</label><input type="password" id="twitter-access-secret" placeholder="Access Token Secret"></div>
+                        <div class="form-group"><label>Posting Frequency (hours)</label><input type="number" id="twitter-frequency" value="4" min="1"></div>
+                        <div class="form-group"><label><input type="checkbox" id="twitter-auto"> Enable Auto-Posting</label></div>
+                    </div>
+
+                    <!-- Reddit Settings -->
+                    <div class="platform-settings" id="settings-reddit" style="display:block;">
+                        <div class="form-group"><label>Reddit Client ID</label><input type="text" id="reddit-client-id" placeholder="Client ID from apps.reddit.com"></div>
+                        <div class="form-group"><label>Reddit Client Secret</label><input type="password" id="reddit-client-secret" placeholder="Client Secret"></div>
+                        <div class="form-group"><label>Reddit Username</label><input type="text" id="reddit-username" placeholder="Your Reddit username"></div>
+                        <div class="form-group"><label>Reddit Password</label><input type="password" id="reddit-password" placeholder="Your Reddit password"></div>
+                        <div class="form-group"><label>Posting Frequency (hours)</label><input type="number" id="reddit-frequency" value="6" min="1"></div>
+                        <div class="form-group"><label><input type="checkbox" id="reddit-auto"> Enable Auto-Posting</label></div>
+                    </div>
+
+                    <!-- Pinterest Settings -->
+                    <div class="platform-settings" id="settings-pinterest" style="display:none;">
+                        <div style="background:#f0f9ff;border:1px solid #bae6fd;padding:14px 18px;border-radius:8px;margin-bottom:16px;">
+                            <strong>🔐 Schritt 1: App-Daten eintragen</strong>
+                            <div class="form-group" style="margin-top:10px;"><label>Pinterest App ID</label><input type="text" id="pinterest-app-id" placeholder="App ID from developers.pinterest.com"></div>
+                            <div class="form-group"><label>Pinterest App Secret</label><input type="password" id="pinterest-app-secret" placeholder="App Secret"></div>
+                            <button onclick="saveSettings()" style="background:#667eea;color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-weight:600;margin-top:4px;">💾 Speichern</button>
+                        </div>
+                        <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:14px 18px;border-radius:8px;margin-bottom:16px;">
+                            <strong>🔗 Schritt 2: Pinterest verbinden</strong><br>
+                            <small style="color:#6b7280;">Nach dem Speichern der App-Daten hier autorisieren:</small><br>
+                            <button onclick="getPinterestAuthUrl()" style="background:#e60023;color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-weight:600;margin-top:8px;">📌 Mit Pinterest verbinden</button>
+                            <div id="pinterest-auth-status" style="margin-top:8px;font-size:13px;color:#16a34a;"></div>
+                        </div>
+                        <div style="background:#fafafa;border:1px solid #e5e7eb;padding:14px 18px;border-radius:8px;margin-bottom:16px;">
+                            <strong>📋 Schritt 3: Board auswählen</strong><br>
+                            <button onclick="loadPinterestBoards()" style="background:#667eea;color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-weight:600;margin-top:8px;">🔄 Boards laden</button>
+                            <div id="pinterest-boards-list" style="margin-top:10px;"></div>
+                            <div class="form-group" style="margin-top:10px;"><label>Board ID (manuell)</label><input type="text" id="pinterest-board-id" placeholder="123456789012345678"></div>
+                        </div>
+                        <div class="form-group"><label>Pinterest Access Token</label><input type="password" id="pinterest-access-token" placeholder="Wird automatisch gesetzt nach OAuth"></div>
+                        <div class="form-group"><label>Ideogram API Key</label><input type="password" id="ideogram-api-key" placeholder="For AI image generation"></div>
+                        <div class="form-group"><label>Posting Frequency (hours)</label><input type="number" id="pinterest-frequency" value="4" min="1"></div>
+                        <div class="form-group"><label><input type="checkbox" id="pinterest-auto"> Enable Auto-Posting</label></div>
+                    </div>
+
+                    <!-- Instagram Settings -->
+                    <div class="platform-settings" id="settings-instagram" style="display:none;">
+                        <div class="form-group"><label>Instagram Access Token</label><input type="password" id="instagram-access-token" placeholder="Long-lived access token"></div>
+                        <div class="form-group"><label>Instagram Business Account ID</label><input type="text" id="instagram-account-id" placeholder="Numeric account ID"></div>
+                        <div class="form-group"><label>Posting Frequency (hours)</label><input type="number" id="instagram-frequency" value="8" min="1"></div>
+                        <div class="form-group"><label><input type="checkbox" id="instagram-auto"> Enable Auto-Posting</label></div>
+                    </div>
+
+                    <!-- LinkedIn Settings -->
+                    <div class="platform-settings" id="settings-linkedin" style="display:none;">
+                        <div style="background:#f0f9ff;border:1px solid #bae6fd;padding:14px 18px;border-radius:8px;margin-bottom:16px;">
+                            <strong>🔐 Schritt 1: App-Daten eintragen</strong>
+                            <div class="form-group" style="margin-top:10px;"><label>LinkedIn Client ID</label><input type="text" id="linkedin-client-id" placeholder="Client ID from LinkedIn Developer App"></div>
+                            <div class="form-group"><label>LinkedIn Client Secret</label><input type="password" id="linkedin-client-secret" placeholder="Primary Client Secret"></div>
+                            <button onclick="saveSettings()" style="background:#667eea;color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-weight:600;margin-top:4px;">💾 Speichern</button>
+                        </div>
+                        <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:14px 18px;border-radius:8px;margin-bottom:16px;">
+                            <strong>🔗 Schritt 2: LinkedIn verbinden</strong><br>
+                            <small style="color:#6b7280;">Nach dem Speichern der App-Daten hier autorisieren:</small><br>
+                            <button onclick="getLinkedInAuthUrl()" style="background:#0077b5;color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-weight:600;margin-top:8px;">💼 Mit LinkedIn verbinden</button>
+                            <div id="linkedin-auth-status" style="margin-top:8px;font-size:13px;color:#16a34a;"></div>
+                        </div>
+                        <div class="form-group"><label>LinkedIn Access Token</label><input type="password" id="linkedin-access-token" placeholder="Token vom Developer Token Generator"></div>
+                        <div class="form-group">
+                            <label>LinkedIn Person URN</label>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <input type="text" id="linkedin-person-urn" placeholder="Wird automatisch abgerufen" style="flex:1;">
+                                <button onclick="fetchLinkedInUrn()" style="background:#0077b5;color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-size:13px;white-space:nowrap;">🔍 URN abrufen</button>
+                            </div>
+                        </div>
+                        <div class="form-group"><label>Posting Frequency (hours)</label><input type="number" id="linkedin-frequency" value="12" min="1"></div>
+                        <div class="form-group"><label><input type="checkbox" id="linkedin-auto"> Enable Auto-Posting</label></div>
+                    </div>
+
+                    <!-- WordPress Settings -->
+                    <div class="platform-settings" id="settings-wordpress" style="display:none;">
+                        <div class="form-group"><label>WordPress Site URL</label><input type="text" id="wordpress-site-url" placeholder="https://deineblog.de (ohne trailing slash)"></div>
+                        <div class="form-group"><label>WordPress Benutzername</label><input type="text" id="wordpress-username" placeholder="dein WordPress Login-Name"></div>
+                        <div class="form-group"><label>WordPress App Password</label><input type="password" id="wordpress-app-password" placeholder="xxxx xxxx xxxx xxxx xxxx xxxx"></div>
+                        <div class="form-group"><label>Posting Frequency (hours)</label><input type="number" id="wordpress-frequency" value="48" min="1"></div>
+                        <div class="form-group"><label><input type="checkbox" id="wordpress-auto"> Enable Auto-Posting</label></div>
+                        <p style="color:#6b7280;font-size:0.85em;">After saving, go to the WordPress tab to authorize and connect your site.</p>
+                    </div>
+
+                    <!-- Blogger Settings -->
+                    <div class="platform-settings" id="settings-blogger" style="display:none;">
+                        <div class="form-group"><label>Google Client ID</label><input type="text" id="google-client-id" placeholder="From console.cloud.google.com"></div>
+                        <div class="form-group"><label>Google Client Secret</label><input type="password" id="google-client-secret" placeholder="Client Secret"></div>
+                        <div class="form-group"><label>Posting Frequency (hours)</label><input type="number" id="blogger-frequency" value="24" min="1"></div>
+                        <div class="form-group"><label><input type="checkbox" id="blogger-auto"> Enable Auto-Posting</label></div>
+                        <p style="color:#6b7280;font-size:0.85em;">After saving, go to the Blogger tab to authorize and connect your blog.</p>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="saveSettings()" style="margin-top:20px;">Save All Settings</button>
                 </div>
             </div>
         </div>
@@ -1313,6 +2237,8 @@
                 <h3 id="template-modal-title">Create Email Template</h3>
                 <button class="close-modal" onclick="closeTemplateModal()">✕</button>
             </div>
+
+            <input type="hidden" id="modal-template-id" value="">
 
             <div class="form-group">
                 <label>Sequence</label>
