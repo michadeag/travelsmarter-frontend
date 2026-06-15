@@ -1350,13 +1350,21 @@ async function saveEmailTemplate() {
             closeTemplateModal();
             loadEmailTemplates();
         } else {
-            const error = await response.json();
-            showAlert(error.message || `Failed to ${isEdit ? 'update' : 'create'} template`, 'error');
-            console.error('API error:', error);
+            let errorMsg = `HTTP ${response.status}`;
+            try {
+                const error = await response.json();
+                errorMsg = error.message || errorMsg;
+                console.error('API error:', error);
+            } catch(e) {
+                const text = await response.text().catch(() => '');
+                console.error('Non-JSON error response:', text);
+                errorMsg += ' ' + text.slice(0, 100);
+            }
+            showAlert(`Failed to save template: ${errorMsg}`, 'error');
         }
     } catch (error) {
-        console.error(`Error ${isEdit ? 'updating' : 'creating'} template:`, error);
-        showAlert(`Error ${isEdit ? 'updating' : 'creating'} template: ` + error.message, 'error');
+        console.error(`Error saving template:`, error);
+        showAlert(`Error saving template: ` + error.message, 'error');
     }
 }
 
