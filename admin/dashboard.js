@@ -1204,6 +1204,13 @@ function renderSequences(sequences) {
             </td>
         </tr>
     `).join('');
+
+    // Also populate the sequence dropdown in the template modal
+    const select = document.getElementById('modal-template-sequence');
+    if (select) {
+        select.innerHTML = '<option value="">-- Select Sequence --</option>' +
+            sequences.map(seq => `<option value="${seq.id}">${seq.name}</option>`).join('');
+    }
 }
 
 async function viewSequence(sequenceId) {
