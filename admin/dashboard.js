@@ -1244,10 +1244,47 @@ function renderTemplatesForSequence(templates) {
             <td><span class="badge ${template.is_active ? 'badge-success' : 'badge-danger'}">${template.is_active ? 'Active' : 'Inactive'}</span></td>
             <td>
                 <button class="btn btn-sm btn-primary" onclick="editTemplate('${template.id}')">Edit</button>
+                <button class="btn btn-sm btn-secondary" onclick="openSendTestModal('${template.id}', \`${template.subject.replace(/`/g, "'")}\`)">✉️ Test</button>
                 <button class="btn btn-sm btn-danger" onclick="deleteTemplate('${template.id}')">Delete</button>
             </td>
         </tr>
     `).join('');
+}
+
+let currentTestTemplateId = null;
+
+function openSendTestModal(templateId, subject) {
+    currentTestTemplateId = templateId;
+    document.getElementById('send-test-subject').textContent = 'Template: ' + subject;
+    document.getElementById('send-test-modal').classList.add('active');
+}
+
+function closeSendTestModal() {
+    document.getElementById('send-test-modal').classList.remove('active');
+    currentTestTemplateId = null;
+}
+
+async function sendTestEmail() {
+    const toEmail = document.getElementById('send-test-email').value.trim();
+    if (!toEmail) { showAlert('Please enter an email address', 'error'); return; }
+    if (!currentTestTemplateId) return;
+
+    try {
+        const res = await fetch(`${API_URL}/api/email-templates/templates/${currentTestTemplateId}/send-test`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ toEmail })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showAlert(`Test email sent to ${toEmail}`, 'success');
+            closeSendTestModal();
+        } else {
+            showAlert('Failed: ' + data.message, 'error');
+        }
+    } catch (err) {
+        showAlert('Error: ' + err.message, 'error');
+    }
 }
 
 function openEmailSequenceModal() {
