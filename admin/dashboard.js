@@ -13,7 +13,8 @@ console.log('Admin Dashboard using API:', API_URL);
 
 // Helper function to get current auth token
 function getAuthToken() {
-    return localStorage.getItem('userToken') || localStorage.getItem('adminToken');
+    // Admin dashboard: always prefer adminToken over userToken
+    return localStorage.getItem('adminToken') || localStorage.getItem('userToken');
 }
 
 // Deprecated: Use getAuthToken() instead
