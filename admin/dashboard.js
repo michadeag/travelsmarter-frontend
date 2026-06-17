@@ -2995,6 +2995,7 @@ async function loadSocialSettings() {
         set('pinterest-app-secret', 'pinterest_app_secret');
         set('pinterest-access-token', 'pinterest_access_token');
         set('pinterest-board-id', 'pinterest_board_id');
+        set('openai-api-key', 'openai_api_key');
         set('ideogram-api-key', 'ideogram_api_key');
         set('pinterest-frequency', 'pinterest_frequency_hours');
         chk('pinterest-auto', 'pinterest_auto_posting');
@@ -3042,6 +3043,7 @@ async function saveSocialSettings() {
         pinterest_app_secret: val('pinterest-app-secret'),
         pinterest_access_token: val('pinterest-access-token'),
         pinterest_board_id: val('pinterest-board-id'),
+        openai_api_key: val('openai-api-key'),
         ideogram_api_key: val('ideogram-api-key'),
         pinterest_frequency_hours: val('pinterest-frequency') || '4',
         pinterest_auto_posting: chk('pinterest-auto'),
