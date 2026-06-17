@@ -1252,20 +1252,21 @@
                             readonly></textarea>
                     </div>
 
-                    <!-- Description -->
+                    <!-- Description + Tags combined -->
                     <div style="margin-bottom:16px;">
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                            <label style="font-weight:700;font-size:13px;color:#374151;">✍️ BESCHREIBUNG</label>
+                            <label style="font-weight:700;font-size:13px;color:#374151;">✍️ BESCHREIBUNG &amp; TAGS</label>
                             <button onclick="copyPinterestField('pinterest-desc-field')"
                                 style="padding:4px 12px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">📋 Kopieren</button>
                         </div>
-                        <textarea id="pinterest-desc-field" rows="4"
+                        <textarea id="pinterest-desc-field" rows="6"
                             style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;line-height:1.6;box-sizing:border-box;"
                             readonly></textarea>
+                        <textarea id="pinterest-tags-field" style="display:none;" readonly></textarea>
                     </div>
 
                     <!-- Link -->
-                    <div style="margin-bottom:16px;">
+                    <div style="margin-bottom:20px;">
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
                             <label style="font-weight:700;font-size:13px;color:#374151;">🔗 DESTINATION LINK</label>
                             <button onclick="copyPinterestField('pinterest-link-field')"
@@ -1273,18 +1274,6 @@
                         </div>
                         <textarea id="pinterest-link-field" rows="1"
                             style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:monospace;resize:none;box-sizing:border-box;"
-                            readonly></textarea>
-                    </div>
-
-                    <!-- Tags -->
-                    <div style="margin-bottom:20px;">
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                            <label style="font-weight:700;font-size:13px;color:#374151;">🏷️ TAGS</label>
-                            <button onclick="copyPinterestField('pinterest-tags-field')"
-                                style="padding:4px 12px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">📋 Kopieren</button>
-                        </div>
-                        <textarea id="pinterest-tags-field" rows="2"
-                            style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:monospace;resize:vertical;box-sizing:border-box;"
                             readonly></textarea>
                     </div>
 

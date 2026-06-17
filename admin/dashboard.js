@@ -2189,7 +2189,7 @@ async function generatePinterestPin() {
 
         // Fill fields
         document.getElementById('pinterest-title-field').value = data.title;
-        document.getElementById('pinterest-desc-field').value = data.description;
+        document.getElementById('pinterest-desc-field').value = data.description + '\n\n' + data.tags;
         document.getElementById('pinterest-tags-field').value = data.tags;
         document.getElementById('pinterest-link-field').value = data.link;
         document.getElementById('pinterest-board-badge').textContent = data.board?.name || 'Travel';
