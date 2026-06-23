@@ -5426,6 +5426,23 @@
                 ? 'http://localhost:5000'
                 : 'https://api.travelsmarterapp.com';
 
+            // Handle magic login link from email
+            const urlParams = new URLSearchParams(window.location.search);
+            const magicToken = urlParams.get('magic');
+            if (magicToken) {
+                try {
+                    const magicRes = await fetch(`${API_URL}/api/auth/magic-login?token=${magicToken}`);
+                    const magicData = await magicRes.json();
+                    if (magicData.success) {
+                        localStorage.setItem('userToken', magicData.token);
+                        localStorage.setItem('userData', JSON.stringify(magicData.user));
+                    }
+                } catch (e) { console.warn('Magic login failed:', e); }
+                // Clean token from URL without reload
+                const cleanUrl = window.location.pathname;
+                window.history.replaceState({}, '', cleanUrl);
+            }
+
             // Get user tier from API
             let userTier = 'free';
             const token = localStorage.getItem('userToken');
