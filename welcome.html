@@ -784,19 +784,20 @@
             const data = await res.json();
 
             if (data.success) {
+                if (data.token) localStorage.setItem('userToken', data.token);
+                if (data.user) localStorage.setItem('userData', JSON.stringify(data.user));
                 if (isHero) {
                     document.getElementById('hero-card').innerHTML = `
                         <div class="success-box">
                             <h3>✓ You're in, ${firstName}!</h3>
                             <p>Your free account is ready.<br><br>
-                            Check your email — we've sent you a link to set your password and access your 20 hacks.<br><br>
-                            Taking you there now…</p>
+                            Taking you to your 20 free hacks now…</p>
                         </div>`;
                 } else {
                     form.innerHTML = `
                         <div class="success-box" style="color:white;">
                             <h3 style="color:#10b981;">✓ You're in, ${firstName}!</h3>
-                            <p style="color:rgba(255,255,255,0.8);">Check your email for your access link.<br>Your 20 free hacks are waiting.</p>
+                            <p style="color:rgba(255,255,255,0.8);">Your 20 free hacks are ready.</p>
                         </div>`;
                 }
                 setTimeout(() => { window.location.href = 'cheat-sheet.html'; }, 2500);

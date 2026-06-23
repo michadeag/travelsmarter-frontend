@@ -226,6 +226,10 @@
             <button type="submit" class="auth-btn" id="auth-btn">Sign In</button>
         </form>
 
+        <div id="forgot-link" style="text-align:center;margin-top:12px;">
+            <a href="reset-password.html" style="color:#667eea;font-size:0.88em;text-decoration:none;">Forgot your password?</a>
+        </div>
+
         <div class="divider">or</div>
 
         <div class="auth-toggle">
@@ -323,6 +327,7 @@
                 toggleText.textContent = 'Already have an account? ';
                 toggleLink.textContent = 'Sign In';
                 extraFields.classList.add('show');
+                document.getElementById('forgot-link').style.display = 'none';
 
                 document.getElementById('firstName').required = true;
                 document.getElementById('lastName').required = true;
@@ -332,6 +337,7 @@
                 toggleText.textContent = "Don't have an account? ";
                 toggleLink.textContent = 'Sign Up';
                 extraFields.classList.remove('show');
+                document.getElementById('forgot-link').style.display = 'block';
 
                 document.getElementById('firstName').required = false;
                 document.getElementById('lastName').required = false;
