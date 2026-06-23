@@ -31,6 +31,7 @@
             min-height: 100svh;
             display: flex;
             flex-direction: column;
+            background: #050a19;
         }
 
         /*
@@ -52,10 +53,10 @@
             inset: 0;
             background: linear-gradient(
                 to bottom,
-                rgba(10,15,30,0.35) 0%,
-                rgba(10,15,30,0.15) 35%,
-                rgba(10,15,30,0.75) 70%,
-                rgba(10,15,30,0.95) 100%
+                rgba(5,10,25,0.55) 0%,
+                rgba(5,10,25,0.45) 40%,
+                rgba(5,10,25,0.82) 70%,
+                rgba(5,10,25,0.97) 100%
             );
         }
 
@@ -86,8 +87,8 @@
 
         .hero-tag {
             display: inline-block;
-            background: #ff6b4a;
-            color: white;
+            background: #f5a623;
+            color: #0a0f1e;
             font-size: 11px;
             font-weight: 700;
             letter-spacing: 0.08em;
@@ -109,7 +110,7 @@
 
         .hero-headline em {
             font-style: normal;
-            color: #ff6b4a;
+            color: #f5a623;
         }
 
         .hero-sub {
@@ -162,7 +163,7 @@
         .cta-btn {
             width: 100%;
             padding: 15px;
-            background: #ff6b4a;
+            background: #f5a623;
             color: white;
             border: none;
             border-radius: 10px;
@@ -172,7 +173,8 @@
             letter-spacing: 0.01em;
             transition: background 0.15s;
         }
-        .cta-btn:hover { background: #e85a39; }
+        .cta-btn { color: #0a0f1e; }
+        .cta-btn:hover { background: #e09510; }
         .cta-btn:disabled { background: #9ca3af; cursor: not-allowed; }
 
         .form-trust {
@@ -231,7 +233,7 @@
         .benefit-icon {
             width: 42px;
             height: 42px;
-            background: #fff4f1;
+            background: #fef3c7;
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -338,24 +340,19 @@
 
 <!-- ── HERO ── -->
 <section class="hero">
-    <!--
-        SWAP THIS IMAGE with your Pinterest Pin image.
-        Upload to Cloudinary or any CDN, paste URL below.
-        Recommended: 1000×1500px, business class / luxury hotel / travel destination.
-    -->
     <img class="hero-img"
-         src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1000&q=80"
-         alt="Business class travel">
+         src="pinterest-hero.jpg"
+         alt="Hidden Flight Deals">
     <div class="hero-overlay"></div>
 
     <div class="hero-content">
         <div class="brand">✈️ Travel<span>Smarter</span></div>
 
-        <span class="hero-tag">Free Cheat Sheet</span>
+        <span class="hero-tag">🔓 Free Access</span>
         <h1 class="hero-headline">
-            20 Hacks That Save <em>$2,000+</em><br>On Every Trip
+            Hidden Flight Deals<br><em>Most Travelers Never See</em>
         </h1>
-        <p class="hero-sub">The exact strategies frequent flyers use to upgrade to business class, get free hotel nights, and never pay full price again.</p>
+        <p class="hero-sub">Get instant access to mistake fares, flight alerts &amp; the 20 booking hacks frequent flyers use to fly for up to 90% off.</p>
 
         <div class="form-wrap" id="hero-form-wrap">
             <label class="form-label">Get instant free access →</label>
@@ -366,7 +363,7 @@
                 <div class="form-row">
                     <input type="email" name="email" placeholder="your@email.com" required autocomplete="email">
                 </div>
-                <button type="submit" class="cta-btn" id="cta-btn">Get My Free Hacks →</button>
+                <button type="submit" class="cta-btn" id="cta-btn">🔓 Unlock Now — It's Free →</button>
             </form>
             <p class="form-trust">Free forever · No credit card · Unsubscribe anytime</p>
         </div>
@@ -431,7 +428,7 @@
 <section class="bottom-cta">
     <p>Ready to travel smarter?</p>
     <button class="cta-btn" onclick="document.querySelector('[name=email]').focus();window.scrollTo({top:0,behavior:'smooth'})">
-        Get My 20 Free Hacks →
+        🔓 Unlock Now — It's Free →
     </button>
     <p style="font-size:12px;color:#9ca3af;font-weight:400;margin-top:12px;margin-bottom:0;">Free forever. No credit card required.</p>
 </section>
