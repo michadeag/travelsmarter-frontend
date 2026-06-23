@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>20 Travel Hacks That Save $2,000+ Per Trip | TravelSmarter</title>
+    <meta name="description" content="The exact hacks frequent flyers use to fly business class for economy prices. Free. No credit card.">
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-470B6E2DKF"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-470B6E2DKF');
+    </script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #fff;
+            color: #1f2937;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── HERO ── */
+        .hero {
+            position: relative;
+            min-height: 100svh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /*
+            HERO IMAGE — replace src with your Pinterest Pin image.
+            Ideal size: 1000×1500px (2:3 ratio, matches Pinterest format).
+            Image should show: business class cabin, luxury hotel, or travel destination.
+        */
+        .hero-img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center top;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(10,15,30,0.35) 0%,
+                rgba(10,15,30,0.15) 35%,
+                rgba(10,15,30,0.75) 70%,
+                rgba(10,15,30,0.95) 100%
+            );
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            flex: 1;
+            padding: 28px 22px 36px;
+            max-width: 480px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .brand {
+            position: absolute;
+            top: 22px;
+            left: 22px;
+            font-size: 15px;
+            font-weight: 700;
+            color: white;
+            letter-spacing: 0.02em;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+        }
+        .brand span { color: #ff6b4a; }
+
+        .hero-tag {
+            display: inline-block;
+            background: #ff6b4a;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 5px 12px;
+            border-radius: 20px;
+            margin-bottom: 14px;
+            width: fit-content;
+        }
+
+        .hero-headline {
+            font-size: clamp(26px, 7vw, 36px);
+            font-weight: 800;
+            color: white;
+            line-height: 1.15;
+            margin-bottom: 12px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .hero-headline em {
+            font-style: normal;
+            color: #ff6b4a;
+        }
+
+        .hero-sub {
+            font-size: 15px;
+            color: rgba(255,255,255,0.82);
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        /* ── FORM ── */
+        .form-wrap {
+            background: white;
+            border-radius: 14px;
+            padding: 20px 18px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+        }
+
+        .form-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .form-row input {
+            flex: 1;
+            padding: 13px 14px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: inherit;
+            color: #1f2937;
+            background: #f9fafb;
+            min-width: 0;
+        }
+        .form-row input:focus {
+            outline: none;
+            border-color: #ff6b4a;
+            background: white;
+        }
+        .form-row input::placeholder { color: #9ca3af; }
+
+        .cta-btn {
+            width: 100%;
+            padding: 15px;
+            background: #ff6b4a;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            letter-spacing: 0.01em;
+            transition: background 0.15s;
+        }
+        .cta-btn:hover { background: #e85a39; }
+        .cta-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+
+        .form-trust {
+            text-align: center;
+            font-size: 11.5px;
+            color: #9ca3af;
+            margin-top: 9px;
+        }
+
+        /* ── SUCCESS ── */
+        .success-box {
+            text-align: center;
+            padding: 8px 0;
+        }
+        .success-box .check {
+            font-size: 36px;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .success-box h3 {
+            font-size: 17px;
+            font-weight: 800;
+            color: #1f2937;
+            margin-bottom: 6px;
+        }
+        .success-box p {
+            font-size: 13px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        /* ── BENEFITS ── */
+        .benefits {
+            padding: 36px 22px 28px;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .benefits-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .benefit {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .benefit-icon {
+            width: 42px;
+            height: 42px;
+            background: #fff4f1;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .benefit-text strong {
+            display: block;
+            font-size: 15px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 2px;
+        }
+
+        .benefit-text span {
+            font-size: 13px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        /* ── PROOF ── */
+        .proof {
+            background: #f9fafb;
+            border-top: 1px solid #f0f0f0;
+            padding: 24px 22px 32px;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .proof-count {
+            text-align: center;
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 18px;
+        }
+        .proof-count strong { color: #1f2937; }
+
+        .testimonial {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 18px;
+            margin-bottom: 12px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .testimonial-stars {
+            color: #f59e0b;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .testimonial-text {
+            font-size: 13.5px;
+            color: #374151;
+            line-height: 1.55;
+            margin-bottom: 8px;
+        }
+
+        .testimonial-author {
+            font-size: 12px;
+            color: #9ca3af;
+            font-weight: 600;
+        }
+
+        /* ── BOTTOM CTA ── */
+        .bottom-cta {
+            padding: 28px 22px 48px;
+            max-width: 480px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .bottom-cta p {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 16px;
+        }
+
+        .bottom-cta .cta-btn { max-width: 320px; margin: 0 auto; display: block; }
+
+        /* ── FOOTER ── */
+        footer {
+            border-top: 1px solid #f0f0f0;
+            padding: 20px;
+            text-align: center;
+            font-size: 11px;
+            color: #9ca3af;
+        }
+        footer a { color: #9ca3af; text-decoration: none; }
+
+        /* ── DESKTOP ── */
+        @media (min-width: 640px) {
+            .hero { min-height: 100vh; }
+            .hero-content { padding: 48px 40px 52px; max-width: 560px; }
+            .brand { top: 28px; left: 40px; }
+            .benefits, .proof, .bottom-cta { max-width: 560px; padding-left: 40px; padding-right: 40px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── HERO ── -->
+<section class="hero">
+    <!--
+        SWAP THIS IMAGE with your Pinterest Pin image.
+        Upload to Cloudinary or any CDN, paste URL below.
+        Recommended: 1000×1500px, business class / luxury hotel / travel destination.
+    -->
+    <img class="hero-img"
+         src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1000&q=80"
+         alt="Business class travel">
+    <div class="hero-overlay"></div>
+
+    <div class="hero-content">
+        <div class="brand">✈️ Travel<span>Smarter</span></div>
+
+        <span class="hero-tag">Free Cheat Sheet</span>
+        <h1 class="hero-headline">
+            20 Hacks That Save <em>$2,000+</em><br>On Every Trip
+        </h1>
+        <p class="hero-sub">The exact strategies frequent flyers use to upgrade to business class, get free hotel nights, and never pay full price again.</p>
+
+        <div class="form-wrap" id="hero-form-wrap">
+            <label class="form-label">Get instant free access →</label>
+            <form id="signup-form" onsubmit="handleSignup(event)">
+                <div class="form-row">
+                    <input type="text" name="firstName" placeholder="First name" required autocomplete="given-name">
+                </div>
+                <div class="form-row">
+                    <input type="email" name="email" placeholder="your@email.com" required autocomplete="email">
+                </div>
+                <button type="submit" class="cta-btn" id="cta-btn">Get My Free Hacks →</button>
+            </form>
+            <p class="form-trust">Free forever · No credit card · Unsubscribe anytime</p>
+        </div>
+    </div>
+</section>
+
+<!-- ── BENEFITS ── -->
+<section class="benefits">
+    <p class="benefits-title">What you get — free</p>
+
+    <div class="benefit">
+        <div class="benefit-icon">✈️</div>
+        <div class="benefit-text">
+            <strong>Flight Hacking</strong>
+            <span>Award arbitrage, mistake fares, and the booking window most people miss — saving $300–600 per ticket.</span>
+        </div>
+    </div>
+
+    <div class="benefit">
+        <div class="benefit-icon">💳</div>
+        <div class="benefit-text">
+            <strong>Credit Card Stacking</strong>
+            <span>How to earn a free return flight without ever boarding a plane — using sign-up bonuses and transfer partners.</span>
+        </div>
+    </div>
+
+    <div class="benefit">
+        <div class="benefit-icon">🏨</div>
+        <div class="benefit-text">
+            <strong>Hotel Upgrades</strong>
+            <span>One sentence at check-in that gets you a room upgrade 40% of the time — works at 5-star properties.</span>
+        </div>
+    </div>
+
+    <div class="benefit">
+        <div class="benefit-icon">⏰</div>
+        <div class="benefit-text">
+            <strong>Perfect Timing</strong>
+            <span>The two weeks per year when flights AND hotels are cheapest simultaneously — mapped by destination.</span>
+        </div>
+    </div>
+</section>
+
+<!-- ── SOCIAL PROOF ── -->
+<section class="proof">
+    <p class="proof-count">Joined by <strong>12,340+ travelers</strong> who save an average of <strong>$1,200 per trip</strong></p>
+
+    <div class="testimonial">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"Upgraded to business class on my NYC→London flight for $180 using the credit card stacking hack. Would have paid $4,200 for that seat."</p>
+        <p class="testimonial-author">Sarah M. — New York</p>
+    </div>
+
+    <div class="testimonial">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"Saved $890 on a family trip to Europe just by shifting our dates by 4 days. The timing module is gold."</p>
+        <p class="testimonial-author">James K. — Chicago</p>
+    </div>
+</section>
+
+<!-- ── BOTTOM CTA ── -->
+<section class="bottom-cta">
+    <p>Ready to travel smarter?</p>
+    <button class="cta-btn" onclick="document.querySelector('[name=email]').focus();window.scrollTo({top:0,behavior:'smooth'})">
+        Get My 20 Free Hacks →
+    </button>
+    <p style="font-size:12px;color:#9ca3af;font-weight:400;margin-top:12px;margin-bottom:0;">Free forever. No credit card required.</p>
+</section>
+
+<footer>
+    © 2026 TravelSmarter &nbsp;·&nbsp;
+    <a href="sales-page.html">Plans</a> &nbsp;·&nbsp;
+    <a href="auth.html">Sign In</a>
+</footer>
+
+<script>
+    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:5000'
+        : 'https://api.travelsmarterapp.com';
+
+    async function handleSignup(e) {
+        e.preventDefault();
+        const form = e.target;
+        const firstName = form.querySelector('[name="firstName"]').value.trim();
+        const email = form.querySelector('[name="email"]').value.trim();
+        const btn = document.getElementById('cta-btn');
+
+        btn.disabled = true;
+        btn.textContent = 'Creating your account…';
+
+        const tempPassword = Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-4).toUpperCase();
+
+        try {
+            const res = await fetch(`${API_URL}/api/auth/signup`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password: tempPassword, firstName, lastName: '' })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                if (data.token) localStorage.setItem('userToken', data.token);
+                if (data.user) localStorage.setItem('userData', JSON.stringify(data.user));
+
+                // Track Pinterest conversion
+                gtag('event', 'sign_up', { method: 'pinterest_landing' });
+
+                document.getElementById('hero-form-wrap').innerHTML = `
+                    <div class="success-box">
+                        <span class="check">✓</span>
+                        <h3>You're in, ${firstName}!</h3>
+                        <p>Your 20 free hacks are ready.<br>Taking you there now…</p>
+                    </div>`;
+
+                setTimeout(() => { window.location.href = 'index.html'; }, 2000);
+
+            } else if (data.message && data.message.toLowerCase().includes('already')) {
+                btn.disabled = false;
+                btn.textContent = 'Get My Free Hacks →';
+                const trust = form.nextElementSibling;
+                if (trust) trust.innerHTML = '⚠️ Already have an account. <a href="auth.html" style="color:#ff6b4a;font-weight:700;">Sign in →</a>';
+            } else {
+                throw new Error(data.message || 'Signup failed');
+            }
+        } catch (err) {
+            btn.disabled = false;
+            btn.textContent = 'Get My Free Hacks →';
+            alert('Something went wrong: ' + err.message);
+        }
+    }
+</script>
+</body>
+</html>
