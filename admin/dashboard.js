@@ -211,7 +211,7 @@ function displayUsers(users) {
             <td>${user.first_name || ''} ${user.last_name || ''}</td>
             <td><span class="badge badge-${user.subscription_tier === 'free' ? 'info' : 'success'}">${user.subscription_tier}</span></td>
             <td>${formatDate(user.created_at)}</td>
-            <td>${user.last_login ? formatDate(user.last_login) : 'Never'}</td>
+            <td>${user.last_login ? formatDate(user.last_login) : '<span style="color:#9ca3af;">—</span>'}</td>
             <td>
                 <div class="actions">
                     <button class="btn btn-sm btn-primary" onclick="editUser('${user.id}')">Edit</button>
