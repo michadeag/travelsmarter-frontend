@@ -87,7 +87,7 @@ function switchTab(tabName) {
     document.getElementById('page-title').textContent = titles[tabName] || tabName;
 
     // Auto-load data when switching to platform tabs
-    if (tabName === 'analytics') { loadAnalytics(); loadPageviews(); }
+    if (tabName === 'analytics') { loadAnalytics(); loadPageviews(); loadPinterestPageviews(); }
     if (tabName === 'twitter') { loadTwitterStatus(); loadTwitterRecentPosts(); }
     if (tabName === 'reddit') { initRedditTab(); }
     if (tabName === 'linkedin') { initLinkedInTab(); }
@@ -1761,17 +1761,25 @@ async function loadAnalytics() {
 
 // ─── PAGEVIEW TRAFFIC ─────────────────────────────────────────────────────────
 async function loadPageviews() {
+    await loadPageviewsForPage('welcome.html', 'pv-today', 'pv-week', 'pv-total', 'pv-by-day');
+}
+
+async function loadPinterestPageviews() {
+    await loadPageviewsForPage('pinterest.html', 'pv2-today', 'pv2-week', 'pv2-total', 'pv2-by-day');
+}
+
+async function loadPageviewsForPage(page, todayId, weekId, totalId, byDayId) {
     try {
-        const res = await fetch(`${API_URL}/api/analytics/pageviews?page=welcome.html`, {
+        const res = await fetch(`${API_URL}/api/analytics/pageviews?page=${encodeURIComponent(page)}`, {
             headers: { 'Authorization': `Bearer ${getAuthToken()}` }
         });
         if (!res.ok) return;
         const { data } = await res.json();
 
-        const todayEl = document.getElementById('pv-today');
-        const weekEl = document.getElementById('pv-week');
-        const totalEl = document.getElementById('pv-total');
-        const byDayEl = document.getElementById('pv-by-day');
+        const todayEl = document.getElementById(todayId);
+        const weekEl = document.getElementById(weekId);
+        const totalEl = document.getElementById(totalId);
+        const byDayEl = document.getElementById(byDayId);
 
         if (todayEl) todayEl.textContent = data.today;
         if (weekEl) weekEl.textContent = data.last7Days;
