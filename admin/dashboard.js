@@ -1056,10 +1056,10 @@ function displayActivities(activities) {
 
     tbody.innerHTML = activities.map(activity => `
         <tr>
-            <td>${activity.user_email}</td>
-            <td>${activity.action}</td>
-            <td>${formatTime(activity.created_at)}</td>
-            <td><span class="badge badge-${activity.status === 'success' ? 'success' : 'danger'}">${activity.status}</span></td>
+            <td>${activity.email || activity.user_email || activity.user || 'N/A'}</td>
+            <td>${activity.activity || activity.action || 'signup'}</td>
+            <td>${formatTime(activity.timestamp || activity.created_at)}</td>
+            <td><span class="badge badge-success">success</span></td>
         </tr>
     `).join('');
 }
