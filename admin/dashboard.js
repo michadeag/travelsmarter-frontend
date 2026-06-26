@@ -113,7 +113,7 @@ async function initBroadcastTab() {
 async function loadBroadcastTemplates() {
     try {
         const res = await fetch(`${API_URL}/api/broadcast/templates`, {
-            headers: { 'Authorization': `Bearer ${getToken()}` }
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
         });
         const data = await res.json();
         const container = document.getElementById('bc-templates');
@@ -147,7 +147,7 @@ function selectBroadcastTemplate(id, subject, el) {
 async function loadBroadcastPreview(templateId) {
     try {
         const res = await fetch(`${API_URL}/api/broadcast/templates`, {
-            headers: { 'Authorization': `Bearer ${getToken()}` }
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
         });
         const data = await res.json();
         const tpl = data.templates.find(t => t.id === templateId);
@@ -171,7 +171,7 @@ async function loadBroadcastSubscribers() {
 
     try {
         const res = await fetch(`${API_URL}/api/broadcast/subscribers?${params}`, {
-            headers: { 'Authorization': `Bearer ${getToken()}` }
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
         });
         const data = await res.json();
         const el = document.getElementById('bc-recipients');
@@ -207,7 +207,7 @@ async function sendBroadcast() {
     try {
         const res = await fetch(`${API_URL}/api/broadcast/send`, {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 template_id: bcSelectedTemplate,
                 custom_subject: subject,
