@@ -80,7 +80,7 @@ function switchTab(tabName) {
     const titles = {
         dashboard: 'Dashboard', users: 'Users Management', subscriptions: 'Subscriptions',
         deals: 'Deals Management', hacks: 'Hacks & Modules', promos: 'Promo Codes',
-        'email-templates': 'Email Templates', analytics: 'Analytics', settings: 'Settings',
+        'email-templates': 'Email Templates', broadcast: '📣 Broadcast Email', analytics: 'Analytics', settings: 'Settings',
         reddit: '🤖 Reddit', linkedin: '💼 LinkedIn', pinterest: '📌 Pinterest',
         instagram: '📸 Instagram', wordpress: '📝 WordPress', quora: '❓ Quora', blogger: '📰 Blogger', slideshare: '📊 SlideShare'
     };
@@ -99,6 +99,142 @@ function switchTab(tabName) {
     if (tabName === 'partner-deals') { loadPartnerDeals(); }
     if (tabName === 'blogger') { initBloggerTab(); }
     if (tabName === 'medium') { initMediumTab(); }
+    if (tabName === 'broadcast') { initBroadcastTab(); }
+}
+
+// ─── BROADCAST ────────────────────────────────────────────────────────────────
+
+let bcSelectedTemplate = null;
+
+async function initBroadcastTab() {
+    await loadBroadcastTemplates();
+}
+
+async function loadBroadcastTemplates() {
+    try {
+        const res = await fetch(`${API_URL}/api/broadcast/templates`, {
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        const data = await res.json();
+        const container = document.getElementById('bc-templates');
+        container.innerHTML = data.templates.map(t => `
+            <div class="bc-template-card" data-id="${t.id}" onclick="selectBroadcastTemplate('${t.id}', '${t.subject.replace(/'/g, "\\'")}', this)"
+                style="border:2px solid #e5e7eb;border-radius:10px;padding:16px;cursor:pointer;transition:all 0.2s;">
+                <div style="font-weight:600;margin-bottom:4px;">${t.name}</div>
+                <div style="font-size:13px;color:#6b7280;">Subject: ${t.subject}</div>
+            </div>
+        `).join('');
+    } catch (err) {
+        document.getElementById('bc-templates').innerHTML = `<div style="color:red;">Error loading templates: ${err.message}</div>`;
+    }
+}
+
+function selectBroadcastTemplate(id, subject, el) {
+    bcSelectedTemplate = id;
+    document.querySelectorAll('.bc-template-card').forEach(c => {
+        c.style.border = '2px solid #e5e7eb';
+        c.style.background = 'white';
+    });
+    el.style.border = '2px solid #667eea';
+    el.style.background = '#f0f4ff';
+
+    document.getElementById('bc-subject').value = subject;
+    loadBroadcastPreview(id);
+    document.getElementById('bc-preview-section').style.display = 'block';
+    document.getElementById('bc-send-section').style.display = 'block';
+}
+
+async function loadBroadcastPreview(templateId) {
+    try {
+        const res = await fetch(`${API_URL}/api/broadcast/templates`, {
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        const data = await res.json();
+        const tpl = data.templates.find(t => t.id === templateId);
+        if (tpl) {
+            document.getElementById('bc-preview-html').innerHTML =
+                `<p style="font-size:12px;color:#9ca3af;margin-bottom:12px;">Preview (placeholders shown as-is)</p>` +
+                `<strong>Subject:</strong> ${tpl.subject}`;
+        }
+    } catch (err) {}
+}
+
+async function loadBroadcastSubscribers() {
+    const after = document.getElementById('bc-after').value;
+    const before = document.getElementById('bc-before').value;
+    const tier = document.getElementById('bc-tier').value;
+
+    const params = new URLSearchParams();
+    if (after) params.append('subscribed_after', after);
+    if (before) params.append('subscribed_before', before);
+    if (tier !== 'all') params.append('tier', tier);
+
+    try {
+        const res = await fetch(`${API_URL}/api/broadcast/subscribers?${params}`, {
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        const data = await res.json();
+        const el = document.getElementById('bc-recipients');
+        if (data.success) {
+            el.innerHTML = `<span style="color:#10b981;font-weight:600;">✓ ${data.count} subscriber${data.count !== 1 ? 's' : ''} selected</span>
+                ${data.subscribers.slice(0, 5).map(u => `<span style="margin-left:8px;background:#f3f4f6;padding:2px 8px;border-radius:4px;font-size:12px;">${u.email}</span>`).join('')}
+                ${data.count > 5 ? `<span style="font-size:12px;color:#6b7280;margin-left:4px;">+${data.count - 5} more</span>` : ''}`;
+        } else {
+            el.innerHTML = `<span style="color:red;">${data.error}</span>`;
+        }
+    } catch (err) {
+        document.getElementById('bc-recipients').innerHTML = `<span style="color:red;">Error: ${err.message}</span>`;
+    }
+}
+
+async function sendBroadcast() {
+    if (!bcSelectedTemplate) {
+        alert('Please select a template first.');
+        return;
+    }
+
+    const after = document.getElementById('bc-after').value;
+    const before = document.getElementById('bc-before').value;
+    const tier = document.getElementById('bc-tier').value;
+    const subject = document.getElementById('bc-subject').value;
+
+    if (!confirm(`Send this email now? This will send to all matching subscribers.`)) return;
+
+    const btn = document.getElementById('bc-send-btn');
+    btn.textContent = '⏳ Sending...';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(`${API_URL}/api/broadcast/send`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                template_id: bcSelectedTemplate,
+                custom_subject: subject,
+                filters: {
+                    subscribed_after: after || undefined,
+                    subscribed_before: before || undefined,
+                    tier: tier !== 'all' ? tier : undefined
+                }
+            })
+        });
+        const data = await res.json();
+        const result = document.getElementById('bc-result');
+        if (data.success) {
+            result.innerHTML = `<div style="background:#d1fae5;border:1px solid #10b981;border-radius:8px;padding:16px;color:#065f46;">
+                ✅ ${data.message}
+            </div>`;
+        } else {
+            result.innerHTML = `<div style="background:#fee2e2;border:1px solid #ef4444;border-radius:8px;padding:16px;color:#991b1b;">
+                ❌ ${data.error}
+            </div>`;
+        }
+    } catch (err) {
+        document.getElementById('bc-result').innerHTML = `<div style="background:#fee2e2;border:1px solid #ef4444;border-radius:8px;padding:16px;color:#991b1b;">Error: ${err.message}</div>`;
+    } finally {
+        btn.textContent = '📣 Send to Recipients';
+        btn.disabled = false;
+    }
 }
 
 // ALERTS
