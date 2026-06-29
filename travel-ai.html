@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Hacks AI — TravelSmarter</title>
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-470B6E2DKF"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-470B6E2DKF');
+    </script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #1f2937;
+            --secondary: #667eea;
+            --accent: #10b981;
+            --border: #e5e7eb;
+            --text: #374151;
+            --text-light: #6b7280;
+            --light-bg: #f9fafb;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text);
+        }
+
+        /* NAV */
+        .nav-bar {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            padding: 14px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+        .nav-bar a { color: white; text-decoration: none; font-weight: 500; opacity: 0.9; }
+        .nav-bar a:hover { opacity: 1; text-decoration: underline; }
+        .nav-bar .nav-right a { margin-left: 20px; }
+
+        .container { max-width: 860px; margin: 0 auto; padding: 32px 20px 60px; }
+
+        /* HERO */
+        .hero {
+            text-align: center;
+            color: white;
+            margin-bottom: 32px;
+        }
+        .hero .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.35);
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 14px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+        .hero h1 { font-size: 2.4em; font-weight: 800; margin-bottom: 12px; }
+        .hero p { font-size: 1.1em; opacity: 0.88; max-width: 560px; margin: 0 auto; }
+
+        /* FORM CARD */
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 36px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+        .form-grid .full { grid-column: 1 / -1; }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            color: var(--text);
+            background: white;
+            transition: border-color 0.2s;
+            font-family: inherit;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--secondary);
+        }
+        textarea { resize: vertical; min-height: 70px; }
+
+        .btn-generate {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            margin-top: 8px;
+        }
+        .btn-generate:hover { opacity: 0.92; transform: translateY(-1px); }
+        .btn-generate:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        /* TIER NOTICE */
+        .tier-notice {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 13px;
+            color: #92400e;
+            margin-bottom: 20px;
+        }
+        .tier-notice.paid {
+            background: #f0fdf4;
+            border-color: #6ee7b7;
+            color: #065f46;
+        }
+        .tier-notice a { color: inherit; font-weight: 700; }
+
+        /* RESULT */
+        .result-area {
+            margin-top: 28px;
+            display: none;
+        }
+        .result-area.visible { display: block; }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .result-header h3 { font-size: 1.1em; color: var(--primary); }
+        .copy-btn {
+            background: var(--light-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-light);
+            transition: background 0.2s;
+        }
+        .copy-btn:hover { background: var(--border); }
+
+        .result-content {
+            background: var(--light-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            font-size: 14.5px;
+            line-height: 1.75;
+            color: var(--text);
+            white-space: pre-wrap;
+            word-break: break-word;
+            min-height: 120px;
+        }
+        .result-content .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1em;
+            background: var(--secondary);
+            animation: blink 0.8s step-end infinite;
+            vertical-align: text-bottom;
+            margin-left: 2px;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* UPGRADE BANNER */
+        .upgrade-banner {
+            margin-top: 20px;
+            background: linear-gradient(135deg, #1a2744, #2d4a8a);
+            border-radius: 14px;
+            padding: 24px;
+            color: white;
+            text-align: center;
+            display: none;
+        }
+        .upgrade-banner.visible { display: block; }
+        .upgrade-banner h4 { font-size: 1.1em; margin-bottom: 8px; }
+        .upgrade-banner p { font-size: 13px; color: #c7d2fe; margin-bottom: 16px; }
+        .upgrade-banner a {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        /* EXAMPLES */
+        .examples {
+            margin-top: 28px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+        .examples h4 { font-size: 13px; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+        .example-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+        .chip {
+            background: #f0f4ff;
+            border: 1px solid #c7d2fe;
+            color: #4338ca;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.15s;
+            white-space: nowrap;
+        }
+        .chip:hover { background: #e0e7ff; }
+
+        @media (max-width: 600px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 1.7em; }
+            .card { padding: 22px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="nav-bar">
+    <a href="index.html">← Back to Home</a>
+    <div class="nav-right">
+        <a href="tools.html">Tools</a>
+        <a href="modules.html">Modules</a>
+        <a href="sales-page.html" style="color:#a5f3c2;">Pricing</a>
+        <a href="account.html">Account</a>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- Hero -->
+    <div class="hero">
+        <div class="badge">✨ AI-Powered</div>
+        <h1>Travel Hacks AI</h1>
+        <p>Tell us where you're going. Get personalized hacks to save money, avoid mistakes, and travel smarter.</p>
+    </div>
+
+    <!-- Main Card -->
+    <div class="card">
+
+        <div class="tier-notice" id="tierNotice">
+            <span>⚡</span>
+            <span>Free preview: get 3-4 top hacks. <a href="sales-page.html">Upgrade to Smart Traveler</a> for the full 10-section personalized report.</span>
+        </div>
+
+        <div class="form-grid">
+            <div class="full">
+                <label>Destination(s) *</label>
+                <input type="text" id="destination" placeholder="e.g. Tokyo, Japan or 3 weeks in Southeast Asia" />
+            </div>
+            <div>
+                <label>Travel Dates</label>
+                <input type="text" id="dates" placeholder="e.g. March 10–24, 2026" />
+            </div>
+            <div>
+                <label>Budget</label>
+                <input type="text" id="budget" placeholder="e.g. €1,500 total or €80/day" />
+            </div>
+            <div>
+                <label>Travel Style</label>
+                <select id="style">
+                    <option value="">— Select —</option>
+                    <option>Solo backpacker</option>
+                    <option>Couple</option>
+                    <option>Family with kids</option>
+                    <option>Business traveler</option>
+                    <option>Digital nomad</option>
+                    <option>Luxury traveler</option>
+                    <option>Adventure / outdoor</option>
+                    <option>Group trip</option>
+                </select>
+            </div>
+            <div>
+                <label>Interests</label>
+                <input type="text" id="interests" placeholder="e.g. food, temples, hiking, nightlife" />
+            </div>
+            <div>
+                <label>Special Requirements</label>
+                <input type="text" id="requirements" placeholder="e.g. traveling with a dog, wheelchair access" />
+            </div>
+        </div>
+
+        <button class="btn-generate" id="generateBtn" onclick="generate()">
+            ✈️ Generate My Travel Hacks
+        </button>
+
+        <!-- Result -->
+        <div class="result-area" id="resultArea">
+            <div class="result-header">
+                <h3 id="resultTitle">Your Personalized Travel Hacks</h3>
+                <button class="copy-btn" onclick="copyResult()">📋 Copy</button>
+            </div>
+            <div class="result-content" id="resultContent"></div>
+        </div>
+
+        <!-- Upgrade Banner (shown to free users after result) -->
+        <div class="upgrade-banner" id="upgradeBanner">
+            <h4>🗂️ You only got the preview</h4>
+            <p>Smart Traveler members get the full 10-section report: packing list, flight strategy, local transport, emergency prep, and more — all personalized to your trip.</p>
+            <a href="sales-page.html">Unlock Full Report →</a>
+        </div>
+
+        <!-- Quick Examples -->
+        <div class="examples">
+            <h4>Try an example</h4>
+            <div class="example-chips">
+                <span class="chip" onclick="fillExample('Tokyo, Japan', 'April 5–15, 2026', '€2,000', 'Couple', 'food, culture, anime', '')">🇯🇵 Tokyo Couple Trip</span>
+                <span class="chip" onclick="fillExample('Bali, Indonesia', 'June 2026', '€50/day', 'Digital nomad', 'remote work, surfing, yoga', '')">🌴 Bali Digital Nomad</span>
+                <span class="chip" onclick="fillExample('New York City, USA', 'December 20–27, 2025', '€3,000', 'Family with kids', 'Christmas markets, museums, Broadway', 'two kids aged 8 and 11')">🗽 NYC Family Holiday</span>
+                <span class="chip" onclick="fillExample('Lisbon & Porto, Portugal', 'September 2026', '€100/day', 'Couple', 'wine, history, beaches', '')">🇵🇹 Portugal Road Trip</span>
+                <span class="chip" onclick="fillExample('Bangkok + Chiang Mai, Thailand', 'January 2026 (3 weeks)', '€1,200 total', 'Solo backpacker', 'street food, temples, trekking', '')">🇹🇭 Thailand Backpacker</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const API_BASE = 'https://api.travelsmarterapp.com';
+    let userTier = 'free';
+
+    function getAuthToken() {
+        return localStorage.getItem('authToken') || localStorage.getItem('token');
+    }
+
+    async function checkAuth() {
+        const token = getAuthToken();
+        if (!token) return;
+        try {
+            const res = await fetch(`${API_BASE}/api/auth/me`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const tier = (data.user?.subscription_tier || 'free').toLowerCase();
+                userTier = tier;
+                const isPaid = tier === 'smart_traveler' || tier === 'elite';
+                const notice = document.getElementById('tierNotice');
+                if (isPaid) {
+                    notice.className = 'tier-notice paid';
+                    notice.innerHTML = `<span>✅</span><span>Full report mode active — you get all 10 sections personalized to your trip.</span>`;
+                }
+            }
+        } catch (_) {}
+    }
+
+    function fillExample(dest, dates, budget, style, interests, req) {
+        document.getElementById('destination').value = dest;
+        document.getElementById('dates').value = dates;
+        document.getElementById('budget').value = budget;
+        const sel = document.getElementById('style');
+        for (let opt of sel.options) {
+            if (opt.value === style) { sel.value = style; break; }
+        }
+        document.getElementById('interests').value = interests;
+        document.getElementById('requirements').value = req;
+    }
+
+    async function generate() {
+        const destination = document.getElementById('destination').value.trim();
+        if (!destination) {
+            document.getElementById('destination').focus();
+            document.getElementById('destination').style.borderColor = '#ef4444';
+            setTimeout(() => document.getElementById('destination').style.borderColor = '', 2000);
+            return;
+        }
+
+        const btn = document.getElementById('generateBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Generating your hacks...';
+
+        const resultArea = document.getElementById('resultArea');
+        const resultContent = document.getElementById('resultContent');
+        const upgradeBanner = document.getElementById('upgradeBanner');
+
+        resultArea.classList.add('visible');
+        upgradeBanner.classList.remove('visible');
+        resultContent.innerHTML = '<span class="cursor"></span>';
+
+        const body = {
+            destination,
+            dates: document.getElementById('dates').value.trim(),
+            budget: document.getElementById('budget').value.trim(),
+            style: document.getElementById('style').value,
+            interests: document.getElementById('interests').value.trim(),
+            requirements: document.getElementById('requirements').value.trim(),
+        };
+
+        const token = getAuthToken();
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        try {
+            const res = await fetch(`${API_BASE}/api/travel-ai/generate`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(body)
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                resultContent.textContent = '❌ Error: ' + (err.error || 'Unknown error');
+                return;
+            }
+
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            let fullText = '';
+            let responseTier = 'free';
+            let isPaid = false;
+
+            resultContent.textContent = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop();
+
+                for (const line of lines) {
+                    if (!line.startsWith('data: ')) continue;
+                    try {
+                        const data = JSON.parse(line.slice(6));
+                        if (data.text) {
+                            fullText += data.text;
+                            resultContent.textContent = fullText;
+                        }
+                        if (data.done) {
+                            responseTier = data.tier;
+                            isPaid = data.isPaid;
+                        }
+                        if (data.error) {
+                            resultContent.textContent = '❌ ' + data.error;
+                        }
+                    } catch (_) {}
+                }
+            }
+
+            // Scroll result into view
+            resultArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            // Show upgrade banner for free users
+            if (!isPaid) {
+                upgradeBanner.classList.add('visible');
+            }
+
+        } catch (err) {
+            resultContent.textContent = '❌ Connection error: ' + err.message;
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '✈️ Generate My Travel Hacks';
+        }
+    }
+
+    function copyResult() {
+        const text = document.getElementById('resultContent').textContent;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.querySelector('.copy-btn');
+            btn.textContent = '✅ Copied!';
+            setTimeout(() => btn.textContent = '📋 Copy', 2000);
+        });
+    }
+
+    // Allow Enter key on destination to trigger
+    document.addEventListener('DOMContentLoaded', () => {
+        checkAuth();
+        document.getElementById('destination').addEventListener('keydown', e => {
+            if (e.key === 'Enter') generate();
+        });
+    });
+</script>
+</body>
+</html>
