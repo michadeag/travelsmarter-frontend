@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Fine Print Decoder — TravelSmarter</title>
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-470B6E2DKF"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-470B6E2DKF');
+    </script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #1f2937;
+            --secondary: #667eea;
+            --accent: #10b981;
+            --border: #e5e7eb;
+            --text: #374151;
+            --text-light: #6b7280;
+            --light-bg: #f9fafb;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #134e4a 0%, #065f46 100%);
+            min-height: 100vh;
+            color: var(--text);
+        }
+
+        .nav-bar {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 14px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+        .nav-bar a { color: rgba(255,255,255,0.85); text-decoration: none; font-weight: 500; }
+        .nav-bar a:hover { color: white; text-decoration: underline; }
+        .nav-bar .nav-right a { margin-left: 20px; }
+
+        .container { max-width: 800px; margin: 0 auto; padding: 32px 20px 60px; }
+
+        .hero {
+            text-align: center;
+            color: white;
+            margin-bottom: 32px;
+        }
+        .hero .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 14px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+        .hero h1 { font-size: 2.2em; font-weight: 800; margin-bottom: 12px; }
+        .hero p { font-size: 1.05em; opacity: 0.85; max-width: 560px; margin: 0 auto; }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 36px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+        }
+
+        /* Gate */
+        .gate-screen { text-align: center; padding: 20px 0; }
+        .gate-screen .gate-icon { font-size: 3em; margin-bottom: 16px; }
+        .gate-screen h3 { font-size: 1.3em; font-weight: 700; color: var(--primary); margin-bottom: 10px; }
+        .gate-screen p { color: var(--text-light); font-size: 14px; line-height: 1.6; margin-bottom: 24px; }
+        .btn-upgrade {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            padding: 14px 32px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 15px;
+        }
+        .btn-login { display: block; color: var(--secondary); font-size: 13px; font-weight: 600; text-decoration: none; margin-top: 10px; }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        .label-hint { font-size: 12px; font-weight: 400; color: #9ca3af; text-transform: none; letter-spacing: 0; margin-left: 6px; }
+
+        textarea {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 14px;
+            color: var(--text);
+            font-family: inherit;
+            line-height: 1.6;
+            resize: vertical;
+            min-height: 200px;
+            transition: border-color 0.2s;
+        }
+        textarea:focus { outline: none; border-color: var(--secondary); }
+        textarea::placeholder { color: #d1d5db; }
+
+        .char-count { text-align: right; font-size: 11px; color: #9ca3af; margin-top: 4px; }
+
+        .examples-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 12px 0 20px;
+        }
+        .chip {
+            background: #f0fdf4;
+            border: 1px solid #6ee7b7;
+            color: #065f46;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.15s;
+            white-space: nowrap;
+        }
+        .chip:hover { background: #d1fae5; }
+
+        .btn-decode {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #134e4a, #065f46);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            margin-top: 4px;
+        }
+        .btn-decode:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-decode:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+        .result-area { margin-top: 28px; display: none; }
+        .result-area.visible { display: block; }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+        .result-header h3 { font-size: 1em; font-weight: 700; color: var(--primary); }
+        .copy-btn {
+            background: var(--light-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+        .copy-btn:hover { background: var(--border); }
+
+        .result-content {
+            background: var(--light-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            font-size: 14px;
+            line-height: 1.8;
+            color: var(--text);
+            white-space: pre-wrap;
+            word-break: break-word;
+            min-height: 100px;
+        }
+        .result-content .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1em;
+            background: var(--accent);
+            animation: blink 0.8s step-end infinite;
+            vertical-align: text-bottom;
+            margin-left: 2px;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .info-boxes {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-top: 28px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+        .info-box { background: var(--light-bg); border-radius: 10px; padding: 16px; text-align: center; }
+        .info-box .icon { font-size: 1.6em; margin-bottom: 6px; }
+        .info-box p { font-size: 12px; color: var(--text-light); line-height: 1.5; }
+
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .card { padding: 22px; }
+            .info-boxes { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="nav-bar">
+    <a href="index.html">← Back to Home</a>
+    <div class="nav-right">
+        <a href="travel-ai.html">✨ AI Hacks</a>
+        <a href="compensation-checker.html">⚖️ Compensation</a>
+        <a href="tools.html">Tools</a>
+        <a href="sales-page.html" style="color:#a7f3d0;">Pricing</a>
+        <a href="account.html">Account</a>
+    </div>
+</div>
+
+<div class="container">
+
+    <div class="hero">
+        <div class="badge">📄 Smart Traveler & Elite</div>
+        <h1>Travel Fine Print Decoder</h1>
+        <p>Paste any travel policy, booking terms, or agreement. Get a plain-English breakdown of every rule, fee, and deadline that affects you.</p>
+    </div>
+
+    <div class="card" id="mainCard">
+
+        <!-- Gate -->
+        <div class="gate-screen" id="gateScreen" style="display:none;">
+            <div class="gate-icon">🔒</div>
+            <h3>Smart Traveler & Elite Feature</h3>
+            <p>The Fine Print Decoder is available to paid members.<br>Stop agreeing to things you don't understand — upgrade to decode any travel policy instantly.</p>
+            <a href="sales-page.html" class="btn-upgrade">Unlock This Feature →</a>
+            <a href="auth.html" class="btn-login">Already a member? Log in</a>
+        </div>
+
+        <!-- Decoder -->
+        <div id="decoderScreen">
+            <label>
+                Paste your travel policy or terms
+                <span class="label-hint">— airline fare rules, hotel policy, rental car agreement, travel insurance, etc.</span>
+            </label>
+            <textarea id="policyText" placeholder="Paste the full policy or terms here. For example:&#10;&#10;'Non-refundable fare. Changes permitted for a fee of €75 per person. No-shows will forfeit the full ticket value. Baggage not included — carry-on only. Check-in closes 45 minutes before departure...'"></textarea>
+            <div class="char-count"><span id="charCount">0</span> characters</div>
+
+            <div class="examples-row">
+                <span style="font-size:12px;color:#9ca3af;align-self:center;">Examples:</span>
+                <span class="chip" onclick="fillExample('airline')">✈️ Airline Fare Rules</span>
+                <span class="chip" onclick="fillExample('hotel')">🏨 Hotel Cancellation</span>
+                <span class="chip" onclick="fillExample('rental')">🚗 Rental Car Terms</span>
+                <span class="chip" onclick="fillExample('insurance')">🛡️ Travel Insurance</span>
+            </div>
+
+            <button class="btn-decode" id="decodeBtn" onclick="decode()">
+                🔍 Decode This Fine Print
+            </button>
+
+            <div class="result-area" id="resultArea">
+                <div class="result-header">
+                    <h3>Plain-English Breakdown</h3>
+                    <button class="copy-btn" onclick="copyResult()">📋 Copy</button>
+                </div>
+                <div class="result-content" id="resultContent"></div>
+            </div>
+
+            <div class="info-boxes">
+                <div class="info-box">
+                    <div class="icon">🔒</div>
+                    <p>Your document is analyzed in real time and never stored</p>
+                </div>
+                <div class="info-box">
+                    <div class="icon">📖</div>
+                    <p>Plain English only — no legal jargon, no invented clauses</p>
+                </div>
+                <div class="info-box">
+                    <div class="icon">⏱️</div>
+                    <p>10-section breakdown in under 15 seconds</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    const API_BASE = 'https://api.travelsmarterapp.com';
+
+    const EXAMPLES = {
+        airline: `FARE CONDITIONS — BASIC ECONOMY (XY Airlines)
+
+This ticket is non-refundable and non-transferable. Name changes are not permitted under any circumstances. Date changes are allowed up to 24 hours before departure for a fee of €85 per person per segment, subject to fare difference. Seats are assigned at check-in. Carry-on bag included (max 10kg, 55x40x23cm). Checked baggage not included — first bag €35 each way, second bag €55 each way. Priority boarding not included. Ticket valid for travel on booked date only. No-show policy: full ticket value forfeited. Miles and points: not eligible for frequent flyer accrual. Check-in closes 45 minutes before departure for European flights, 60 minutes for international.`,
+
+        hotel: `CANCELLATION POLICY — The Grand Hotel
+
+Reservations cancelled more than 7 days before arrival: full refund minus a €25 administrative processing fee. Cancellations 3–7 days before arrival: first night charged. Cancellations within 72 hours of arrival: full stay charged. No-shows: full stay charged plus a €30 no-show fee. Early departures: full stay charged with no refund for unused nights. Check-in: 15:00. Check-out: 11:00. Late check-out available upon request, subject to availability, at €15/hour or €60 for guaranteed late check-out until 18:00. Pets not permitted. Parking: €20/night, not included. Resort fee: €18/night, mandatory, payable at check-in. Valid credit card required at check-in for a €200 security deposit (released within 5–7 business days after departure).`,
+
+        rental: `RENTAL AGREEMENT TERMS — FastDrive Car Rental
+
+Driver must be 25 years or older. Drivers aged 21–24 may rent subject to a Young Driver Surcharge of €28/day. Full driving licence held for minimum 2 years required. Collision Damage Waiver (CDW) included — excess liability: €1,200. Excess can be reduced to €0 with Super CDW at €18/day. Theft Protection included — excess: €800. Fuel policy: full-to-full. Vehicle returned with less fuel than collected will be charged at €2.40/litre plus a €35 refuelling service fee. Additional driver: €12/day, max 2 additional drivers. GPS available at €8/day. Toll charges: driver responsibility. Traffic fines: driver responsibility plus a €35 administration fee per fine. Vehicles may not be driven outside the country of rental without prior written approval.`,
+
+        insurance: `TRAVEL INSURANCE POLICY SUMMARY — SafeTrip Standard
+
+Trip Cancellation: up to €3,000 per person. Covered reasons include illness, injury, death of insured or immediate family member, jury duty, and natural disaster at destination. Not covered: pre-existing conditions diagnosed within 180 days of purchase, change of mind, work obligations, or financial default of travel supplier. Trip Interruption: up to €1,500. Emergency Medical: up to €50,000. Pre-existing conditions excluded unless policy purchased within 14 days of initial trip deposit. Medical Evacuation: up to €250,000. Baggage Loss: up to €1,200 (single item limit €300, electronics limit €500). Baggage Delay: €100/day after 12-hour delay, max €300. Flight Delay: €75 after 6-hour delay. Claims must be filed within 60 days of incident. Original receipts required for all claims. Policy does not cover adventure sports including skiing, scuba diving, or mountaineering unless Adventure Sports Rider purchased.`
+    };
+
+    function fillExample(type) {
+        const ta = document.getElementById('policyText');
+        ta.value = EXAMPLES[type];
+        updateCharCount();
+    }
+
+    function updateCharCount() {
+        document.getElementById('charCount').textContent = document.getElementById('policyText').value.length;
+    }
+
+    function getAuthToken() {
+        return localStorage.getItem('authToken') || localStorage.getItem('token');
+    }
+
+    async function checkAuth() {
+        const token = getAuthToken();
+        if (!token) { showGate(); return; }
+        try {
+            const res = await fetch(`${API_BASE}/api/auth/me`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!res.ok) { showGate(); return; }
+            const data = await res.json();
+            const tier = (data.user?.subscription_tier || 'free').toLowerCase();
+            if (tier === 'free') showGate();
+        } catch (_) { showGate(); }
+    }
+
+    function showGate() {
+        document.getElementById('gateScreen').style.display = 'block';
+        document.getElementById('decoderScreen').style.display = 'none';
+    }
+
+    async function decode() {
+        const doc = document.getElementById('policyText').value.trim();
+        if (doc.length < 30) {
+            document.getElementById('policyText').style.borderColor = '#ef4444';
+            setTimeout(() => document.getElementById('policyText').style.borderColor = '', 2000);
+            return;
+        }
+
+        const btn = document.getElementById('decodeBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Decoding...';
+
+        const resultArea = document.getElementById('resultArea');
+        const resultContent = document.getElementById('resultContent');
+        resultArea.classList.add('visible');
+        resultContent.innerHTML = '<span class="cursor"></span>';
+
+        try {
+            const res = await fetch(`${API_BASE}/api/fine-print/decode`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getAuthToken()}`
+                },
+                body: JSON.stringify({ document: doc })
+            });
+
+            if (res.status === 401) { resultContent.textContent = '⚠️ Session expired — please log in again.'; return; }
+            if (res.status === 403) { showGate(); return; }
+            if (!res.ok) {
+                const err = await res.json();
+                resultContent.textContent = '❌ ' + (err.error || 'Unknown error');
+                return;
+            }
+
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            let fullText = '';
+            resultContent.textContent = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop();
+                for (const line of lines) {
+                    if (!line.startsWith('data: ')) continue;
+                    try {
+                        const data = JSON.parse(line.slice(6));
+                        if (data.text) { fullText += data.text; resultContent.textContent = fullText; }
+                        if (data.error) { resultContent.textContent = '❌ ' + data.error; }
+                    } catch (_) {}
+                }
+            }
+
+            resultArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        } catch (err) {
+            resultContent.textContent = '❌ Connection error: ' + err.message;
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '🔍 Decode This Fine Print';
+        }
+    }
+
+    function copyResult() {
+        const text = document.getElementById('resultContent').textContent;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.querySelector('.copy-btn');
+            btn.textContent = '✅ Copied!';
+            setTimeout(() => btn.textContent = '📋 Copy', 2000);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('policyText').addEventListener('input', updateCharCount);
+        checkAuth();
+    });
+</script>
+</body>
+</html>
