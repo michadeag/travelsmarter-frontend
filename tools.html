@@ -607,12 +607,30 @@
         // Check tier on page load
         document.addEventListener('DOMContentLoaded', () => {
             checkTierAccess();
-            loadGoodies();
         });
 
         const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? 'http://localhost:5000'
             : 'https://api.travelsmarterapp.com';
+
+        let currentUserTier = 'free';
+
+        function getTierForIndex(index) {
+            if (index < 4) return 'free';
+            if (index < 10) return 'smart_traveler';
+            return 'elite';
+        }
+
+        function tierLabel(tier) {
+            if (tier === 'smart_traveler') return '⭐ Smart Traveler';
+            if (tier === 'elite') return '👑 Elite';
+            return '🆓 Free';
+        }
+
+        function canAccess(requiredTier) {
+            const order = ['free', 'smart_traveler', 'elite'];
+            return order.indexOf(currentUserTier) >= order.indexOf(requiredTier);
+        }
 
         async function loadGoodies() {
             const grid = document.getElementById('goodies-grid');
@@ -621,16 +639,30 @@
                 const res = await fetch(`${API_URL}/api/slideshare/goodies/public`);
                 const data = await res.json();
                 if (!data.success || !data.goodies.length) {
-                    grid.innerHTML = '<p style="color:#666;text-align:center;">Noch keine Guides verfügbar – schau bald wieder rein!</p>';
+                    grid.innerHTML = '<p style="color:#666;text-align:center;">No guides available yet — check back soon!</p>';
                     return;
                 }
-                grid.innerHTML = data.goodies.map(g => {
-                    const url = g.pdf_url || g.slideshare_url || '#';
-                    const categoryColors = {
-                        travel: '#1a2744', flights: '#ff6b4a', hotels: '#2196F3',
-                        points: '#9C27B0', packing: '#4CAF50', budget: '#FF9800'
-                    };
-                    const catColor = categoryColors[g.category] || '#1a2744';
+                renderGoodies(data.goodies);
+            } catch (err) {
+                console.error('loadGoodies error:', err);
+                grid.innerHTML = '<p style="color:#666;text-align:center;">Could not load guides.</p>';
+            }
+        }
+
+        function renderGoodies(goodies) {
+            const grid = document.getElementById('goodies-grid');
+            if (!grid) return;
+            const categoryColors = {
+                travel: '#1a2744', flights: '#ff6b4a', hotels: '#2196F3',
+                points: '#9C27B0', packing: '#4CAF50', budget: '#FF9800'
+            };
+            grid.innerHTML = goodies.map((g, index) => {
+                const requiredTier = getTierForIndex(index);
+                const accessible = canAccess(requiredTier);
+                const url = g.pdf_url || g.slideshare_url || '#';
+                const catColor = categoryColors[g.category] || '#1a2744';
+
+                if (accessible) {
                     return `<div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.08);display:flex;flex-direction:column;gap:12px;">
                         <div style="display:flex;align-items:center;justify-content:space-between;">
                             <span style="background:${catColor};color:#fff;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;text-transform:uppercase;">${g.category || 'travel'}</span>
@@ -642,14 +674,25 @@
                         <a href="${url}" target="_blank" rel="noopener"
                            onclick="trackGoodieDownload('${g.id}')"
                            style="display:inline-block;background:#ff6b4a;color:#fff;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:600;font-size:13px;text-align:center;margin-top:auto;">
-                           📥 Download for Free
+                           📥 Download Free
                         </a>
                     </div>`;
-                }).join('');
-            } catch (err) {
-                console.error('loadGoodies error:', err);
-                grid.innerHTML = '<p style="color:#666;text-align:center;">Guides konnten nicht geladen werden.</p>';
-            }
+                } else {
+                    return `<div style="background:#f3f4f6;border-radius:12px;padding:24px;box-shadow:none;display:flex;flex-direction:column;gap:12px;opacity:0.65;position:relative;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <span style="background:#9ca3af;color:#fff;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;text-transform:uppercase;">${g.category || 'travel'}</span>
+                            <span style="font-size:11px;font-weight:700;color:#6b7280;background:#e5e7eb;padding:3px 10px;border-radius:20px;">${tierLabel(requiredTier)}</span>
+                        </div>
+                        ${g.thumbnail_url ? `<img src="${g.thumbnail_url}" alt="${g.title}" style="width:100%;border-radius:8px;object-fit:cover;max-height:140px;filter:grayscale(100%);">` : ''}
+                        <h3 style="margin:0;font-size:16px;color:#6b7280;line-height:1.3;">${g.title}</h3>
+                        ${g.description ? `<p style="margin:0;font-size:13px;color:#9ca3af;line-height:1.5;">${g.description}</p>` : ''}
+                        <a href="sales-page.html"
+                           style="display:inline-block;background:#d1d5db;color:#6b7280;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:600;font-size:13px;text-align:center;margin-top:auto;cursor:pointer;">
+                           🔒 ${tierLabel(requiredTier)} Only — Upgrade
+                        </a>
+                    </div>`;
+                }
+            }).join('');
         }
 
         async function trackGoodieDownload(id) {
@@ -662,8 +705,9 @@
             const token = localStorage.getItem('userToken');
 
             if (!token) {
-                // Not logged in - show upgrade prompt
+                currentUserTier = 'free';
                 showUpgradePrompt();
+                loadGoodies();
                 return;
             }
 
@@ -674,19 +718,20 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    const userTier = (data.user.subscriptionTier || 'free').toLowerCase();
-
-                    if (userTier === 'free') {
+                    currentUserTier = (data.user.subscriptionTier || 'free').toLowerCase();
+                    if (currentUserTier === 'free') {
                         showUpgradePrompt();
                     }
-                    // Smart Traveler and Elite can see the tools
                 } else {
+                    currentUserTier = 'free';
                     showUpgradePrompt();
                 }
             } catch (error) {
                 console.error('Error checking tier:', error);
+                currentUserTier = 'free';
                 showUpgradePrompt();
             }
+            loadGoodies();
         }
 
         function showUpgradePrompt() {
