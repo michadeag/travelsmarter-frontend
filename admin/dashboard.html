@@ -596,6 +596,7 @@
                 <a class="nav-link" data-tab="promos">🎟️ Promo Codes</a>
                 <a class="nav-link" data-tab="email-templates">📧 Email Templates</a>
                 <a class="nav-link" data-tab="broadcast">📣 Broadcast</a>
+                <a class="nav-link" data-tab="hidden-gem">🗺️ Hidden Gem</a>
                 <a class="nav-link" data-tab="analytics">📈 Analytics</a>
                 <a class="nav-link" data-tab="twitter">🐦 Twitter</a>
                 <a class="nav-link" data-tab="reddit">🤖 Reddit</a>
@@ -1020,6 +1021,101 @@
                             📣 Send to Recipients
                         </button>
                         <div id="bc-result" style="margin-top:12px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HIDDEN GEM TAB -->
+            <div id="hidden-gem" class="tab-content">
+                <div style="max-width:800px;">
+                    <h3 style="margin-bottom:8px;">🗺️ Hidden Gem of the Month</h3>
+                    <p style="color:#6b7280;margin-bottom:24px;">Set the monthly Hidden Gem destination — visible to Smart Traveler & Elite members on the Tools page.</p>
+
+                    <!-- Current Gem Preview -->
+                    <div id="hg-current-preview" style="background:linear-gradient(135deg,#1a2744,#2d3f6b);border-radius:12px;padding:24px;margin-bottom:24px;color:white;min-height:60px;display:flex;align-items:center;">
+                        <div style="color:#a5b4fc;font-size:14px;">Loading current gem...</div>
+                    </div>
+
+                    <!-- Form -->
+                    <div style="background:white;border-radius:12px;padding:28px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+                        <h4 style="margin-bottom:20px;">Create / Update Gem</h4>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+                            <div>
+                                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Month <span style="color:#ef4444;">*</span></label>
+                                <input type="month" id="hg-month" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;">
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Timing Score</label>
+                                <select id="hg-timing" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;">
+                                    <option value="green">🟢 Go Now</option>
+                                    <option value="yellow">🟡 12–18 months left</option>
+                                    <option value="red">🔴 Getting crowded</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:16px;margin-bottom:16px;">
+                            <div>
+                                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Destination <span style="color:#ef4444;">*</span></label>
+                                <input type="text" id="hg-destination" placeholder="e.g. Tbilisi" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;">
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Country <span style="color:#ef4444;">*</span></label>
+                                <input type="text" id="hg-country" placeholder="e.g. Georgia" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;">
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Flag Emoji</label>
+                                <input type="text" id="hg-flag" placeholder="🇬🇪" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;">
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Tagline</label>
+                            <input type="text" id="hg-tagline" placeholder="e.g. Europe's most underrated city — ancient, affordable, and about to blow up." style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;">
+                        </div>
+
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Description</label>
+                            <textarea id="hg-description" rows="4" placeholder="2–3 sentences describing why this destination is special." style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;resize:vertical;"></textarea>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+                            <div>
+                                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Best Time to Visit</label>
+                                <input type="text" id="hg-best-time" placeholder="e.g. April–June, September–October" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;">
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Daily Budget</label>
+                                <input type="text" id="hg-budget" placeholder="e.g. $35–55 all-in" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;">
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Why Now</label>
+                            <textarea id="hg-why-now" rows="2" placeholder="What makes this the right moment to go?" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;resize:vertical;"></textarea>
+                        </div>
+
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Flight Tip</label>
+                            <textarea id="hg-flight-tip" rows="2" placeholder="e.g. Fly into Kutaisi (not Tbilisi) via Wizz Air from Vienna — often under €60 return." style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;resize:vertical;"></textarea>
+                        </div>
+
+                        <div style="margin-bottom:24px;">
+                            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Image URL (optional)</label>
+                            <input type="url" id="hg-image" placeholder="https://..." style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;">
+                        </div>
+
+                        <button onclick="saveHiddenGem()" style="background:#667eea;color:white;border:none;padding:12px 32px;border-radius:8px;cursor:pointer;font-size:15px;font-weight:600;width:100%;">
+                            💾 Save Hidden Gem
+                        </button>
+                        <div id="hg-result" style="margin-top:12px;"></div>
+                    </div>
+
+                    <!-- Past Gems List -->
+                    <div style="background:white;border-radius:12px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,0.08);margin-top:24px;">
+                        <h4 style="margin-bottom:16px;">Past Hidden Gems</h4>
+                        <div id="hg-list" style="color:#6b7280;font-size:14px;">Loading...</div>
                     </div>
                 </div>
             </div>

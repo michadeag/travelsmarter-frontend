@@ -100,6 +100,7 @@ function switchTab(tabName) {
     if (tabName === 'blogger') { initBloggerTab(); }
     if (tabName === 'medium') { initMediumTab(); }
     if (tabName === 'broadcast') { initBroadcastTab(); }
+    if (tabName === 'hidden-gem') { initHiddenGemTab(); }
 }
 
 // ─── BROADCAST ────────────────────────────────────────────────────────────────
@@ -184,6 +185,142 @@ async function loadBroadcastSubscribers() {
         }
     } catch (err) {
         document.getElementById('bc-recipients').innerHTML = `<span style="color:red;">Error: ${err.message}</span>`;
+    }
+}
+
+// ── HIDDEN GEM OF THE MONTH ────────────────────────────────────────────
+
+async function initHiddenGemTab() {
+    await loadCurrentHiddenGem();
+    await loadHiddenGemList();
+    // Pre-fill month to current
+    const monthInput = document.getElementById('hg-month');
+    if (monthInput && !monthInput.value) {
+        monthInput.value = new Date().toISOString().slice(0, 7);
+    }
+}
+
+async function loadCurrentHiddenGem() {
+    const preview = document.getElementById('hg-current-preview');
+    if (!preview) return;
+    try {
+        const res = await fetch(`${API_URL}/api/hidden-gem/current`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const data = await res.json();
+        if (!data.success || !data.gem) {
+            preview.innerHTML = `<span style="color:#a5b4fc;">No gem set yet for this month.</span>`;
+            return;
+        }
+        const g = data.gem;
+        const monthLabel = g.month ? new Date(g.month + '-01').toLocaleString('en-US', { month: 'long', year: 'numeric' }) : g.month;
+        const scoreColor = g.timing_score === 'green' ? '#10b981' : g.timing_score === 'yellow' ? '#f59e0b' : '#ef4444';
+        preview.innerHTML = `
+            <div>
+                <div style="font-size:11px;color:#a5b4fc;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Current Gem — ${monthLabel}</div>
+                <div style="font-size:1.5em;font-weight:800;margin-bottom:4px;">${g.flag_emoji || '📍'} ${g.destination}, ${g.country}</div>
+                <div style="color:#c7d2fe;font-size:14px;margin-bottom:8px;">${g.tagline || ''}</div>
+                <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:13px;">
+                    ${g.best_time ? `<span style="color:#a5b4fc;">🗓 ${g.best_time}</span>` : ''}
+                    ${g.daily_budget ? `<span style="color:#a5b4fc;">💰 ${g.daily_budget}</span>` : ''}
+                    <span style="color:${scoreColor};font-weight:700;">${g.timing_score === 'green' ? '🟢 Go Now' : g.timing_score === 'yellow' ? '🟡 12–18 months' : '🔴 Getting crowded'}</span>
+                </div>
+            </div>`;
+        // Pre-fill form with current gem data for easy editing
+        document.getElementById('hg-month').value = g.month || '';
+        document.getElementById('hg-destination').value = g.destination || '';
+        document.getElementById('hg-country').value = g.country || '';
+        document.getElementById('hg-flag').value = g.flag_emoji || '';
+        document.getElementById('hg-tagline').value = g.tagline || '';
+        document.getElementById('hg-description').value = g.description || '';
+        document.getElementById('hg-why-now').value = g.why_now || '';
+        document.getElementById('hg-best-time').value = g.best_time || '';
+        document.getElementById('hg-budget').value = g.daily_budget || '';
+        document.getElementById('hg-flight-tip').value = g.flight_tip || '';
+        document.getElementById('hg-image').value = g.image_url || '';
+        document.getElementById('hg-timing').value = g.timing_score || 'green';
+    } catch (err) {
+        preview.innerHTML = `<span style="color:#fca5a5;">Error loading current gem: ${err.message}</span>`;
+    }
+}
+
+async function loadHiddenGemList() {
+    const list = document.getElementById('hg-list');
+    if (!list) return;
+    try {
+        const res = await fetch(`${API_URL}/api/hidden-gem/all`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const data = await res.json();
+        if (!data.success || !data.gems.length) {
+            list.innerHTML = '<span style="color:#9ca3af;">No gems saved yet.</span>';
+            return;
+        }
+        list.innerHTML = data.gems.map(g => {
+            const monthLabel = new Date(g.month + '-01').toLocaleString('en-US', { month: 'long', year: 'numeric' });
+            return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f3f4f6;">
+                <div>
+                    <span style="font-weight:600;">${g.flag_emoji || '📍'} ${g.destination}, ${g.country}</span>
+                    <span style="color:#9ca3af;margin-left:8px;font-size:12px;">${monthLabel}</span>
+                </div>
+                <button onclick="deleteHiddenGem('${g.month}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:13px;">🗑 Delete</button>
+            </div>`;
+        }).join('');
+    } catch (err) {
+        list.innerHTML = `<span style="color:#ef4444;">Error: ${err.message}</span>`;
+    }
+}
+
+async function saveHiddenGem() {
+    const result = document.getElementById('hg-result');
+    const payload = {
+        month: document.getElementById('hg-month').value,
+        destination: document.getElementById('hg-destination').value,
+        country: document.getElementById('hg-country').value,
+        flag_emoji: document.getElementById('hg-flag').value,
+        tagline: document.getElementById('hg-tagline').value,
+        description: document.getElementById('hg-description').value,
+        why_now: document.getElementById('hg-why-now').value,
+        best_time: document.getElementById('hg-best-time').value,
+        daily_budget: document.getElementById('hg-budget').value,
+        flight_tip: document.getElementById('hg-flight-tip').value,
+        image_url: document.getElementById('hg-image').value,
+        timing_score: document.getElementById('hg-timing').value,
+    };
+    if (!payload.month || !payload.destination || !payload.country) {
+        result.innerHTML = `<div style="color:#ef4444;padding:10px;">Month, Destination, and Country are required.</div>`;
+        return;
+    }
+    try {
+        const res = await fetch(`${API_URL}/api/hidden-gem/upsert`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+            result.innerHTML = `<div style="background:#d1fae5;border:1px solid #10b981;border-radius:8px;padding:12px;color:#065f46;">✅ Hidden Gem saved successfully!</div>`;
+            await loadCurrentHiddenGem();
+            await loadHiddenGemList();
+        } else {
+            result.innerHTML = `<div style="background:#fee2e2;border:1px solid #ef4444;border-radius:8px;padding:12px;color:#991b1b;">❌ ${data.error}</div>`;
+        }
+    } catch (err) {
+        result.innerHTML = `<div style="background:#fee2e2;border:1px solid #ef4444;border-radius:8px;padding:12px;color:#991b1b;">Error: ${err.message}</div>`;
+    }
+}
+
+async function deleteHiddenGem(month) {
+    if (!confirm(`Delete the Hidden Gem for ${month}?`)) return;
+    try {
+        await fetch(`${API_URL}/api/hidden-gem/${month}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        await loadHiddenGemList();
+        await loadCurrentHiddenGem();
+    } catch (err) {
+        alert('Error deleting gem: ' + err.message);
     }
 }
 

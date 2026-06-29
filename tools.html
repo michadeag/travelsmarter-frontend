@@ -414,6 +414,13 @@
             </div>
         </div>
 
+        <!-- Hidden Gem of the Month — Smart Traveler & Elite only -->
+        <div id="hidden-gem-section" style="margin-top:40px;">
+            <div id="hidden-gem-card" style="background:linear-gradient(135deg,#1a2744 0%,#2d3f6b 100%);border-radius:15px;padding:40px;box-shadow:0 10px 30px rgba(0,0,0,0.2);color:white;min-height:220px;display:flex;align-items:center;justify-content:center;">
+                <div style="color:#a5b4fc;font-size:14px;">Loading Hidden Gem...</div>
+            </div>
+        </div>
+
         <!-- Free Guides / Goodies — visible to ALL users -->
         <div id="goodies-section" style="margin-top:40px;">
             <div style="background:white;border-radius:15px;padding:40px;box-shadow:0 10px 30px rgba(0,0,0,0.1);">
@@ -607,6 +614,7 @@
         // Check tier on page load
         document.addEventListener('DOMContentLoaded', () => {
             checkTierAccess();
+            loadHiddenGem();
         });
 
         const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
@@ -693,6 +701,73 @@
                     </div>`;
                 }
             }).join('');
+        }
+
+        // ── HIDDEN GEM OF THE MONTH ──────────────────────────────────────
+        async function loadHiddenGem() {
+            const card = document.getElementById('hidden-gem-card');
+            if (!card) return;
+            try {
+                const token = localStorage.getItem('userToken');
+                const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+                const res = await fetch(`${API_URL}/api/hidden-gem/current`, { headers });
+                const data = await res.json();
+
+                if (!data.success || !data.gem) {
+                    card.innerHTML = `<div style="text-align:center;width:100%;">
+                        <div style="font-size:2em;margin-bottom:8px;">🗺️</div>
+                        <p style="color:#a5b4fc;margin:0;">No Hidden Gem set for this month yet — check back soon.</p>
+                    </div>`;
+                    return;
+                }
+
+                const gem = data.gem;
+                const monthLabel = gem.month ? new Date(gem.month + '-01').toLocaleString('en-US', { month: 'long', year: 'numeric' }) : '';
+                const scoreColor = gem.timing_score === 'green' ? '#10b981' : gem.timing_score === 'yellow' ? '#f59e0b' : '#ef4444';
+                const scoreLabel = gem.timing_score === 'green' ? '🟢 Go Now' : gem.timing_score === 'yellow' ? '🟡 12–18 months left' : '🔴 Getting crowded';
+
+                if (!data.allowed) {
+                    // Teaser for Free users
+                    card.innerHTML = `
+                        <div style="width:100%;display:flex;flex-wrap:wrap;gap:32px;align-items:center;">
+                            <div style="flex:1;min-width:220px;">
+                                <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#a5b4fc;text-transform:uppercase;margin-bottom:12px;">🗺️ Hidden Gem of the Month — ${monthLabel}</div>
+                                <div style="font-size:2.8em;margin-bottom:8px;">${gem.flag_emoji || '📍'} <span style="font-size:0.7em;font-weight:700;">${gem.destination}, ${gem.country}</span></div>
+                                <p style="color:#c7d2fe;font-size:1em;margin:0 0 20px;">${gem.tagline || ''}</p>
+                                <div style="background:rgba(255,255,255,0.08);border-radius:10px;padding:16px 20px;margin-bottom:20px;">
+                                    <p style="color:#e0e7ff;margin:0;font-size:14px;">🔒 Full destination briefing, timing score, daily budget, flight tips, and local insider info — available to <strong>Smart Traveler & Elite</strong> members.</p>
+                                </div>
+                                <a href="sales-page.html" style="display:inline-block;background:linear-gradient(135deg,#667eea,#764ba2);color:white;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:700;font-size:14px;">⭐ Unlock Smart Traveler →</a>
+                            </div>
+                            <div style="flex:0 0 auto;text-align:center;opacity:0.3;font-size:5em;">🔒</div>
+                        </div>`;
+                    return;
+                }
+
+                // Full card for Smart Traveler & Elite
+                card.innerHTML = `
+                    <div style="width:100%;display:flex;flex-wrap:wrap;gap:32px;">
+                        ${gem.image_url ? `<div style="flex:0 0 auto;"><img src="${gem.image_url}" alt="${gem.destination}" style="width:220px;height:160px;object-fit:cover;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.3);"></div>` : ''}
+                        <div style="flex:1;min-width:260px;">
+                            <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#a5b4fc;text-transform:uppercase;margin-bottom:10px;">🗺️ Hidden Gem of the Month — ${monthLabel}</div>
+                            <div style="font-size:2em;font-weight:800;margin-bottom:6px;">${gem.flag_emoji || '📍'} ${gem.destination}, ${gem.country}</div>
+                            <p style="color:#c7d2fe;font-size:1.05em;margin:0 0 16px;font-style:italic;">"${gem.tagline || ''}"</p>
+                            <p style="color:#e0e7ff;font-size:0.95em;line-height:1.6;margin:0 0 16px;">${gem.description || ''}</p>
+
+                            <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+                                ${gem.best_time ? `<div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:10px 16px;"><div style="font-size:11px;color:#a5b4fc;font-weight:600;text-transform:uppercase;margin-bottom:2px;">Best Time</div><div style="font-size:14px;color:white;">${gem.best_time}</div></div>` : ''}
+                                ${gem.daily_budget ? `<div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:10px 16px;"><div style="font-size:11px;color:#a5b4fc;font-weight:600;text-transform:uppercase;margin-bottom:2px;">Daily Budget</div><div style="font-size:14px;color:white;">${gem.daily_budget}</div></div>` : ''}
+                                <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:10px 16px;"><div style="font-size:11px;color:#a5b4fc;font-weight:600;text-transform:uppercase;margin-bottom:2px;">Timing Window</div><div style="font-size:14px;color:${scoreColor};font-weight:700;">${scoreLabel}</div></div>
+                            </div>
+
+                            ${gem.why_now ? `<div style="background:rgba(16,185,129,0.15);border-left:3px solid #10b981;border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:12px;"><div style="font-size:12px;color:#6ee7b7;font-weight:700;margin-bottom:4px;">WHY NOW</div><p style="color:#d1fae5;margin:0;font-size:14px;line-height:1.5;">${gem.why_now}</p></div>` : ''}
+                            ${gem.flight_tip ? `<div style="background:rgba(102,126,234,0.15);border-left:3px solid #667eea;border-radius:0 8px 8px 0;padding:12px 16px;"><div style="font-size:12px;color:#a5b4fc;font-weight:700;margin-bottom:4px;">✈️ FLIGHT TIP</div><p style="color:#e0e7ff;margin:0;font-size:14px;line-height:1.5;">${gem.flight_tip}</p></div>` : ''}
+                        </div>
+                    </div>`;
+
+            } catch (err) {
+                console.error('loadHiddenGem error:', err);
+            }
         }
 
         async function trackGoodieDownload(id) {
