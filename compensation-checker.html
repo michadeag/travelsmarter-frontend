@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Delay Compensation Checker — TravelSmarter</title>
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-470B6E2DKF"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-470B6E2DKF');
+    </script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #1f2937;
+            --secondary: #667eea;
+            --accent: #10b981;
+            --danger: #ef4444;
+            --border: #e5e7eb;
+            --text: #374151;
+            --text-light: #6b7280;
+            --light-bg: #f9fafb;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a2744 0%, #2d4a8a 100%);
+            min-height: 100vh;
+            color: var(--text);
+        }
+
+        .nav-bar {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 14px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+        .nav-bar a { color: rgba(255,255,255,0.85); text-decoration: none; font-weight: 500; }
+        .nav-bar a:hover { color: white; text-decoration: underline; }
+        .nav-bar .nav-right a { margin-left: 20px; }
+
+        .container { max-width: 800px; margin: 0 auto; padding: 32px 20px 60px; }
+
+        .hero {
+            text-align: center;
+            color: white;
+            margin-bottom: 32px;
+        }
+        .hero .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 14px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+        .hero h1 { font-size: 2.2em; font-weight: 800; margin-bottom: 12px; }
+        .hero p { font-size: 1.05em; opacity: 0.85; max-width: 540px; margin: 0 auto; }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 36px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+        }
+
+        .gate-screen {
+            text-align: center;
+            padding: 20px 0;
+        }
+        .gate-screen .gate-icon { font-size: 3em; margin-bottom: 16px; }
+        .gate-screen h3 { font-size: 1.3em; font-weight: 700; color: var(--primary); margin-bottom: 10px; }
+        .gate-screen p { color: var(--text-light); font-size: 14px; line-height: 1.6; margin-bottom: 24px; }
+        .btn-upgrade {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            padding: 14px 32px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 12px;
+        }
+        .btn-login {
+            display: block;
+            color: var(--secondary);
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            margin-top: 10px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        .label-hint { font-size: 12px; font-weight: 400; color: #9ca3af; text-transform: none; letter-spacing: 0; margin-left: 6px; }
+
+        textarea {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 14px;
+            color: var(--text);
+            font-family: inherit;
+            line-height: 1.6;
+            resize: vertical;
+            min-height: 180px;
+            transition: border-color 0.2s;
+        }
+        textarea:focus { outline: none; border-color: var(--secondary); }
+        textarea::placeholder { color: #d1d5db; }
+
+        .char-count {
+            text-align: right;
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 4px;
+        }
+
+        .examples-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 12px 0 20px;
+        }
+        .chip {
+            background: #f0f4ff;
+            border: 1px solid #c7d2fe;
+            color: #4338ca;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.15s;
+            white-space: nowrap;
+        }
+        .chip:hover { background: #e0e7ff; }
+
+        .btn-analyze {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #1a2744, #2d4a8a);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            margin-top: 4px;
+        }
+        .btn-analyze:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-analyze:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+        .result-area { margin-top: 28px; display: none; }
+        .result-area.visible { display: block; }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+        .result-header h3 { font-size: 1em; font-weight: 700; color: var(--primary); }
+        .copy-btn {
+            background: var(--light-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+        .copy-btn:hover { background: var(--border); }
+
+        .result-content {
+            background: var(--light-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            font-size: 14px;
+            line-height: 1.8;
+            color: var(--text);
+            white-space: pre-wrap;
+            word-break: break-word;
+            min-height: 100px;
+        }
+        .result-content .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1em;
+            background: var(--secondary);
+            animation: blink 0.8s step-end infinite;
+            vertical-align: text-bottom;
+            margin-left: 2px;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .info-boxes {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-top: 28px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+        .info-box {
+            background: var(--light-bg);
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+        }
+        .info-box .icon { font-size: 1.6em; margin-bottom: 6px; }
+        .info-box p { font-size: 12px; color: var(--text-light); line-height: 1.5; }
+
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.6em; }
+            .card { padding: 22px; }
+            .info-boxes { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="nav-bar">
+    <a href="index.html">← Back to Home</a>
+    <div class="nav-right">
+        <a href="travel-ai.html">✨ AI Hacks</a>
+        <a href="tools.html">Tools</a>
+        <a href="sales-page.html" style="color:#a5f3c2;">Pricing</a>
+        <a href="account.html">Account</a>
+    </div>
+</div>
+
+<div class="container">
+
+    <div class="hero">
+        <div class="badge">⚖️ Smart Traveler & Elite</div>
+        <h1>Flight Delay Compensation Checker</h1>
+        <p>Paste one airline disruption message. We'll analyze whether you may have a compensation claim — in seconds.</p>
+    </div>
+
+    <div class="card" id="mainCard">
+
+        <!-- Gate: shown to non-paid users -->
+        <div class="gate-screen" id="gateScreen" style="display:none;">
+            <div class="gate-icon">🔒</div>
+            <h3>Smart Traveler & Elite Feature</h3>
+            <p>The Compensation Checker is available to paid members.<br>Upgrade to analyze your disruption message and find out if you're owed money.</p>
+            <a href="sales-page.html" class="btn-upgrade">Unlock This Feature →</a>
+            <a href="auth.html" class="btn-login">Already a member? Log in</a>
+        </div>
+
+        <!-- Checker: shown to paid users -->
+        <div id="checkerScreen">
+            <label>
+                Paste your airline message
+                <span class="label-hint">— delay email, cancellation SMS, booking update, or support chat</span>
+            </label>
+            <textarea id="airlineMessage" placeholder="Paste the full airline message here. For example:&#10;&#10;'Dear passenger, we regret to inform you that your flight LH 456 from Frankfurt (FRA) to New York (JFK) on 14 June 2026 has been cancelled due to operational reasons. We have rebooked you on the next available flight departing 15 June 2026...'"></textarea>
+            <div class="char-count"><span id="charCount">0</span> characters</div>
+
+            <div class="examples-row">
+                <span style="font-size:12px;color:#9ca3af;align-self:center;">Examples:</span>
+                <span class="chip" onclick="fillExample('delay')">✈️ 3h Delay</span>
+                <span class="chip" onclick="fillExample('cancel')">❌ Cancellation</span>
+                <span class="chip" onclick="fillExample('rebook')">🔄 Rebooking</span>
+            </div>
+
+            <button class="btn-analyze" id="analyzeBtn" onclick="analyze()">
+                🔍 Analyze My Message
+            </button>
+
+            <div class="result-area" id="resultArea">
+                <div class="result-header">
+                    <h3>Your Compensation Assessment</h3>
+                    <button class="copy-btn" onclick="copyResult()">📋 Copy</button>
+                </div>
+                <div class="result-content" id="resultContent"></div>
+            </div>
+
+            <div class="info-boxes">
+                <div class="info-box">
+                    <div class="icon">🔒</div>
+                    <p>Your message is analyzed in real time and never stored</p>
+                </div>
+                <div class="info-box">
+                    <div class="icon">⚖️</div>
+                    <p>Based on EU261/2004 and general passenger rights — not legal advice</p>
+                </div>
+                <div class="info-box">
+                    <div class="icon">⏱️</div>
+                    <p>Results in under 10 seconds — no forms, no waiting</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    const API_BASE = 'https://api.travelsmarterapp.com';
+
+    const EXAMPLES = {
+        delay: `Dear passenger,
+
+We regret to inform you that your flight LH 456 from Frankfurt (FRA) to New York (JFK) on 14 June 2026 is delayed. The new estimated departure time is 21:45 (original: 18:30). The delay is due to a late incoming aircraft.
+
+We apologize for the inconvenience and have arranged meal vouchers at the airport. Please proceed to gate B22.
+
+Lufthansa Customer Service`,
+        cancel: `Dear valued customer,
+
+Unfortunately, your flight FR9921 from Dublin (DUB) to Barcelona (BCN) on 20 June 2026 has been cancelled. This is due to an air traffic control strike affecting operations across southern Europe.
+
+We have automatically rebooked you on the next available flight departing 21 June 2026 at 07:10. If this does not suit you, you may request a full refund via our website.
+
+Ryanair Customer Care`,
+        rebook: `Hi there,
+
+Due to a schedule change, your original flight BA203 from London Heathrow (LHR) to Miami (MIA) on 3 July 2026 at 11:00 has been rescheduled to 4 July 2026 at 09:30. Your booking reference is ABC123.
+
+Your seat and baggage allowance remain unchanged. No action is required if you accept the new schedule.
+
+British Airways`
+    };
+
+    function fillExample(type) {
+        const ta = document.getElementById('airlineMessage');
+        ta.value = EXAMPLES[type];
+        updateCharCount();
+    }
+
+    function updateCharCount() {
+        document.getElementById('charCount').textContent = document.getElementById('airlineMessage').value.length;
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('airlineMessage').addEventListener('input', updateCharCount);
+        checkAuth();
+    });
+
+    function getAuthToken() {
+        return localStorage.getItem('authToken') || localStorage.getItem('token');
+    }
+
+    async function checkAuth() {
+        const token = getAuthToken();
+        if (!token) {
+            showGate();
+            return;
+        }
+        try {
+            const res = await fetch(`${API_BASE}/api/auth/me`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!res.ok) { showGate(); return; }
+            const data = await res.json();
+            const tier = (data.user?.subscription_tier || 'free').toLowerCase();
+            if (tier === 'free') {
+                showGate();
+            }
+            // paid: checker screen already visible by default
+        } catch (_) {
+            showGate();
+        }
+    }
+
+    function showGate() {
+        document.getElementById('gateScreen').style.display = 'block';
+        document.getElementById('checkerScreen').style.display = 'none';
+    }
+
+    async function analyze() {
+        const message = document.getElementById('airlineMessage').value.trim();
+        if (message.length < 20) {
+            document.getElementById('airlineMessage').style.borderColor = '#ef4444';
+            setTimeout(() => document.getElementById('airlineMessage').style.borderColor = '', 2000);
+            return;
+        }
+
+        const btn = document.getElementById('analyzeBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Analyzing...';
+
+        const resultArea = document.getElementById('resultArea');
+        const resultContent = document.getElementById('resultContent');
+        resultArea.classList.add('visible');
+        resultContent.innerHTML = '<span class="cursor"></span>';
+
+        try {
+            const res = await fetch(`${API_BASE}/api/compensation-checker/analyze`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getAuthToken()}`
+                },
+                body: JSON.stringify({ message })
+            });
+
+            if (res.status === 401) {
+                resultContent.textContent = '⚠️ Session expired — please log in again.';
+                return;
+            }
+            if (res.status === 403) {
+                showGate();
+                return;
+            }
+            if (!res.ok) {
+                const err = await res.json();
+                resultContent.textContent = '❌ ' + (err.error || 'Unknown error');
+                return;
+            }
+
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            let fullText = '';
+            resultContent.textContent = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop();
+                for (const line of lines) {
+                    if (!line.startsWith('data: ')) continue;
+                    try {
+                        const data = JSON.parse(line.slice(6));
+                        if (data.text) {
+                            fullText += data.text;
+                            resultContent.textContent = fullText;
+                        }
+                        if (data.error) {
+                            resultContent.textContent = '❌ ' + data.error;
+                        }
+                    } catch (_) {}
+                }
+            }
+
+            resultArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        } catch (err) {
+            resultContent.textContent = '❌ Connection error: ' + err.message;
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '🔍 Analyze My Message';
+        }
+    }
+
+    function copyResult() {
+        const text = document.getElementById('resultContent').textContent;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.querySelector('.copy-btn');
+            btn.textContent = '✅ Copied!';
+            setTimeout(() => btn.textContent = '📋 Copy', 2000);
+        });
+    }
+</script>
+</body>
+</html>
