@@ -256,7 +256,7 @@
                 Paste your travel listing or booking description
                 <span class="label-hint">— hotel, Airbnb, flight fare, tour, rental car, cruise, package deal</span>
             </label>
-            <textarea id="listingText" placeholder="Paste the full listing or offer text here. For example:&#10;&#10;'Deluxe Room — €89/night. Free cancellation until 48 hours before arrival. Breakfast not included. Resort fee €22/night payable at property. Check-in from 15:00, check-out by 11:00...'"></textarea>
+            <textarea id="listingText" placeholder="Paste the full listing or offer text here. For example:&#10;&#10;'Deluxe Room — $89/night. Free cancellation until 48 hours before arrival. Breakfast not included. Resort fee $22/night payable at property. Check-in from 15:00, check-out by 11:00...'"></textarea>
             <div class="char-count"><span id="charCount">0</span> characters</div>
 
             <div class="examples-row">
@@ -303,49 +303,49 @@
 
     const EXAMPLES = {
         hotel: `Superior Double Room — City Center Hotel Vienna
-Price: €129/night (room only)
+Price: $129/night (room only)
 Check-in: 15:00 | Check-out: 11:00
 Cancellation: Free cancellation until 72 hours before arrival. Within 72 hours: first night charged. No-show: full stay charged.
-Breakfast: not included. Available at €18/person/day.
+Breakfast: not included. Available at $18/person/day.
 Parking: not available on-site. Public parking nearby at guest's expense.
-City tax: €3.02/person/night, payable at check-in.
-Resort fee: €15/night mandatory, payable at check-in. Includes gym access and Wi-Fi.
+City tax: $3.02/person/night, payable at check-in.
+Resort fee: $15/night mandatory, payable at check-in. Includes gym access and Wi-Fi.
 Pet policy: pets not permitted.
-Extra bed: available on request, €35/night.
-Credit card required at check-in for a refundable €150 security deposit.`,
+Extra bed: available on request, $35/night.
+Credit card required at check-in for a refundable $150 security deposit.`,
 
         airbnb: `Cozy Studio in Lisbon — Alfama District
-€65/night · Minimum stay: 3 nights
+$65/night · Minimum stay: 3 nights
 Sleeps 2 · 1 bathroom · No kitchen (kitchenette only)
 Check-in: 16:00–20:00 (self check-in with lockbox)
 Check-out: 10:00 strictly
 Cancellation: Moderate — full refund if cancelled 5+ days before check-in. 50% refund if cancelled 2–5 days before. No refund within 48 hours.
-Cleaning fee: €75 (one-time)
+Cleaning fee: $75 (one-time)
 Service fee: calculated at checkout
 House rules: no parties, no smoking, no pets, quiet hours 22:00–08:00
 Reviews: 4.3/5 (12 reviews)
 Note: stairs only, no lift. Fourth floor.`,
 
         tour: `7-Day Highlights of Morocco — Group Tour
-From €899/person (based on double occupancy)
+From $899/person (based on double occupancy)
 Includes: hotel accommodation (3-star), daily breakfast, guided tours, airport transfers on Day 1 and Day 7
 Excludes: flights, lunches, dinners, personal travel insurance, tips for guides and drivers, optional activities
 Group size: 8–16 people
-Single supplement: €195
-Deposit: €250 per person due at booking. Remaining balance due 60 days before departure.
+Single supplement: $195
+Deposit: $250 per person due at booking. Remaining balance due 60 days before departure.
 Cancellation: Deposit non-refundable. 50% of total cost if cancelled 30–60 days before departure. No refund within 30 days.
 Travel insurance: strongly recommended but not included.
 Itinerary subject to change due to local conditions.`,
 
         deal: `FLASH SALE — All-Inclusive Tenerife 7 nights
-Was €1,299 NOW €649/person — Save 50%!
+Was $1,299 NOW $649/person — Save 50%!
 Includes: return flights from London Gatwick, 4-star hotel, all meals and drinks
 Travel dates: select dates in October–November 2026
 Based on 2 adults sharing. Limited availability — book now!
-Baggage: hand luggage only (10kg). Hold baggage not included — available from €35/bag each way.
-Transfer: not included. Airport transfer available to add from €18/person each way.
+Baggage: hand luggage only (10kg). Hold baggage not included — available from $35/bag each way.
+Transfer: not included. Airport transfer available to add from $18/person each way.
 Holiday protection: ATOL protected.
-Price shown excludes: departure tax (approx. €42/person), travel insurance.`
+Price shown excludes: departure tax (approx. $42/person), travel insurance.`
     };
 
     function fillExample(type) {

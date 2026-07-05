@@ -60,7 +60,7 @@ exports.sendDealAlert = async (dealId) => {
         await sgMail.send({
           to: user.email,
           from: process.env.SENDGRID_FROM_EMAIL || 'noreply@travelsmarterapp.com',
-          subject: `🎉 New ${deal.category} Deal: Save €${deal.value_amount}`,
+          subject: `🎉 New ${deal.category} Deal: Save $${deal.value_amount}`,
           html: generateDealAlertHTML(user.first_name, deal)
         });
 
@@ -183,7 +183,7 @@ function generateDealAlertHTML(firstName, deal) {
 
           <div style="background: #f0f4ff; padding: 15px; border-radius: 6px; margin: 15px 0;">
             <p style="color: #667eea; font-weight: bold; margin: 0;">
-              💰 Save: €${deal.value_amount}
+              💰 Save: $${deal.value_amount}
             </p>
             <p style="color: #666; margin: 5px 0 0 0;">Category: ${deal.category}</p>
           </div>
@@ -220,7 +220,7 @@ function generateWeeklyDigestHTML(firstName, deals) {
       <h4 style="color: #667eea; margin: 0 0 8px 0;">${deal.title}</h4>
       <p style="color: #666; font-size: 0.95em; margin: 0 0 10px 0;">${deal.description || deal.category}</p>
       <div style="display: flex; justify-content: space-between; align-items: center;">
-        <span style="color: #667eea; font-weight: bold;">💰 Save €${deal.value_amount}</span>
+        <span style="color: #667eea; font-weight: bold;">💰 Save $${deal.value_amount}</span>
         <span style="color: #999; font-size: 0.9em;">👍 ${deal.upvote_count || 0} upvotes</span>
       </div>
     </div>
