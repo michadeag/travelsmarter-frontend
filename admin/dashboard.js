@@ -438,7 +438,7 @@ async function loadSubscriptionStats() {
             const eliteMRR = (data.elite || 0) * 49;
             const totalMRR = smartMRR + eliteMRR;
 
-            document.getElementById('total-mrr').textContent = `€${totalMRR.toLocaleString()}`;
+            document.getElementById('total-mrr').textContent = `$${totalMRR.toLocaleString()}`;
         }
     } catch (error) {
         console.error('Error loading subscription stats:', error);
@@ -687,7 +687,7 @@ function displaySubscriptions(subscriptions) {
             <td><span class="badge badge-${sub.status === 'active' ? 'success' : 'danger'}">${sub.status}</span></td>
             <td>${formatDate(sub.created_at)}</td>
             <td>${formatDate(sub.current_period_end)}</td>
-            <td>€${sub.price_monthly || '0'}</td>
+            <td>$${sub.price_monthly || '0'}</td>
             <td>
                 <div class="actions">
                     <button class="btn btn-sm btn-primary" onclick="editSubscription('${sub.id}')">Edit</button>
@@ -827,7 +827,7 @@ function displayDeals(deals) {
         <tr>
             <td>${deal.title}</td>
             <td>${deal.category}</td>
-            <td>€${deal.value_amount}</td>
+            <td>$${deal.value_amount}</td>
             <td><span class="badge badge-${deal.verified ? 'success' : 'pending'}">${deal.verified ? 'Yes' : 'No'}</span></td>
             <td>${deal.upvote_count}</td>
             <td>${deal.expires_at ? formatDate(deal.expires_at) : 'No expiry'}</td>
@@ -909,7 +909,7 @@ async function saveDeal() {
                 category,
                 deal_type: 'featured',
                 value_amount: parseFloat(value),
-                value_currency: 'EUR'
+                value_currency: 'USD'
             })
         });
 
@@ -1034,7 +1034,7 @@ function displayPromos(promos) {
     tbody.innerHTML = promos.map(promo => `
         <tr>
             <td><strong>${promo.code}</strong></td>
-            <td>${promo.discount_percent || promo.discount_amount}${promo.discount_percent ? '%' : '€'}</td>
+            <td>${promo.discount_percent || promo.discount_amount}${promo.discount_percent ? '%' : '$'}</td>
             <td>${promo.current_uses || '0'}</td>
             <td>${promo.max_uses || '∞'}</td>
             <td>${promo.valid_until ? formatDate(promo.valid_until) : 'No expiry'}</td>
@@ -2063,7 +2063,7 @@ async function loadPageviewsForPage(page, todayId, weekId, totalId, byDayId) {
                 byDayEl.innerHTML = '<tr><td colspan="2" style="text-align:center;padding:20px;">Noch keine Daten</td></tr>';
             } else {
                 byDayEl.innerHTML = data.byDay.map(r =>
-                    `<tr><td>${new Date(r.day).toLocaleDateString('de-DE')}</td><td>${r.count}</td></tr>`
+                    `<tr><td>${new Date(r.day).toLocaleDateString('en-US')}</td><td>${r.count}</td></tr>`
                 ).join('');
             }
         }
@@ -2115,11 +2115,11 @@ async function ytSearch() {
                     <a href="${v.url}" target="_blank" style="color:#667eea; font-weight:600; text-decoration:none;">
                         ${v.title.length > 60 ? v.title.slice(0, 60) + '…' : v.title}
                     </a>
-                    <div style="font-size:0.8em; color:#9ca3af; margin-top:2px;">${new Date(v.publishedAt).toLocaleDateString('de-DE')}</div>
+                    <div style="font-size:0.8em; color:#9ca3af; margin-top:2px;">${new Date(v.publishedAt).toLocaleDateString('en-US')}</div>
                 </td>
                 <td style="color:#6b7280; font-size:0.9em;">${v.channel}</td>
-                <td style="text-align:right; font-weight:600;">${v.views.toLocaleString('de-DE')}</td>
-                <td style="text-align:right;">${v.comments.toLocaleString('de-DE')}</td>
+                <td style="text-align:right; font-weight:600;">${v.views.toLocaleString('en-US')}</td>
+                <td style="text-align:right;">${v.comments.toLocaleString('en-US')}</td>
                 <td>
                     <button class="btn btn-sm btn-primary" onclick="openYtCommentModal(${JSON.stringify(v).replace(/"/g, '&quot;')})">
                         💬 Kommentar
@@ -2260,8 +2260,8 @@ function renderTwitterUpcoming(jobs, isRunning) {
         <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #f3f4f6;">
             <span style="font-size:1.2em">🐦</span>
             <div>
-                <strong>${t.toLocaleDateString('de-DE', {weekday:'short', day:'numeric', month:'short'})}</strong>
-                <span style="color:#667eea;margin-left:8px;font-weight:600">${t.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'})}</span>
+                <strong>${t.toLocaleDateString('en-US', {weekday:'short', day:'numeric', month:'short'})}</strong>
+                <span style="color:#667eea;margin-left:8px;font-weight:600">${t.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'})}</span>
                 <span style="color:#6b7280;margin-left:8px;font-size:0.85em">Travel tip (auto-generated)</span>
             </div>
         </div>`).join('');
@@ -2537,7 +2537,7 @@ async function loadPinterestRecentPosts() {
                     </div>
                     <strong style="font-size:13px;">${p.title?.substring(0, 70)}</strong>
                     <div style="font-size:11px;color:#9ca3af;margin-top:2px;">
-                        ${new Date(p.posted_at).toLocaleString('de-DE')}
+                        ${new Date(p.posted_at).toLocaleString('en-US')}
                         ${p.pin_id ? `· <a href="${p.pin_id}" target="_blank" style="color:#e60023;">Ansehen ↗</a>` : ''}
                     </div>
                 </div>
@@ -2657,7 +2657,7 @@ async function loadIgRecentPosts() {
                     <strong>${p.title || 'Instagram Post'}</strong>
                     <span style="background:${p.status==='posted'?'#d1fae5':'#fef3c7'};color:${p.status==='posted'?'#065f46':'#92400e'};padding:2px 8px;border-radius:10px;font-size:11px;margin-left:8px;">${p.status}</span><br>
                     <small style="color:#6b7280;">${p.caption?.substring(0,80)}...</small><br>
-                    <small style="color:#9ca3af;">${p.created_at ? new Date(p.created_at).toLocaleString('de-DE') : ''}</small>
+                    <small style="color:#9ca3af;">${p.created_at ? new Date(p.created_at).toLocaleString('en-US') : ''}</small>
                 </div>
                 <button onclick='reloadIgPost(${JSON.stringify(p).replace(/'/g,"&#39;")})' style="background:#E1306C;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;white-space:nowrap;flex-shrink:0;">
                     🔄 Neu laden
@@ -2779,7 +2779,7 @@ async function loadWordPressRecentPosts() {
                 <strong>${p.title?.substring(0, 80)}</strong>
                 ${p.included_cta ? '<span style="margin-left:6px;font-size:11px;background:#dcfce7;color:#166534;padding:2px 7px;border-radius:10px;">CTA</span>' : ''}
                 <div style="font-size:12px;color:#9ca3af;margin-top:2px;">
-                    ${new Date(p.posted_at).toLocaleString('de-DE')} · ${p.category || ''}
+                    ${new Date(p.posted_at).toLocaleString('en-US')} · ${p.category || ''}
                     ${p.wp_url ? `· <a href="${p.wp_url}" target="_blank" style="color:#21759b;">Ansehen ↗</a>` : ''}
                 </div>
             </div>`).join('');
@@ -2897,7 +2897,7 @@ async function loadQuoraRecentPostsNew() {
                 </div>
                 <strong style="font-size:13px;">${p.question?.substring(0, 80)}</strong>
                 <div style="font-size:11px;color:#9ca3af;margin-top:2px;">
-                    ${new Date(p.posted_at).toLocaleString('de-DE')}
+                    ${new Date(p.posted_at).toLocaleString('en-US')}
                     ${p.space_suggestions ? `· ${p.space_suggestions}` : ''}
                     ${p.post_url ? `· <a href="${p.post_url}" target="_blank" style="color:#b92b27;">Ansehen ↗</a>` : ''}
                 </div>
@@ -3115,7 +3115,7 @@ async function loadSlideShareRecentPosts() {
                 </div>
                 <strong style="font-size:13px;">${p.ss_title?.substring(0, 80) || p.title}</strong>
                 <div style="font-size:11px;color:#9ca3af;margin-top:2px;">
-                    ${new Date(p.posted_at).toLocaleString('de-DE')}
+                    ${new Date(p.posted_at).toLocaleString('en-US')}
                     ${p.post_url ? `· <a href="${p.post_url}" target="_blank" style="color:#0077b5;">Ansehen ↗</a>` : ''}
                 </div>
             </div>`).join('');
@@ -3243,7 +3243,7 @@ async function loadBloggerRecentPosts() {
             <div style="padding:10px 0;border-bottom:1px solid #f0f0f0;">
                 <strong>${p.title?.substring(0,80)}</strong>
                 <div style="font-size:12px;color:#9ca3af;margin-top:2px;">
-                    ${new Date(p.posted_at).toLocaleString('de-DE')} · ${p.category || ''}
+                    ${new Date(p.posted_at).toLocaleString('en-US')} · ${p.category || ''}
                     ${p.blogger_url ? `· <a href="${p.blogger_url}" target="_blank" style="color:#f57c00;">Ansehen ↗</a>` : ''}
                 </div>
             </div>`).join('');
@@ -3515,7 +3515,7 @@ async function loadMediumRecentPosts() {
             <div style="padding:10px 0;border-bottom:1px solid #f0f0f0;">
                 <strong>${p.title}</strong>
                 <span style="margin-left:8px;font-size:11px;padding:2px 8px;border-radius:10px;background:${p.status==='posted'?'#dcfce7':'#fef9c3'};color:${p.status==='posted'?'#166534':'#854d0e'};">${p.status}</span>
-                <div style="font-size:12px;color:#9ca3af;margin-top:2px;">${new Date(p.posted_at).toLocaleString('de-DE')} · ${p.category}
+                <div style="font-size:12px;color:#9ca3af;margin-top:2px;">${new Date(p.posted_at).toLocaleString('en-US')} · ${p.category}
                 ${p.medium_url ? `· <a href="${p.medium_url}" target="_blank" style="color:#1d9bf0;">Ansehen ↗</a>` : ''}</div>
             </div>`).join('');
     } catch (e) { el.innerHTML = '<p>Fehler beim Laden.</p>'; }
@@ -3606,7 +3606,7 @@ async function loadLinkedInRecentPostsNew() {
             <div style="padding:10px 0;border-bottom:1px solid #f0f0f0;">
                 <div style="font-size:13px;color:#374151;">${(p.body||'').substring(0,120)}…</div>
                 <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${p.status==='posted'?'#dcfce7':'#fef9c3'};color:${p.status==='posted'?'#166534':'#854d0e'};">${p.status}</span>
-                <span style="font-size:12px;color:#9ca3af;margin-left:8px;">${new Date(p.posted_at).toLocaleString('de-DE')} · ${p.category||''}</span>
+                <span style="font-size:12px;color:#9ca3af;margin-left:8px;">${new Date(p.posted_at).toLocaleString('en-US')} · ${p.category||''}</span>
                 ${p.linkedin_post_id ? `<a href="${p.linkedin_post_id}" target="_blank" style="margin-left:8px;font-size:12px;color:#0077b5;">Ansehen ↗</a>` : ''}
             </div>`).join('');
     } catch (e) { el.innerHTML = '<p>Fehler beim Laden.</p>'; }
@@ -3708,7 +3708,7 @@ async function loadRedditRecentPostsNew() {
                 <strong style="font-size:14px;">${p.title || ''}</strong>
                 <span style="margin-left:8px;font-size:12px;color:#ff4500;">r/${p.subreddit || ''}</span>
                 <span style="margin-left:8px;font-size:11px;padding:2px 8px;border-radius:10px;background:${p.status==='posted'?'#dcfce7':'#fef9c3'};color:${p.status==='posted'?'#166534':'#854d0e'};">${p.status}</span>
-                <div style="font-size:12px;color:#9ca3af;margin-top:2px;">${new Date(p.posted_at).toLocaleString('de-DE')} · ${p.category||''}
+                <div style="font-size:12px;color:#9ca3af;margin-top:2px;">${new Date(p.posted_at).toLocaleString('en-US')} · ${p.category||''}
                 ${p.reddit_url ? `· <a href="${p.reddit_url}" target="_blank" style="color:#ff4500;">Ansehen ↗</a>` : ''}</div>
             </div>`).join('');
     } catch (e) { el.innerHTML = '<p>Fehler beim Laden.</p>'; }

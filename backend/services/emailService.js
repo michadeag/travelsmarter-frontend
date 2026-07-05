@@ -77,7 +77,7 @@ const templates = {
               </tr>
               <tr>
                 <td style="padding: 8px 0;"><strong>Price:</strong></td>
-                <td style="padding: 8px 0; text-align: right;">€${subscription.priceMonthly}/month</td>
+                <td style="padding: 8px 0; text-align: right;">$${subscription.priceMonthly}/month</td>
               </tr>
               <tr style="border-top: 1px solid #eee;">
                 <td style="padding: 8px 0;"><strong>Renewal Date:</strong></td>

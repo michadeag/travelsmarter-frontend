@@ -582,7 +582,7 @@ async function initializeApp() {
         category VARCHAR(100),
         deal_type VARCHAR(50),
         value_amount DECIMAL(10, 2),
-        value_currency VARCHAR(10) DEFAULT 'EUR',
+        value_currency VARCHAR(10) DEFAULT 'USD',
         image_url VARCHAR(500),
         source VARCHAR(100),
         verified BOOLEAN DEFAULT false,
