@@ -174,20 +174,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        .settings-link {
-            text-align: center;
-            margin-top: 15px;
-        }
-
-        .settings-link a {
-            color: #6b7280;
-            text-decoration: none;
-            font-size: 0.85em;
-        }
-
-        .settings-link a:hover {
-            color: #667eea;
-        }
     </style>
 </head>
 <body>
@@ -237,62 +223,6 @@
             <a onclick="toggleAuthMode()">Sign Up</a>
         </div>
 
-        <div class="settings-link">
-            <a href="#" onclick="openSettings()">Change API URL</a>
-        </div>
-    </div>
-
-    <!-- Settings Modal -->
-    <div id="settings-modal" style="
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 1000;
-        justify-content: center;
-        align-items: center;
-    ">
-        <div style="
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            max-width: 500px;
-            width: 90%;
-        ">
-            <h3 style="margin-bottom: 20px;">API Configuration</h3>
-
-            <div style="margin-bottom: 20px;">
-                <label for="api-url" style="display: block; margin-bottom: 8px; font-weight: 600;">API URL</label>
-                <input type="url" id="api-url" placeholder="http://localhost:5000/api"
-                       style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
-            </div>
-
-            <div style="display: flex; gap: 10px;">
-                <button onclick="saveAPISettings()" style="
-                    flex: 1;
-                    padding: 10px;
-                    background: #667eea;
-                    color: white;
-                    border: none;
-                    border-radius: 8px;
-                    font-weight: 600;
-                    cursor: pointer;
-                ">Save</button>
-                <button onclick="closeSettings()" style="
-                    flex: 1;
-                    padding: 10px;
-                    background: #e5e7eb;
-                    color: #1f2937;
-                    border: none;
-                    border-radius: 8px;
-                    font-weight: 600;
-                    cursor: pointer;
-                ">Cancel</button>
-            </div>
-        </div>
     </div>
 
     <script src="api-service.js"></script>
@@ -301,12 +231,6 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            // Set API URL from input
-            const storedUrl = localStorage.getItem('apiUrl');
-            if (storedUrl) {
-                api.setBaseURL(storedUrl);
-            }
-
             // Check if already logged in
             if (api.isLoggedIn()) {
                 window.location.href = 'account.html';
@@ -407,28 +331,6 @@
         function hideAlert() {
             const alertEl = document.getElementById('alert');
             alertEl.classList.remove('show');
-        }
-
-        function openSettings() {
-            const apiUrl = api.baseURL.replace('/api', '');
-            document.getElementById('api-url').value = apiUrl;
-            document.getElementById('settings-modal').style.display = 'flex';
-        }
-
-        function closeSettings() {
-            document.getElementById('settings-modal').style.display = 'none';
-        }
-
-        function saveAPISettings() {
-            const url = document.getElementById('api-url').value;
-            if (!url) {
-                alert('Please enter API URL');
-                return;
-            }
-            const apiUrl = url.endsWith('/api') ? url : url + '/api';
-            api.setBaseURL(apiUrl);
-            showAlert('API URL updated', 'success');
-            closeSettings();
         }
     </script>
 </body>

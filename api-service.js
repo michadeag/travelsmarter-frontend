@@ -5,7 +5,11 @@
 
 class APIService {
     constructor() {
-        // Determine API URL based on current domain
+        // Determine API URL based on current domain. There's no supported
+        // way to override this anymore (the "Change API URL" UI was removed
+        // since it had no validation and could silently break login) — so
+        // clear out any leftover override from localStorage in production,
+        // rather than trusting a value nothing can set or fix anymore.
         let defaultApiUrl;
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
             // Local development
@@ -13,11 +17,7 @@ class APIService {
         } else {
             // Production
             defaultApiUrl = 'https://api.travelsmarterapp.com/api';
-            // Clear any localhost URLs from localStorage in production
-            const storedUrl = localStorage.getItem('apiUrl');
-            if (storedUrl && storedUrl.includes('localhost')) {
-                localStorage.removeItem('apiUrl');
-            }
+            localStorage.removeItem('apiUrl');
         }
 
         this.baseURL = defaultApiUrl;
@@ -383,14 +383,6 @@ class APIService {
         const requiredLevel = tierLevels[requiredTier] || 0;
 
         return userLevel >= requiredLevel;
-    }
-
-    /**
-     * Set API base URL
-     */
-    setBaseURL(url) {
-        this.baseURL = url;
-        localStorage.setItem('apiUrl', url);
     }
 }
 
