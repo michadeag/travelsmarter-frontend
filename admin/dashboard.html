@@ -1000,12 +1000,12 @@
             <div id="broadcast" class="tab-content">
                 <div style="max-width:800px;">
                     <h3 style="margin-bottom:8px;">📣 Broadcast Email</h3>
-                    <p style="color:#6b7280;margin-bottom:24px;">Send a one-off email to your subscribers. Filter by signup date or plan, pick a template, preview and send.</p>
+                    <p style="color:#6b7280;margin-bottom:24px;">Send a one-off email to your free-tier subscribers. Broadcasts are always free-tier only (this is a conversion tool, not a general announcement channel), and each subscriber only ever receives a given broadcast once — filter by signup date, pick a template, preview and send.</p>
 
                     <!-- Filters -->
                     <div style="background:white;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
                         <h4 style="margin-bottom:16px;">1. Select Recipients</h4>
-                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
                             <div>
                                 <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Subscribed after</label>
                                 <input type="date" id="bc-after" style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;">
@@ -1013,15 +1013,6 @@
                             <div>
                                 <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Subscribed before</label>
                                 <input type="date" id="bc-before" style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;">
-                            </div>
-                            <div>
-                                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Plan</label>
-                                <select id="bc-tier" style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;">
-                                    <option value="all">All plans</option>
-                                    <option value="free">Free</option>
-                                    <option value="smart">Smart Traveler</option>
-                                    <option value="elite">Elite</option>
-                                </select>
                             </div>
                         </div>
                         <button onclick="loadBroadcastSubscribers()" style="background:#667eea;color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600;">Preview Recipients</button>

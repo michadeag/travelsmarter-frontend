@@ -145,6 +145,10 @@ function selectBroadcastTemplate(id, subject, el) {
     loadBroadcastPreview(id);
     document.getElementById('bc-preview-section').style.display = 'block';
     document.getElementById('bc-send-section').style.display = 'block';
+
+    // Recipient count depends on the template (each broadcast only goes to
+    // users who haven't already received it), so refresh it on selection.
+    loadBroadcastSubscribers();
 }
 
 async function loadBroadcastPreview(templateId) {
@@ -165,12 +169,11 @@ async function loadBroadcastPreview(templateId) {
 async function loadBroadcastSubscribers() {
     const after = document.getElementById('bc-after').value;
     const before = document.getElementById('bc-before').value;
-    const tier = document.getElementById('bc-tier').value;
 
     const params = new URLSearchParams();
     if (after) params.append('subscribed_after', after);
     if (before) params.append('subscribed_before', before);
-    if (tier !== 'all') params.append('tier', tier);
+    if (bcSelectedTemplate) params.append('template_id', bcSelectedTemplate);
 
     try {
         const res = await fetch(`${API_URL}/api/broadcast/subscribers?${params}`, {
@@ -179,7 +182,11 @@ async function loadBroadcastSubscribers() {
         const data = await res.json();
         const el = document.getElementById('bc-recipients');
         if (data.success) {
+            const scopeNote = bcSelectedTemplate
+                ? 'free users who haven\'t received this broadcast yet'
+                : 'free users (pick a template to exclude those who already got it)';
             el.innerHTML = `<span style="color:#10b981;font-weight:600;">✓ ${data.count} subscriber${data.count !== 1 ? 's' : ''} selected</span>
+                <span style="font-size:12px;color:#6b7280;margin-left:6px;">— ${scopeNote}</span><br>
                 ${data.subscribers.slice(0, 5).map(u => `<span style="margin-left:8px;background:#f3f4f6;padding:2px 8px;border-radius:4px;font-size:12px;">${u.email}</span>`).join('')}
                 ${data.count > 5 ? `<span style="font-size:12px;color:#6b7280;margin-left:4px;">+${data.count - 5} more</span>` : ''}`;
         } else {
@@ -334,10 +341,9 @@ async function sendBroadcast() {
 
     const after = document.getElementById('bc-after').value;
     const before = document.getElementById('bc-before').value;
-    const tier = document.getElementById('bc-tier').value;
     const subject = document.getElementById('bc-subject').value;
 
-    if (!confirm(`Send this email now? This will send to all matching subscribers.`)) return;
+    if (!confirm(`Send this email now? This will send to all matching free-tier subscribers who haven't already received it.`)) return;
 
     const btn = document.getElementById('bc-send-btn');
     btn.textContent = '⏳ Sending...';
@@ -352,8 +358,7 @@ async function sendBroadcast() {
                 custom_subject: subject,
                 filters: {
                     subscribed_after: after || undefined,
-                    subscribed_before: before || undefined,
-                    tier: tier !== 'all' ? tier : undefined
+                    subscribed_before: before || undefined
                 }
             })
         });
@@ -363,6 +368,7 @@ async function sendBroadcast() {
             result.innerHTML = `<div style="background:#d1fae5;border:1px solid #10b981;border-radius:8px;padding:16px;color:#065f46;">
                 ✅ ${data.message}
             </div>`;
+            loadBroadcastSubscribers();
         } else {
             result.innerHTML = `<div style="background:#fee2e2;border:1px solid #ef4444;border-radius:8px;padding:16px;color:#991b1b;">
                 ❌ ${data.error}
