@@ -123,7 +123,10 @@ async function loadBroadcastTemplates() {
         container.innerHTML = data.templates.map(t => `
             <div class="bc-template-card" data-id="${t.id}" onclick="selectBroadcastTemplate('${t.id}', '${t.subject.replace(/'/g, "\\'")}', this)"
                 style="border:2px solid #e5e7eb;border-radius:10px;padding:16px;cursor:pointer;transition:all 0.2s;">
-                <div style="font-weight:600;margin-bottom:4px;">${t.name}</div>
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+                    <div style="font-weight:600;">${t.name}</div>
+                    <span style="background:#f3f4f6;color:#374151;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap;margin-left:8px;">${t.sentCount || 0} sent</span>
+                </div>
                 <div style="font-size:13px;color:#6b7280;">Subject: ${t.subject}</div>
             </div>
         `).join('');
@@ -369,6 +372,7 @@ async function sendBroadcast() {
                 ✅ ${data.message}
             </div>`;
             loadBroadcastSubscribers();
+            loadBroadcastTemplates();
         } else {
             result.innerHTML = `<div style="background:#fee2e2;border:1px solid #ef4444;border-radius:8px;padding:16px;color:#991b1b;">
                 ❌ ${data.error}
