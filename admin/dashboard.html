@@ -611,6 +611,7 @@
                 <a class="nav-link" data-tab="blogger">📰 Blogger</a>
                 <a class="nav-link" data-tab="medium">✍️ Medium</a>
                 <a class="nav-link" data-tab="youtube">▶️ YouTube</a>
+                <a class="nav-link" data-tab="outreach">📮 Outreach</a>
                 <a class="nav-link" data-tab="settings">⚙️ Settings</a>
             </nav>
         </div>
@@ -2121,6 +2122,90 @@
                 </div>
             </div>
 
+            <!-- OUTREACH TAB -->
+            <div id="outreach" class="tab-content">
+                <h3 style="margin-bottom: 8px;">📮 Outreach</h3>
+                <p style="color:#6b7280;margin-bottom:20px;">Finde und kontaktiere potenzielle Referral-Partner (Blogs, YouTube-Kanäle, Pinterest etc.). Antwortet jemand positiv, wandelst du den Prospect direkt in einen freigegebenen Partner mit eigenem Link um.</p>
+
+                <div style="margin-bottom:20px;">
+                    <button class="btn btn-primary" onclick="openProspectModal()">+ Prospect hinzufügen</button>
+                </div>
+
+                <div style="background:white;border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+                    <h4 style="margin-bottom:12px;">🔍 YouTube-Kanäle suchen</h4>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <input type="text" id="outreach-yt-query" placeholder="z.B. travel hacking, budget backpacking..." style="flex:1;min-width:220px;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;">
+                        <input type="number" id="outreach-yt-max" value="10" min="1" max="25" style="width:80px;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;">
+                        <button class="btn btn-secondary" onclick="searchYoutubeProspects()" id="outreach-yt-btn">Suchen</button>
+                    </div>
+                    <div id="outreach-yt-result" style="margin-top:10px;font-size:13px;"></div>
+                    <p style="font-size:12px;color:#9ca3af;margin-top:8px;">Hinweis: Die YouTube-API liefert keine Kontakt-Email — die trägst du nach einem Blick auf die Kanalseite unten manuell nach.</p>
+                </div>
+
+                <div style="background:white;border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+                        <h4 style="margin:0;">Prospects</h4>
+                        <select id="outreach-filter-status" onchange="loadOutreachProspects()" style="padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;">
+                            <option value="">Alle Status</option>
+                            <option value="new">Neu</option>
+                            <option value="contacted">Kontaktiert</option>
+                            <option value="replied">Geantwortet</option>
+                            <option value="converted">Konvertiert</option>
+                            <option value="declined">Abgelehnt</option>
+                            <option value="bounced">Bounced</option>
+                        </select>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="outreach-select-all" onchange="toggleAllProspects(this)"></th>
+                                    <th>Name</th>
+                                    <th>Kanal</th>
+                                    <th>Email</th>
+                                    <th>Reichweite</th>
+                                    <th>Quelle</th>
+                                    <th>Status</th>
+                                    <th>Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody id="outreach-prospects-table">
+                                <tr><td colspan="8" style="text-align:center;padding:20px;">Lädt...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="background:white;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+                    <h4 style="margin-bottom:8px;">✉️ Kampagne senden</h4>
+                    <p id="outreach-selected-count" style="color:#6b7280;font-size:13px;margin-bottom:12px;">0 Prospects ausgewählt (nur mit hinterlegter Email zählbar)</p>
+                    <div style="margin-bottom:12px;">
+                        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Betreff</label>
+                        <input type="text" id="outreach-subject" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;" placeholder="z.B. Partnerschaft mit TravelSmarter?">
+                    </div>
+                    <div style="margin-bottom:8px;">
+                        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Nachricht (HTML) — Platzhalter: {name}, {channelType}, {url}</label>
+                        <textarea id="outreach-body" style="width:100%;min-height:180px;padding:12px;border:1px solid #e5e7eb;border-radius:8px;font-family:inherit;" placeholder="Hi {name}, ..."></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="sendOutreachCampaign()" id="outreach-send-btn">📮 An ausgewählte senden</button>
+                    <div id="outreach-send-result" style="margin-top:12px;"></div>
+                </div>
+
+                <div style="background:white;border-radius:12px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+                    <h4 style="margin-bottom:12px;">Kampagnen-Historie</h4>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr><th>Datum</th><th>Betreff</th><th style="text-align:right;">Gesendet</th><th style="text-align:right;">Fehlgeschlagen</th></tr>
+                            </thead>
+                            <tbody id="outreach-campaigns-table">
+                                <tr><td colspan="4" style="text-align:center;padding:20px;">Lädt...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- SETTINGS TAB -->
             <div id="settings" class="tab-content">
                 <h3>Platform Settings</h3>
@@ -2640,6 +2725,58 @@
             <div class="actions" style="margin-top: 30px;">
                 <button class="btn btn-primary" onclick="saveHackManagement()">Save Hack</button>
                 <button class="btn btn-secondary" onclick="closeHackManagementModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Outreach Prospect Modal -->
+    <div id="prospect-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Prospect hinzufügen</h3>
+                <button class="close-modal" onclick="closeProspectModal()">✕</button>
+            </div>
+
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" id="modal-prospect-name" placeholder="z.B. Nomadic Matt">
+            </div>
+
+            <div class="form-group">
+                <label>Kanal-Typ</label>
+                <select id="modal-prospect-channel-type" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;">
+                    <option value="blog">Blog</option>
+                    <option value="youtube">YouTube</option>
+                    <option value="pinterest">Pinterest</option>
+                    <option value="instagram">Instagram</option>
+                    <option value="newsletter">Newsletter</option>
+                    <option value="other">Sonstiges</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>URL</label>
+                <input type="text" id="modal-prospect-url" placeholder="https://...">
+            </div>
+
+            <div class="form-group">
+                <label>Kontakt-Email</label>
+                <input type="email" id="modal-prospect-email" placeholder="contact@...">
+            </div>
+
+            <div class="form-group">
+                <label>Reichweite (frei, z.B. "42.000 Abonnenten")</label>
+                <input type="text" id="modal-prospect-audience" placeholder='z.B. 42.000 Abonnenten'>
+            </div>
+
+            <div class="form-group">
+                <label>Notizen</label>
+                <textarea id="modal-prospect-notes" placeholder="Optional"></textarea>
+            </div>
+
+            <div class="actions" style="margin-top: 30px;">
+                <button class="btn btn-primary" onclick="saveNewProspect()">Speichern</button>
+                <button class="btn btn-secondary" onclick="closeProspectModal()">Abbrechen</button>
             </div>
         </div>
     </div>

@@ -84,7 +84,8 @@ function switchTab(tabName) {
         affiliates: 'Affiliate Links',
         'email-templates': 'Email Templates', broadcast: '📣 Broadcast Email', analytics: 'Analytics', settings: 'Settings',
         reddit: '🤖 Reddit', linkedin: '💼 LinkedIn', pinterest: '📌 Pinterest',
-        instagram: '📸 Instagram', wordpress: '📝 WordPress', quora: '❓ Quora', blogger: '📰 Blogger', slideshare: '📊 SlideShare'
+        instagram: '📸 Instagram', wordpress: '📝 WordPress', quora: '❓ Quora', blogger: '📰 Blogger', slideshare: '📊 SlideShare',
+        outreach: '📮 Outreach'
     };
     document.getElementById('page-title').textContent = titles[tabName] || tabName;
 
@@ -103,6 +104,7 @@ function switchTab(tabName) {
     if (tabName === 'medium') { initMediumTab(); }
     if (tabName === 'broadcast') { initBroadcastTab(); }
     if (tabName === 'hidden-gem') { initHiddenGemTab(); }
+    if (tabName === 'outreach') { initOutreachTab(); }
 }
 
 // ─── BROADCAST ────────────────────────────────────────────────────────────────
@@ -197,6 +199,279 @@ async function loadBroadcastSubscribers() {
         }
     } catch (err) {
         document.getElementById('bc-recipients').innerHTML = `<span style="color:red;">Error: ${err.message}</span>`;
+    }
+}
+
+// ─── OUTREACH (referral partner prospecting) ──────────────────────────────────
+
+let outreachProspectsCache = [];
+
+const OUTREACH_STATUS_LABELS = {
+    new: 'Neu', contacted: 'Kontaktiert', replied: 'Geantwortet',
+    converted: 'Konvertiert', declined: 'Abgelehnt', bounced: 'Bounced',
+};
+
+async function initOutreachTab() {
+    await loadOutreachProspects();
+    await loadOutreachCampaigns();
+}
+
+async function loadOutreachProspects() {
+    const status = document.getElementById('outreach-filter-status').value;
+    const params = new URLSearchParams();
+    if (status) params.append('status', status);
+    try {
+        const res = await fetch(`${API_URL}/api/outreach/admin/prospects?${params}`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const data = await res.json();
+        outreachProspectsCache = data.prospects || [];
+        renderOutreachProspects();
+    } catch (err) {
+        document.getElementById('outreach-prospects-table').innerHTML =
+            `<tr><td colspan="8" style="color:red;text-align:center;">Fehler: ${err.message}</td></tr>`;
+    }
+}
+
+function renderOutreachProspects() {
+    const tbody = document.getElementById('outreach-prospects-table');
+    if (outreachProspectsCache.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:#9ca3af;">Keine Prospects gefunden.</td></tr>';
+        updateOutreachSelectedCount();
+        return;
+    }
+    tbody.innerHTML = outreachProspectsCache.map(p => `
+        <tr>
+            <td><input type="checkbox" class="outreach-prospect-checkbox" value="${p.id}" ${p.contact_email ? '' : 'disabled title="Keine Email hinterlegt"'} onchange="updateOutreachSelectedCount()"></td>
+            <td>${p.name}</td>
+            <td>${p.channel_type}${p.url ? ` — <a href="${p.url}" target="_blank" style="color:#667eea;">Link</a>` : ''}</td>
+            <td>
+                <input type="email" value="${p.contact_email || ''}" placeholder="fehlt"
+                    style="width:160px;padding:4px 6px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;"
+                    onchange="updateProspectField('${p.id}', 'contact_email', this.value)">
+            </td>
+            <td>${p.audience_size || '—'}</td>
+            <td style="font-size:12px;color:#9ca3af;">${p.source}</td>
+            <td>
+                <select onchange="updateProspectField('${p.id}', 'status', this.value)" style="padding:4px 6px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;">
+                    ${Object.entries(OUTREACH_STATUS_LABELS).map(([val, label]) =>
+                        `<option value="${val}" ${p.status === val ? 'selected' : ''}>${label}</option>`).join('')}
+                </select>
+            </td>
+            <td style="white-space:nowrap;">
+                ${p.referral_partner_id
+                    ? '<span style="color:#10b981;font-size:12px;">✓ Partner</span>'
+                    : `<button onclick="convertProspect('${p.id}')" style="background:none;border:none;color:#667eea;cursor:pointer;font-size:12px;">🤝 Convert</button>`
+                }
+                <button onclick="deleteProspect('${p.id}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:12px;">🗑</button>
+            </td>
+        </tr>
+    `).join('');
+    updateOutreachSelectedCount();
+}
+
+async function updateProspectField(id, field, value) {
+    try {
+        await fetch(`${API_URL}/api/outreach/admin/prospects/${id}`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ [field]: value })
+        });
+        const prospect = outreachProspectsCache.find(p => p.id === id);
+        if (prospect) prospect[field] = value;
+        if (field === 'contact_email') renderOutreachProspects();
+    } catch (err) {
+        showAlert('Fehler beim Aktualisieren: ' + err.message, 'error');
+    }
+}
+
+async function deleteProspect(id) {
+    if (!confirm('Diesen Prospect wirklich löschen?')) return;
+    try {
+        await fetch(`${API_URL}/api/outreach/admin/prospects/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        loadOutreachProspects();
+    } catch (err) {
+        showAlert('Fehler beim Löschen: ' + err.message, 'error');
+    }
+}
+
+async function convertProspect(id) {
+    if (!confirm('Diesen Prospect in einen freigegebenen Referral-Partner umwandeln? Braucht eine hinterlegte Email.')) return;
+    try {
+        const res = await fetch(`${API_URL}/api/outreach/admin/prospects/${id}/convert`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+            showAlert(`Partner angelegt — Referral-Code: ${data.partner.referral_code}`, 'success');
+            loadOutreachProspects();
+        } else {
+            showAlert(data.error || 'Fehler beim Umwandeln', 'error');
+        }
+    } catch (err) {
+        showAlert('Fehler: ' + err.message, 'error');
+    }
+}
+
+function toggleAllProspects(checkbox) {
+    document.querySelectorAll('.outreach-prospect-checkbox:not(:disabled)').forEach(cb => { cb.checked = checkbox.checked; });
+    updateOutreachSelectedCount();
+}
+
+function getSelectedProspectIds() {
+    return Array.from(document.querySelectorAll('.outreach-prospect-checkbox:checked')).map(cb => cb.value);
+}
+
+function updateOutreachSelectedCount() {
+    const count = getSelectedProspectIds().length;
+    const el = document.getElementById('outreach-selected-count');
+    if (el) el.textContent = `${count} Prospect${count === 1 ? '' : 's'} ausgewählt (nur mit hinterlegter Email zählbar)`;
+}
+
+function openProspectModal() {
+    document.getElementById('prospect-modal').classList.add('active');
+}
+
+function closeProspectModal() {
+    document.getElementById('prospect-modal').classList.remove('active');
+    ['name', 'url', 'email', 'audience', 'notes'].forEach(f => {
+        const el = document.getElementById(`modal-prospect-${f}`);
+        if (el) el.value = '';
+    });
+}
+
+async function saveNewProspect() {
+    const name = document.getElementById('modal-prospect-name').value.trim();
+    const channel_type = document.getElementById('modal-prospect-channel-type').value;
+    const url = document.getElementById('modal-prospect-url').value.trim();
+    const contact_email = document.getElementById('modal-prospect-email').value.trim();
+    const audience_size = document.getElementById('modal-prospect-audience').value.trim();
+    const notes = document.getElementById('modal-prospect-notes').value.trim();
+
+    if (!name) {
+        showAlert('Name ist erforderlich', 'error');
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_URL}/api/outreach/admin/prospects`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, channel_type, url, contact_email, audience_size, notes })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showAlert('Prospect hinzugefügt', 'success');
+            closeProspectModal();
+            loadOutreachProspects();
+        } else {
+            showAlert(data.error || 'Fehler beim Speichern', 'error');
+        }
+    } catch (err) {
+        showAlert('Fehler: ' + err.message, 'error');
+    }
+}
+
+async function searchYoutubeProspects() {
+    const query = document.getElementById('outreach-yt-query').value.trim();
+    const maxResults = parseInt(document.getElementById('outreach-yt-max').value, 10) || 10;
+    const resultEl = document.getElementById('outreach-yt-result');
+    if (!query) {
+        resultEl.innerHTML = '<span style="color:#ef4444;">Bitte ein Suchwort eingeben.</span>';
+        return;
+    }
+    const btn = document.getElementById('outreach-yt-btn');
+    btn.disabled = true;
+    btn.textContent = 'Suche läuft...';
+    try {
+        const res = await fetch(`${API_URL}/api/outreach/admin/prospects/search-youtube`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query, maxResults })
+        });
+        const data = await res.json();
+        if (data.success) {
+            resultEl.innerHTML = `<span style="color:#10b981;">✓ ${data.added} neue Kanäle hinzugefügt (Rest war bereits vorhanden).</span>`;
+            loadOutreachProspects();
+        } else {
+            resultEl.innerHTML = `<span style="color:#ef4444;">${data.error}</span>`;
+        }
+    } catch (err) {
+        resultEl.innerHTML = `<span style="color:#ef4444;">Fehler: ${err.message}</span>`;
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Suchen';
+    }
+}
+
+async function sendOutreachCampaign() {
+    const prospectIds = getSelectedProspectIds();
+    const subject = document.getElementById('outreach-subject').value.trim();
+    const bodyHtml = document.getElementById('outreach-body').value.trim();
+    const resultEl = document.getElementById('outreach-send-result');
+
+    if (prospectIds.length === 0) {
+        showAlert('Bitte mindestens einen Prospect mit Email auswählen', 'error');
+        return;
+    }
+    if (!subject || !bodyHtml) {
+        showAlert('Betreff und Nachricht sind erforderlich', 'error');
+        return;
+    }
+    if (!confirm(`Email jetzt an ${prospectIds.length} Prospect(s) senden? Das kann nicht rückgängig gemacht werden.`)) return;
+
+    const btn = document.getElementById('outreach-send-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Sende...';
+
+    try {
+        const res = await fetch(`${API_URL}/api/outreach/admin/campaigns/send`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prospectIds, subject, bodyHtml })
+        });
+        const data = await res.json();
+        if (data.success) {
+            resultEl.innerHTML = `<div style="background:#d1fae5;border:1px solid #10b981;border-radius:8px;padding:12px;color:#065f46;">✅ ${data.sent} gesendet, ${data.failed} fehlgeschlagen.</div>`;
+            loadOutreachProspects();
+            loadOutreachCampaigns();
+        } else {
+            resultEl.innerHTML = `<div style="background:#fee2e2;border:1px solid #ef4444;border-radius:8px;padding:12px;color:#991b1b;">❌ ${data.error}</div>`;
+        }
+    } catch (err) {
+        resultEl.innerHTML = `<div style="background:#fee2e2;border:1px solid #ef4444;border-radius:8px;padding:12px;color:#991b1b;">Fehler: ${err.message}</div>`;
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '📮 An ausgewählte senden';
+    }
+}
+
+async function loadOutreachCampaigns() {
+    try {
+        const res = await fetch(`${API_URL}/api/outreach/admin/campaigns`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const data = await res.json();
+        const tbody = document.getElementById('outreach-campaigns-table');
+        if (!data.success || data.campaigns.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#9ca3af;">Noch keine Kampagnen gesendet.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = data.campaigns.map(c => `
+            <tr>
+                <td>${new Date(c.created_at).toLocaleString('de-DE')}</td>
+                <td>${c.subject}</td>
+                <td style="text-align:right;color:#10b981;">${c.sent_count}</td>
+                <td style="text-align:right;color:${c.failed_count > 0 ? '#ef4444' : '#9ca3af'};">${c.failed_count}</td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        document.getElementById('outreach-campaigns-table').innerHTML =
+            `<tr><td colspan="4" style="color:red;text-align:center;">Fehler: ${err.message}</td></tr>`;
     }
 }
 
