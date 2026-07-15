@@ -229,14 +229,21 @@ async function loadOutreachProspects() {
         renderOutreachProspects();
     } catch (err) {
         document.getElementById('outreach-prospects-table').innerHTML =
-            `<tr><td colspan="8" style="color:red;text-align:center;">Fehler: ${err.message}</td></tr>`;
+            `<tr><td colspan="9" style="color:red;text-align:center;">Fehler: ${err.message}</td></tr>`;
     }
+}
+
+function outreachSequenceLabel(p) {
+    if (!p.sequence_step) return '<span style="color:#9ca3af;font-size:12px;">—</span>';
+    if (p.sequence_step >= 3) return '<span style="font-size:12px;color:#10b981;">Abgeschlossen (3/3)</span>';
+    const sentAt = p.last_step_sent_at ? new Date(p.last_step_sent_at).toLocaleDateString('de-DE') : '';
+    return `<span style="font-size:12px;">Step ${p.sequence_step}/3${sentAt ? ` · ${sentAt}` : ''}</span>`;
 }
 
 function renderOutreachProspects() {
     const tbody = document.getElementById('outreach-prospects-table');
     if (outreachProspectsCache.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:#9ca3af;">Keine Prospects gefunden.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:#9ca3af;">Keine Prospects gefunden.</td></tr>';
         updateOutreachSelectedCount();
         return;
     }
@@ -252,6 +259,7 @@ function renderOutreachProspects() {
             </td>
             <td>${p.audience_size || '—'}</td>
             <td style="font-size:12px;color:#9ca3af;">${p.source}</td>
+            <td>${outreachSequenceLabel(p)}</td>
             <td>
                 <select onchange="updateProspectField('${p.id}', 'status', this.value)" style="padding:4px 6px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;">
                     ${Object.entries(OUTREACH_STATUS_LABELS).map(([val, label]) =>
@@ -447,6 +455,33 @@ async function sendOutreachCampaign() {
     } finally {
         btn.disabled = false;
         btn.textContent = '📮 An ausgewählte senden';
+    }
+}
+
+async function enrollInSequence() {
+    const prospectIds = getSelectedProspectIds();
+    if (prospectIds.length === 0) {
+        showAlert('Bitte mindestens einen Prospect mit Email auswählen', 'error');
+        return;
+    }
+    if (!confirm(`${prospectIds.length} Prospect(s) in die 3-Email-Sequenz einschreiben? Email 1 wird sofort verschickt, Email 2/3 automatisch nach 2 bzw. 4 Tagen, solange der Status "Kontaktiert" bleibt.`)) return;
+
+    try {
+        const res = await fetch(`${API_URL}/api/outreach/admin/sequence/enroll`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prospectIds })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showAlert(`${data.enrolled} eingeschrieben, ${data.failed} fehlgeschlagen (bereits eingeschriebene wurden übersprungen)`, 'success');
+            loadOutreachProspects();
+            loadOutreachCampaigns();
+        } else {
+            showAlert(data.error || 'Fehler beim Einschreiben', 'error');
+        }
+    } catch (err) {
+        showAlert('Fehler: ' + err.message, 'error');
     }
 }
 

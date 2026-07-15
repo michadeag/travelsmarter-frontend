@@ -2127,9 +2127,11 @@
                 <h3 style="margin-bottom: 8px;">📮 Outreach</h3>
                 <p style="color:#6b7280;margin-bottom:20px;">Finde und kontaktiere potenzielle Referral-Partner (Blogs, YouTube-Kanäle, Pinterest etc.). Antwortet jemand positiv, wandelst du den Prospect direkt in einen freigegebenen Partner mit eigenem Link um.</p>
 
-                <div style="margin-bottom:20px;">
+                <div style="margin-bottom:20px; display:flex; gap:10px; flex-wrap:wrap;">
                     <button class="btn btn-primary" onclick="openProspectModal()">+ Prospect hinzufügen</button>
+                    <button class="btn btn-secondary" onclick="enrollInSequence()">🚀 Ausgewählte in 3-Email-Sequenz einschreiben</button>
                 </div>
+                <p style="color:#9ca3af;font-size:12px;margin-top:-12px;margin-bottom:20px;">Sequenz: Email 1 sofort, Email 2 nach 2 Tagen, Email 3 nach weiteren 2 Tagen — läuft automatisch, solange der Status "Kontaktiert" bleibt. Sobald du auf Geantwortet/Abgelehnt/etc. umstellst, stoppt sie für diesen Prospect.</p>
 
                 <div style="background:white;border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
                     <h4 style="margin-bottom:12px;">🔍 YouTube-Kanäle suchen</h4>
@@ -2165,12 +2167,13 @@
                                     <th>Email</th>
                                     <th>Reichweite</th>
                                     <th>Quelle</th>
+                                    <th>Sequenz</th>
                                     <th>Status</th>
                                     <th>Aktionen</th>
                                 </tr>
                             </thead>
                             <tbody id="outreach-prospects-table">
-                                <tr><td colspan="8" style="text-align:center;padding:20px;">Lädt...</td></tr>
+                                <tr><td colspan="9" style="text-align:center;padding:20px;">Lädt...</td></tr>
                             </tbody>
                         </table>
                     </div>
