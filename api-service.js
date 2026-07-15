@@ -24,7 +24,44 @@ class APIService {
         this.token = localStorage.getItem('userToken');
         this.user = JSON.parse(localStorage.getItem('userData') || '{}');
 
+        this.captureReferralCode();
+
         console.log('API Service initialized with URL:', this.baseURL);
+    }
+
+    /**
+     * Referral partner attribution — last-click, 60-day window. Any page can
+     * be the landing page for a partner link (?ref=CODE), so this runs on
+     * every load and overwrites whatever code was stored before.
+     */
+    captureReferralCode() {
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get('ref');
+        if (code) {
+            localStorage.setItem('ts_referral', JSON.stringify({
+                code,
+                capturedAt: Date.now(),
+            }));
+        }
+    }
+
+    /**
+     * Returns the stored referral code if it's still within the 60-day
+     * attribution window, otherwise null.
+     */
+    getReferralCode() {
+        try {
+            const stored = JSON.parse(localStorage.getItem('ts_referral') || 'null');
+            if (!stored) return null;
+            const sixtyDaysMs = 60 * 24 * 60 * 60 * 1000;
+            if (Date.now() - stored.capturedAt > sixtyDaysMs) {
+                localStorage.removeItem('ts_referral');
+                return null;
+            }
+            return stored.code;
+        } catch {
+            return null;
+        }
     }
 
     /**
@@ -110,6 +147,7 @@ class APIService {
             password,
             firstName,
             lastName,
+            referralCode: this.getReferralCode(),
         }, false);
 
         if (response.success) {
