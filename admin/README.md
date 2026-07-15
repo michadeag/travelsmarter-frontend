@@ -69,14 +69,11 @@ http://localhost:8080/admin/login.html
 https://yourdomain.com/admin/login.html
 ```
 
-### 2. Demo Credentials
+### 2. Admin Account
 
-```
-Email: admin@travelsmarter.com
-Password: DemoPassword123!
-```
-
-⚠️ **Change demo credentials immediately in production!**
+Log in at `/api/admin-auth/login` with a real `admin_users` account. If none
+exists yet, bootstrap the first one via `POST /api/admin-auth/init` (only
+works while `admin_users` is empty).
 
 ### 3. Configure API Connection
 

@@ -117,7 +117,7 @@ class APIService {
             if (response.status === 401) {
                 // Token expired, clear and redirect to login
                 this.logout();
-                window.location.href = '/login.html';
+                window.location.href = './auth.html';
                 return null;
             }
 

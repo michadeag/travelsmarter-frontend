@@ -2138,30 +2138,6 @@ async function saveEmailTemplate() {
     }
 }
 
-async function createSequence(name) {
-    try {
-        const response = await fetch(`${API_URL}/api/email-templates/sequences`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${getAuthToken()}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ name, description: '' })
-        });
-
-        if (response.ok) {
-            showAlert('Sequence created successfully', 'success');
-            loadEmailTemplates();
-        } else {
-            const error = await response.json();
-            showAlert(error.message || 'Failed to create sequence', 'error');
-        }
-    } catch (error) {
-        console.error('Error creating sequence:', error);
-        showAlert('Error creating sequence', 'error');
-    }
-}
-
 async function deleteSequence(sequenceId) {
     if (confirm('Are you sure you want to delete this sequence?')) {
         try {
@@ -2824,96 +2800,6 @@ async function loadTwitterRecentPosts() {
     } catch { el.innerHTML = '<p style="color:#ef4444">Error loading posts</p>'; }
 }
 
-// ─── REDDIT ──────────────────────────────────────────────────────────────────
-async function loadRedditStatus() {
-    const card = document.getElementById('reddit-status-card');
-    try {
-        const res = await fetch(`${API_URL}/api/reddit/status`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
-        const data = await res.json();
-        const s = data.status || {};
-        card.innerHTML = `<p><strong>Status:</strong> ${s.configured ? '✅ Configured' : '❌ Not configured — add credentials in Settings'}</p>
-            ${s.configured ? `<p><strong>Scheduler:</strong> ${s.schedulerRunning ? '▶ Running' : '⏹ Stopped'}</p><p><strong>Total Posts:</strong> ${s.totalPosts || 0}</p>` : ''}`;
-    } catch { card.innerHTML = '<p>❌ Could not reach backend</p>'; }
-}
-async function publishRedditPost() {
-    showAlert('Generating Reddit post...', 'success');
-    try {
-        const res = await fetch(`${API_URL}/api/reddit/post`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
-        const data = await res.json();
-        if (data.success) { showAlert(`✅ Posted to r/${data.subreddit}`, 'success'); loadRedditRecentPosts(); }
-        else showAlert(`❌ ${data.error || data.message}`, 'error');
-    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
-}
-async function startRedditScheduler() {
-    const res = await fetch(`${API_URL}/api/reddit/scheduler/start`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
-    const data = await res.json();
-    showAlert(data.success ? '▶ Reddit scheduler started' : `❌ ${data.error}`, data.success ? 'success' : 'error');
-    loadRedditStatus();
-}
-async function stopRedditScheduler() {
-    const res = await fetch(`${API_URL}/api/reddit/scheduler/stop`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
-    const data = await res.json();
-    showAlert(data.success ? '⏹ Reddit scheduler stopped' : `❌ ${data.error}`, data.success ? 'success' : 'error');
-    loadRedditStatus();
-}
-async function loadRedditRecentPosts() {
-    const el = document.getElementById('reddit-recent-posts');
-    try {
-        const res = await fetch(`${API_URL}/api/reddit/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
-        const data = await res.json();
-        if (!data.posts?.length) { el.innerHTML = '<p style="color:#6b7280">No posts yet.</p>'; return; }
-        el.innerHTML = data.posts.map(p => `<div style="padding:10px;border-bottom:1px solid #e5e7eb">
-            <strong>r/${p.subreddit}</strong> — ${p.title?.substring(0,80)}...<br>
-            <small style="color:#6b7280">${new Date(p.posted_at).toLocaleString()} ${p.reddit_url ? `| <a href="${p.reddit_url}" target="_blank">View</a>` : ''}</small>
-        </div>`).join('');
-    } catch { el.innerHTML = '<p style="color:#ef4444">Error loading posts</p>'; }
-}
-
-// ─── LINKEDIN ─────────────────────────────────────────────────────────────────
-async function loadLinkedInStatus() {
-    const card = document.getElementById('linkedin-status-card');
-    try {
-        const res = await fetch(`${API_URL}/api/linkedin/status`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
-        const data = await res.json();
-        const s = data.status || {};
-        card.innerHTML = `<p><strong>Status:</strong> ${s.configured ? '✅ Configured' : '❌ Not configured — add credentials in Settings'}</p>
-            ${s.configured ? `<p><strong>Scheduler:</strong> ${s.schedulerRunning ? '▶ Running' : '⏹ Stopped'}</p><p><strong>Total Posts:</strong> ${s.totalPosts || 0}</p>` : ''}`;
-    } catch { card.innerHTML = '<p>❌ Could not reach backend</p>'; }
-}
-async function publishLinkedInPost() {
-    showAlert('Generating LinkedIn post...', 'success');
-    try {
-        const res = await fetch(`${API_URL}/api/linkedin/post-article`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
-        const data = await res.json();
-        if (data.success) { showAlert('✅ Posted to LinkedIn!', 'success'); loadLinkedInRecentPosts(); }
-        else showAlert(`❌ ${data.error || data.message}`, 'error');
-    } catch (err) { showAlert('❌ Error: ' + err.message, 'error'); }
-}
-async function startLinkedInScheduler() {
-    const res = await fetch(`${API_URL}/api/linkedin/scheduler/start`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
-    const data = await res.json();
-    showAlert(data.success ? '▶ LinkedIn scheduler started' : `❌ ${data.error}`, data.success ? 'success' : 'error');
-    loadLinkedInStatus();
-}
-async function stopLinkedInScheduler() {
-    const res = await fetch(`${API_URL}/api/linkedin/scheduler/stop`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
-    const data = await res.json();
-    showAlert(data.success ? '⏹ LinkedIn scheduler stopped' : `❌ ${data.error}`, data.success ? 'success' : 'error');
-    loadLinkedInStatus();
-}
-async function loadLinkedInRecentPosts() {
-    const el = document.getElementById('linkedin-recent-posts');
-    try {
-        const res = await fetch(`${API_URL}/api/linkedin/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
-        const data = await res.json();
-        if (!data.posts?.length) { el.innerHTML = '<p style="color:#6b7280">No posts yet.</p>'; return; }
-        el.innerHTML = data.posts.map(p => `<div style="padding:10px;border-bottom:1px solid #e5e7eb">
-            <strong>LinkedIn</strong> — ${p.content?.substring(0,100)}...<br>
-            <small style="color:#6b7280">${new Date(p.posted_at).toLocaleString()} ${p.post_url ? `| <a href="${p.post_url}" target="_blank">View</a>` : ''}</small>
-        </div>`).join('');
-    } catch { el.innerHTML = '<p style="color:#ef4444">Error loading posts</p>'; }
-}
-
 // ─── PINTEREST ───────────────────────────────────────────────────────────────
 let _pinterestCurrentPin = null;
 
@@ -3099,33 +2985,6 @@ function copyIgField(id) {
     if (!el) return;
     navigator.clipboard.writeText(el.value || el.textContent);
     showAlert('📋 Kopiert!', 'success');
-}
-
-async function publishInstagramPost() {
-    if (!igCurrentDbId) { showAlert('Bitte zuerst einen Post generieren.', 'error'); return; }
-    const btn = document.getElementById('ig-publish-btn');
-    btn.disabled = true;
-    btn.textContent = '⏳ Wird gepostet...';
-    try {
-        const res = await fetch(`${API_URL}/api/instagram/publish`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ dbId: igCurrentDbId })
-        });
-        const data = await res.json();
-        if (data.success) {
-            showAlert('✅ Auf Instagram gepostet!', 'success');
-            document.getElementById('ig-posted-msg').style.display = 'inline';
-            loadIgRecentPosts();
-        } else {
-            showAlert(`❌ ${data.error}`, 'error');
-        }
-    } catch (err) {
-        showAlert('❌ Fehler: ' + err.message, 'error');
-    } finally {
-        btn.disabled = false;
-        btn.textContent = '🚀 Direkt auf Instagram posten';
-    }
 }
 
 async function markInstagramAsPosted() {
@@ -4228,7 +4087,10 @@ async function triggerHackDigest() {
     result.style.display = 'none';
 
     try {
-        const res = await fetch(`${API_URL}/api/admin/trigger-hack-digest`, { method: 'POST' });
+        const res = await fetch(`${API_URL}/api/admin/trigger-hack-digest`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
         const data = await res.json();
         if (data.success) {
             result.style.display = 'block';
