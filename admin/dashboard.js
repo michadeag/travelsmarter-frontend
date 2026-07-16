@@ -85,7 +85,7 @@ function switchTab(tabName) {
         'email-templates': 'Email Templates', broadcast: '📣 Broadcast Email', analytics: 'Analytics', settings: 'Settings',
         reddit: '🤖 Reddit', linkedin: '💼 LinkedIn', pinterest: '📌 Pinterest',
         instagram: '📸 Instagram', wordpress: '📝 WordPress', quora: '❓ Quora', blogger: '📰 Blogger', slideshare: '📊 SlideShare',
-        outreach: '📮 Outreach'
+        outreach: '📮 Outreach', twitter: '🐦 Twitter', youtube: '▶️ YouTube'
     };
     document.getElementById('page-title').textContent = titles[tabName] || tabName;
 

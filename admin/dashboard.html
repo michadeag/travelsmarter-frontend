@@ -580,6 +580,30 @@
             font-size: 1.1em;
             margin-top: 10px;
         }
+
+        /* Shared across the platform/outreach/broadcast panels — these three
+           exact inline styles used to be repeated verbatim 17/12/10 times. */
+        .field-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .panel-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .text-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -1008,11 +1032,11 @@
                         <h4 style="margin-bottom:16px;">1. Select Recipients</h4>
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
                             <div>
-                                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Subscribed after</label>
+                                <label class="field-label">Subscribed after</label>
                                 <input type="date" id="bc-after" style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;">
                             </div>
                             <div>
-                                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Subscribed before</label>
+                                <label class="field-label">Subscribed before</label>
                                 <input type="date" id="bc-before" style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;">
                             </div>
                         </div>
@@ -1032,8 +1056,8 @@
                     <div id="bc-preview-section" style="background:white;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,0.08);display:none;">
                         <h4 style="margin-bottom:16px;">3. Preview</h4>
                         <div style="margin-bottom:12px;">
-                            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Subject</label>
-                            <input type="text" id="bc-subject" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;">
+                            <label class="field-label">Subject</label>
+                            <input type="text" id="bc-subject" class="text-input">
                         </div>
                         <div style="border:1px solid #e5e7eb;border-radius:8px;padding:20px;background:#f9fafb;max-height:400px;overflow-y:auto;" id="bc-preview-html"></div>
                     </div>
@@ -1065,12 +1089,12 @@
 
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
                             <div>
-                                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Month <span style="color:#ef4444;">*</span></label>
-                                <input type="month" id="hg-month" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;">
+                                <label class="field-label">Month <span style="color:#ef4444;">*</span></label>
+                                <input type="month" id="hg-month" class="text-input">
                             </div>
                             <div>
-                                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Timing Score</label>
-                                <select id="hg-timing" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;">
+                                <label class="field-label">Timing Score</label>
+                                <select id="hg-timing" class="text-input">
                                     <option value="green">🟢 Go Now</option>
                                     <option value="yellow">🟡 12–18 months left</option>
                                     <option value="red">🔴 Getting crowded</option>
@@ -1080,53 +1104,53 @@
 
                         <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:16px;margin-bottom:16px;">
                             <div>
-                                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Destination <span style="color:#ef4444;">*</span></label>
-                                <input type="text" id="hg-destination" placeholder="e.g. Tbilisi" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;">
+                                <label class="field-label">Destination <span style="color:#ef4444;">*</span></label>
+                                <input type="text" id="hg-destination" placeholder="e.g. Tbilisi" class="text-input">
                             </div>
                             <div>
-                                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Country <span style="color:#ef4444;">*</span></label>
-                                <input type="text" id="hg-country" placeholder="e.g. Georgia" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;">
+                                <label class="field-label">Country <span style="color:#ef4444;">*</span></label>
+                                <input type="text" id="hg-country" placeholder="e.g. Georgia" class="text-input">
                             </div>
                             <div>
-                                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Flag Emoji</label>
-                                <input type="text" id="hg-flag" placeholder="🇬🇪" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;">
+                                <label class="field-label">Flag Emoji</label>
+                                <input type="text" id="hg-flag" placeholder="🇬🇪" class="text-input">
                             </div>
                         </div>
 
                         <div style="margin-bottom:16px;">
-                            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Tagline</label>
-                            <input type="text" id="hg-tagline" placeholder="e.g. Europe's most underrated city — ancient, affordable, and about to blow up." style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;">
+                            <label class="field-label">Tagline</label>
+                            <input type="text" id="hg-tagline" placeholder="e.g. Europe's most underrated city — ancient, affordable, and about to blow up." class="text-input">
                         </div>
 
                         <div style="margin-bottom:16px;">
-                            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Description</label>
+                            <label class="field-label">Description</label>
                             <textarea id="hg-description" rows="4" placeholder="2–3 sentences describing why this destination is special." style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;resize:vertical;"></textarea>
                         </div>
 
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
                             <div>
-                                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Best Time to Visit</label>
-                                <input type="text" id="hg-best-time" placeholder="e.g. April–June, September–October" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;">
+                                <label class="field-label">Best Time to Visit</label>
+                                <input type="text" id="hg-best-time" placeholder="e.g. April–June, September–October" class="text-input">
                             </div>
                             <div>
-                                <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Daily Budget</label>
-                                <input type="text" id="hg-budget" placeholder="e.g. $35–55 all-in" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;">
+                                <label class="field-label">Daily Budget</label>
+                                <input type="text" id="hg-budget" placeholder="e.g. $35–55 all-in" class="text-input">
                             </div>
                         </div>
 
                         <div style="margin-bottom:16px;">
-                            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Why Now</label>
+                            <label class="field-label">Why Now</label>
                             <textarea id="hg-why-now" rows="2" placeholder="What makes this the right moment to go?" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;resize:vertical;"></textarea>
                         </div>
 
                         <div style="margin-bottom:16px;">
-                            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Flight Tip</label>
+                            <label class="field-label">Flight Tip</label>
                             <textarea id="hg-flight-tip" rows="2" placeholder="e.g. Fly into Kutaisi (not Tbilisi) via Wizz Air from Vienna — often under €60 return." style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;resize:vertical;"></textarea>
                         </div>
 
                         <div style="margin-bottom:24px;">
-                            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Image URL (optional)</label>
-                            <input type="url" id="hg-image" placeholder="https://..." style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;">
+                            <label class="field-label">Image URL (optional)</label>
+                            <input type="url" id="hg-image" placeholder="https://..." class="text-input">
                         </div>
 
                         <button onclick="saveHiddenGem()" style="background:#667eea;color:white;border:none;padding:12px 32px;border-radius:8px;cursor:pointer;font-size:15px;font-weight:600;width:100%;">
@@ -1437,7 +1461,7 @@
                 <h3 style="margin-bottom:6px;">📌 Pinterest Copy-Paste Workflow</h3>
                 <p style="color:#6b7280;margin-bottom:24px;font-size:14px;">Claude generiert Pin + Bild → du postest manuell auf Pinterest → hier als gepostet markieren</p>
 
-                <div id="pinterest-status-card" style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                <div id="pinterest-status-card" class="panel-card">
                     <p style="color:#6b7280;">Wird geladen...</p>
                 </div>
 
@@ -1671,11 +1695,11 @@
                 <h3 style="margin-bottom:6px;">📝 WordPress Auto-Publishing</h3>
                 <p style="color:#6b7280;margin-bottom:24px;font-size:14px;">Vollautomatisch — Claude generiert Artikel und postet direkt auf deine WordPress-Seite</p>
 
-                <div id="wordpress-status-card" style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                <div id="wordpress-status-card" class="panel-card">
                     <p style="color:#6b7280;">Wird geladen...</p>
                 </div>
 
-                <div style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                <div class="panel-card">
                     <h4 style="margin-bottom:14px;">🔧 Verbindung testen</h4>
                     <button onclick="testWordPressConnection()" style="background:#21759b;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:600;">
                         🔗 Verbindung testen
@@ -1683,7 +1707,7 @@
                     <div id="wordpress-test-result" style="margin-top:10px;font-size:13px;"></div>
                 </div>
 
-                <div style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                <div class="panel-card">
                     <h4 style="margin-bottom:14px;">✍️ Manuell veröffentlichen</h4>
                     <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
                         <button onclick="publishWordPressPost()" id="wp-publish-btn"
@@ -1697,7 +1721,7 @@
                     <div id="wp-publish-result" style="margin-top:12px;font-size:13px;"></div>
                 </div>
 
-                <div style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                <div class="panel-card">
                     <h4 style="margin-bottom:8px;">⏰ Auto-Scheduler</h4>
                     <p style="color:#6b7280;font-size:13px;margin-bottom:12px;">Postet automatisch alle 2 Tage um 10:00 Uhr UTC</p>
                     <button onclick="startWordPressScheduler()" style="background:#16a34a;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:600;">▶ Scheduler starten</button>
@@ -1715,7 +1739,7 @@
                 <h3 style="margin-bottom:6px;">❓ Quora Copy-Paste Workflow</h3>
                 <p style="color:#6b7280;margin-bottom:24px;font-size:14px;">Claude generiert Frage + Antwort → du postest manuell auf Quora → hier als gepostet markieren</p>
 
-                <div id="quora-status-card" style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                <div id="quora-status-card" class="panel-card">
                     <p style="color:#6b7280;">Wird geladen...</p>
                 </div>
 
@@ -1804,7 +1828,7 @@
                 <h3 style="margin-bottom:6px;">📊 SlideShare via Gamma</h3>
                 <p style="color:#6b7280;margin-bottom:24px;font-size:14px;">Claude generiert Gamma-Prompt + SlideShare-Metadaten → Gamma erstellt Präsentation → PDF exportieren → auf SlideShare hochladen</p>
 
-                <div id="slideshare-status-card" style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                <div id="slideshare-status-card" class="panel-card">
                     <p style="color:#6b7280;">Wird geladen...</p>
                 </div>
 
@@ -1971,11 +1995,11 @@
                 <h3 style="margin-bottom:6px;">📰 Blogger Auto-Publishing</h3>
                 <p style="color:#6b7280;margin-bottom:24px;font-size:14px;">Vollautomatisch — Claude generiert Artikel + Bild und postet direkt auf deinen Blogger Blog</p>
 
-                <div id="blogger-status-card" style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                <div id="blogger-status-card" class="panel-card">
                     <p style="color:#6b7280;">Wird geladen...</p>
                 </div>
 
-                <div style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                <div class="panel-card">
                     <h4 style="margin-bottom:10px;">🔗 Google Account verbinden</h4>
                     <p style="color:#6b7280;font-size:13px;margin-bottom:12px;">Google Client ID & Secret in Settings speichern, dann hier verbinden.</p>
                     <button onclick="connectBlogger()" style="background:#4285f4;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:600;">
@@ -1984,13 +2008,13 @@
                     <div id="blogger-connect-status" style="margin-top:8px;font-size:13px;"></div>
                 </div>
 
-                <div style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                <div class="panel-card">
                     <h4 style="margin-bottom:10px;">📋 Blog auswählen</h4>
                     <button onclick="loadBloggerBlogs()" style="background:#e5e7eb;color:#374151;border:none;padding:9px 18px;border-radius:6px;cursor:pointer;font-weight:600;">🔄 Meine Blogs laden</button>
                     <div id="blogger-blogs" style="margin-top:10px;"></div>
                 </div>
 
-                <div style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                <div class="panel-card">
                     <h4 style="margin-bottom:14px;">✍️ Manuell veröffentlichen</h4>
                     <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
                         <button onclick="publishBloggerPost()" id="blogger-publish-btn"
@@ -2004,7 +2028,7 @@
                     <div id="blogger-publish-result" style="margin-top:12px;font-size:13px;"></div>
                 </div>
 
-                <div style="background:white;padding:20px;border-radius:12px;margin-bottom:20px;">
+                <div class="panel-card">
                     <h4 style="margin-bottom:8px;">⏰ Auto-Scheduler</h4>
                     <p style="color:#6b7280;font-size:13px;margin-bottom:12px;">Postet automatisch alle 2 Tage um 11:00 Uhr UTC</p>
                     <button onclick="startBloggerScheduler()" style="background:#16a34a;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:600;">▶ Scheduler starten</button>
@@ -2183,11 +2207,11 @@
                     <h4 style="margin-bottom:8px;">✉️ Kampagne senden</h4>
                     <p id="outreach-selected-count" style="color:#6b7280;font-size:13px;margin-bottom:12px;">0 Prospects ausgewählt (nur mit hinterlegter Email zählbar)</p>
                     <div style="margin-bottom:12px;">
-                        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Betreff</label>
+                        <label class="field-label">Betreff</label>
                         <input type="text" id="outreach-subject" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;" placeholder="z.B. Partnerschaft mit TravelSmarter?">
                     </div>
                     <div style="margin-bottom:8px;">
-                        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Nachricht (HTML) — Platzhalter: {name}, {channelType}, {url}</label>
+                        <label class="field-label">Nachricht (HTML) — Platzhalter: {name}, {channelType}, {url}</label>
                         <textarea id="outreach-body" style="width:100%;min-height:180px;padding:12px;border:1px solid #e5e7eb;border-radius:8px;font-family:inherit;" placeholder="Hi {name}, ..."></textarea>
                     </div>
                     <button class="btn btn-primary" onclick="sendOutreachCampaign()" id="outreach-send-btn">📮 An ausgewählte senden</button>
