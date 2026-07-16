@@ -407,8 +407,8 @@
 
                 // Social proof stats
                 const usageCount = hack.usage_count || 0;
-                const avgSavings = hack.avg_savings_euros || 0;
-                const successRate = hack.success_rate || 0;
+                const avgSavings = parseFloat(hack.avg_savings_euros) || 0;
+                const successRate = parseFloat(hack.success_rate) || 0;
 
                 const socialProof = `
                     <div style="
