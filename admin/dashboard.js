@@ -13,8 +13,11 @@ console.log('Admin Dashboard using API:', API_URL);
 
 // Helper function to get current auth token
 function getAuthToken() {
-    // Admin dashboard: always prefer adminToken over userToken
-    return localStorage.getItem('adminToken') || localStorage.getItem('userToken');
+    // Admin dashboard: always prefer adminToken over userToken. Checks
+    // sessionStorage too — that's where a non-"remember me" login puts it,
+    // so it's gone once the browser tab/window closes.
+    return localStorage.getItem('adminToken') || sessionStorage.getItem('adminToken')
+        || localStorage.getItem('userToken') || sessionStorage.getItem('userToken');
 }
 
 // Deprecated: Use getAuthToken() instead
@@ -771,7 +774,7 @@ async function loadSubscriptionStats() {
 // USERS MANAGEMENT
 async function loadUsers() {
     try {
-        const token = localStorage.getItem('userToken') || localStorage.getItem('adminToken');
+        const token = getAuthToken();
         if (!token) {
             console.error('No authentication token found');
             return;
@@ -1853,6 +1856,10 @@ function logout() {
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminName');
     localStorage.removeItem('apiUrl');
+    localStorage.removeItem('userToken');
+    sessionStorage.removeItem('adminToken');
+    sessionStorage.removeItem('adminName');
+    sessionStorage.removeItem('userToken');
     redirectToLogin();
 }
 

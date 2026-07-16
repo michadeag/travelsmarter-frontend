@@ -332,7 +332,7 @@
                 const response = await fetch(`${API_URL}/api/admin-auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ email, password, remember })
                 });
 
                 const data = await response.json();
@@ -343,14 +343,21 @@
                 }
 
                 const token = data.token;
-                localStorage.setItem('adminToken', token);
-                localStorage.setItem('userToken', token);
-                localStorage.setItem('adminName', data.admin?.firstName || data.admin?.email || 'Admin');
-                localStorage.setItem('apiUrl', API_URL);
+                const adminName = data.admin?.firstName || data.admin?.email || 'Admin';
 
-                if (remember) {
-                    localStorage.setItem('rememberMe', 'true');
-                }
+                // Remember me → localStorage (survives closing the browser).
+                // Otherwise → sessionStorage (cleared when the tab/window
+                // closes), and clear out anything left over from a previous
+                // remembered login so it can't linger past this session.
+                const store = remember ? localStorage : sessionStorage;
+                const other = remember ? sessionStorage : localStorage;
+                store.setItem('adminToken', token);
+                store.setItem('userToken', token);
+                store.setItem('adminName', adminName);
+                store.setItem('apiUrl', API_URL);
+                other.removeItem('adminToken');
+                other.removeItem('userToken');
+                other.removeItem('adminName');
 
                 showAlert('Login successful! Redirecting...', 'success');
 
@@ -398,7 +405,7 @@
         }
 
         // Check if already logged in
-        if (localStorage.getItem('adminToken')) {
+        if (localStorage.getItem('adminToken') || sessionStorage.getItem('adminToken')) {
             window.location.href = 'dashboard.html';
         }
 
