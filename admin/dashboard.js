@@ -3723,7 +3723,7 @@ async function getLinkedInAuthUrl() {
     try {
         const res = await fetch(`${API_URL}/api/linkedin/auth-url`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error);
+        if (!data.success) throw new Error(data.error || data.message || 'Unbekannter Fehler');
         const popup = window.open(data.url, 'LinkedIn Auth', 'width=600,height=700');
         const status = document.getElementById('linkedin-auth-status');
         status.textContent = '⏳ Warte auf Autorisierung...';
@@ -3740,7 +3740,7 @@ async function fetchLinkedInUrn() {
     try {
         const res = await fetch(`${API_URL}/api/linkedin/fetch-urn`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error);
+        if (!data.success) throw new Error(data.error || data.message || 'Unbekannter Fehler');
         document.getElementById('linkedin-person-urn').value = data.personUrn;
         showAlert(`✅ Person URN: ${data.personUrn} — bitte Save All Settings klicken.`, 'success');
     } catch (e) { alert('Fehler: ' + e.message); }
@@ -3751,7 +3751,7 @@ async function getPinterestAuthUrl() {
     try {
         const res = await fetch(`${API_URL}/api/pinterest/auth-url`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error);
+        if (!data.success) throw new Error(data.error || data.message || 'Unbekannter Fehler');
         const popup = window.open(data.url, 'Pinterest Auth', 'width=600,height=700');
         const status = document.getElementById('pinterest-auth-status');
         status.textContent = '⏳ Warte auf Autorisierung...';
@@ -3770,7 +3770,7 @@ async function loadPinterestBoards() {
     try {
         const res = await fetch(`${API_URL}/api/pinterest/boards`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error);
+        if (!data.success) throw new Error(data.error || data.message || 'Unbekannter Fehler');
         el.innerHTML = data.boards.map(b => `
             <div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #f0f0f0;">
                 <span style="flex:1;font-size:13px;">${b.name}</span>
@@ -3817,7 +3817,7 @@ async function generateMediumArticle() {
             body: JSON.stringify({ topicIndex: topicIdx !== '' ? parseInt(topicIdx) : null })
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error);
+        if (!data.success) throw new Error(data.error || data.message || 'Unbekannter Fehler');
         mediumCurrentArticle = data;
         document.getElementById('medium-title-text').textContent = data.title;
         document.getElementById('medium-tags-text').textContent = data.tags?.join(', ') || '';
@@ -3853,7 +3853,7 @@ async function markMediumAsPosted() {
             })
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error);
+        if (!data.success) throw new Error(data.error || data.message || 'Unbekannter Fehler');
         showAlert('✅ Artikel als gepostet markiert!', 'success');
         document.getElementById('medium-posted-url').value = '';
         document.getElementById('medium-generator-result').style.display = 'none';
@@ -3918,7 +3918,7 @@ async function generateLinkedInPost() {
             body: JSON.stringify({ topicIndex: topicIdx !== '' ? parseInt(topicIdx) : null })
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error);
+        if (!data.success) throw new Error(data.error || data.message || 'Unbekannter Fehler');
         linkedInCurrentPost = data;
         document.getElementById('linkedin-post-text').value = data.text;
         result.style.display = 'block';
@@ -3944,7 +3944,7 @@ async function markLinkedInAsPosted() {
             })
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error);
+        if (!data.success) throw new Error(data.error || data.message || 'Unbekannter Fehler');
         showAlert('✅ Post als gepostet markiert!', 'success');
         document.getElementById('linkedin-posted-url').value = '';
         document.getElementById('linkedin-generator-result').style.display = 'none';
@@ -4009,7 +4009,7 @@ async function generateRedditPost() {
             body: JSON.stringify({ topicIndex: topicIdx !== '' ? parseInt(topicIdx) : null })
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error);
+        if (!data.success) throw new Error(data.error || data.message || 'Unbekannter Fehler');
         redditCurrentPost = data;
 
         const [primary, ...alts] = data.subreddits || ['travel'];
@@ -4045,7 +4045,7 @@ async function markRedditAsPosted() {
             })
         });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error);
+        if (!data.success) throw new Error(data.error || data.message || 'Unbekannter Fehler');
         showAlert('✅ Post als gepostet markiert!', 'success');
         document.getElementById('reddit-posted-url').value = '';
         document.getElementById('reddit-generator-result').style.display = 'none';
