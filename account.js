@@ -84,7 +84,12 @@ async function loadSubscription() {
         badge.textContent = tierDisplay;
         badge.className = `subscription-badge ${tierBadges[subscription.tier]}`;
 
-        document.getElementById('subscription-status').textContent = subscription.status === 'active' ? 'Active' : 'Inactive';
+        const isActive = subscription.status === 'active';
+        if (isActive && subscription.cancelAtPeriodEnd) {
+            document.getElementById('subscription-status').textContent = `Cancels on ${subscription.currentPeriodEnd ? formatDate(subscription.currentPeriodEnd) : 'period end'}`;
+        } else {
+            document.getElementById('subscription-status').textContent = isActive ? 'Active' : 'Inactive';
+        }
         document.getElementById('subscription-next-billing').textContent = subscription.currentPeriodEnd ? formatDate(subscription.currentPeriodEnd) : 'N/A';
 
         document.getElementById('subscription-loading').style.display = 'none';
