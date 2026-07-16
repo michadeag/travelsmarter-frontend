@@ -444,6 +444,32 @@
         ? 'http://localhost:5000'
         : 'https://api.travelsmarterapp.com';
 
+    // Referral partner attribution — same last-click, 60-day logic as
+    // api-service.js, duplicated here since this page doesn't load that
+    // script. Uses the same localStorage key so attribution still works
+    // even if the visitor later lands on a page that does use api-service.js.
+    (function captureReferralCode() {
+        const code = new URLSearchParams(window.location.search).get('ref');
+        if (code) {
+            localStorage.setItem('ts_referral', JSON.stringify({ code, capturedAt: Date.now() }));
+        }
+    })();
+
+    function getReferralCode() {
+        try {
+            const stored = JSON.parse(localStorage.getItem('ts_referral') || 'null');
+            if (!stored) return null;
+            const sixtyDaysMs = 60 * 24 * 60 * 60 * 1000;
+            if (Date.now() - stored.capturedAt > sixtyDaysMs) {
+                localStorage.removeItem('ts_referral');
+                return null;
+            }
+            return stored.code;
+        } catch {
+            return null;
+        }
+    }
+
     async function handleSignup(e) {
         e.preventDefault();
         const form = e.target;
@@ -460,7 +486,7 @@
             const res = await fetch(`${API_URL}/api/auth/signup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password: tempPassword, firstName, lastName: '' })
+                body: JSON.stringify({ email, password: tempPassword, firstName, lastName: '', referralCode: getReferralCode() })
             });
             const data = await res.json();
 
