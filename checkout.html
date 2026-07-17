@@ -836,7 +836,7 @@
             try {
                 // Get form data
                 const selectedPlan = document.querySelector('input[name="plan"]:checked').value;
-                const userToken = localStorage.getItem('userToken');
+                let userToken = localStorage.getItem('userToken');
 
                 console.log('Selected plan:', selectedPlan);
                 console.log('User token:', userToken ? 'present' : 'missing');
@@ -853,20 +853,43 @@
                     }]
                 });
 
-                // Not logged in yet (e.g. arrived straight from a referral/sales
-                // link) — send them to sign up first, then bounce back here.
-                if (!userToken) {
-                    const redirectTarget = encodeURIComponent(`checkout.html?tier=${selectedPlan}`);
-                    window.location.href = `welcome.html?redirect=${redirectTarget}`;
-                    return;
-                }
-
                 // Determine backend URL
                 let backendUrl;
                 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
                     backendUrl = 'http://localhost:5000';
                 } else {
                     backendUrl = 'https://api.travelsmarterapp.com';
+                }
+
+                // Not logged in yet (e.g. arrived straight from a referral/sales
+                // link) — create the account right here from the contact info
+                // already filled in above, instead of sending them elsewhere
+                // to re-type it.
+                if (!userToken) {
+                    const firstName = document.getElementById('firstName').value.trim();
+                    const lastName = document.getElementById('lastName').value.trim();
+                    const email = document.getElementById('email').value.trim();
+                    const tempPassword = Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-4).toUpperCase();
+
+                    const signupResponse = await fetch(`${backendUrl}/api/auth/signup`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password: tempPassword, firstName, lastName })
+                    });
+                    const signupData = await signupResponse.json();
+
+                    if (signupData.success && signupData.token) {
+                        userToken = signupData.token;
+                        localStorage.setItem('userToken', userToken);
+                        if (signupData.user) localStorage.setItem('userData', JSON.stringify(signupData.user));
+                    } else if (signupData.message && signupData.message.toLowerCase().includes('already')) {
+                        document.getElementById('card-errors').innerHTML = 'That email already has an account. <a href="auth.html">Log in here</a>, then come back to complete your upgrade.';
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('payButton').disabled = false;
+                        return;
+                    } else {
+                        throw new Error(signupData.message || 'Could not create your account');
+                    }
                 }
 
                 // Send to backend to create Stripe checkout session

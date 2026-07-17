@@ -798,8 +798,6 @@
         const firstName = form.querySelector('[name="firstName"]').value.trim();
         const email = form.querySelector('[name="email"]').value.trim();
         const btn = document.getElementById(btnId);
-        const redirectTarget = new URLSearchParams(window.location.search).get('redirect');
-        const nextUrl = redirectTarget ? decodeURIComponent(redirectTarget) : 'index.html';
 
         btn.disabled = true;
         btn.textContent = 'Creating your account…';
@@ -822,16 +820,16 @@
                         <div class="success-box">
                             <h3>✓ You're in, ${firstName}!</h3>
                             <p>Your free account is ready.<br><br>
-                            ${redirectTarget ? 'Taking you back to checkout now…' : 'Taking you to your 20 free hacks now…'}</p>
+                            Taking you to your 20 free hacks now…</p>
                         </div>`;
                 } else {
                     form.innerHTML = `
                         <div class="success-box" style="color:white;">
                             <h3 style="color:#10b981;">✓ You're in, ${firstName}!</h3>
-                            <p style="color:rgba(255,255,255,0.8);">${redirectTarget ? 'Taking you back to checkout now…' : 'Your 20 free hacks are ready.'}</p>
+                            <p style="color:rgba(255,255,255,0.8);">Your 20 free hacks are ready.</p>
                         </div>`;
                 }
-                setTimeout(() => { window.location.href = nextUrl; }, 2500);
+                setTimeout(() => { window.location.href = 'index.html'; }, 2500);
             } else if (data.message && data.message.toLowerCase().includes('already')) {
                 btn.disabled = false;
                 btn.textContent = 'Get My Free Hacks →';
