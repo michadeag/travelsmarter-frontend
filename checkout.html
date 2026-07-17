@@ -853,11 +853,11 @@
                     }]
                 });
 
-                // Validate user is logged in
+                // Not logged in yet (e.g. arrived straight from a referral/sales
+                // link) — send them to sign up first, then bounce back here.
                 if (!userToken) {
-                    document.getElementById('card-errors').textContent = 'Please log in to complete your purchase';
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('payButton').disabled = false;
+                    const redirectTarget = encodeURIComponent(`checkout.html?tier=${selectedPlan}`);
+                    window.location.href = `welcome.html?redirect=${redirectTarget}`;
                     return;
                 }
 
