@@ -642,6 +642,24 @@
         // The backend creates a checkout session and we redirect to Stripe's page
         // This means we don't need to initialize Stripe on the frontend
 
+        // Referral partner attribution — same read-only logic as
+        // api-service.js, duplicated here since this page doesn't load that
+        // script.
+        function getReferralCode() {
+            try {
+                const stored = JSON.parse(localStorage.getItem('ts_referral') || 'null');
+                if (!stored) return null;
+                const sixtyDaysMs = 60 * 24 * 60 * 60 * 1000;
+                if (Date.now() - stored.capturedAt > sixtyDaysMs) {
+                    localStorage.removeItem('ts_referral');
+                    return null;
+                }
+                return stored.code;
+            } catch {
+                return null;
+            }
+        }
+
         // Plan Selection
         function selectPlan(planType) {
             const options = document.querySelectorAll('.plan-option');
@@ -874,7 +892,7 @@
                     const signupResponse = await fetch(`${backendUrl}/api/auth/signup`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email, password: tempPassword, firstName, lastName })
+                        body: JSON.stringify({ email, password: tempPassword, firstName, lastName, referralCode: getReferralCode() })
                     });
                     const signupData = await signupResponse.json();
 

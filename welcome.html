@@ -808,7 +808,7 @@
             const res = await fetch(`${API_URL}/api/auth/signup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password: tempPassword, firstName, lastName: '' })
+                body: JSON.stringify({ email, password: tempPassword, firstName, lastName: '', referralCode: api.getReferralCode() })
             });
             const data = await res.json();
 
