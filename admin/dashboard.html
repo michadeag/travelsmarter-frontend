@@ -636,6 +636,7 @@
                 <a class="nav-link" data-tab="medium">✍️ Medium</a>
                 <a class="nav-link" data-tab="youtube">▶️ YouTube</a>
                 <a class="nav-link" data-tab="outreach">📮 Outreach</a>
+                <a class="nav-link" data-tab="social-media">📱 Social Media</a>
                 <a class="nav-link" data-tab="settings">⚙️ Settings</a>
             </nav>
         </div>
@@ -2230,6 +2231,108 @@
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+
+            <div id="social-media" class="tab-content">
+                <h3 style="margin-bottom: 8px;">📱 Social Media</h3>
+                <p style="color:#6b7280;margin-bottom:20px;">Einen Post einmal schreiben, automatisch pro Plattform passend umformulieren lassen (KI), und sofort oder zeitversetzt auf mehreren Plattformen gleichzeitig veröffentlichen.</p>
+
+                <div style="background:white;border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+                        <h4 style="margin:0;">Verbundene Accounts</h4>
+                        <button class="btn btn-primary" onclick="openAddSocialAccountModal()">+ Account verbinden</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr><th>Plattform</th><th>Name</th><th>Status</th><th>Aktionen</th></tr>
+                            </thead>
+                            <tbody id="social-accounts-table">
+                                <tr><td colspan="4" style="text-align:center;padding:20px;">Lädt...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p style="font-size:12px;color:#9ca3af;margin-top:8px;">Ohne verbundenen Account kann auf dieser Plattform nicht veröffentlicht werden — Zugangsdaten kommen aus dem jeweiligen Entwickler-Portal der Plattform.</p>
+                </div>
+
+                <div style="background:white;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+                    <h4 style="margin-bottom:12px;">✍️ Post erstellen</h4>
+                    <div style="margin-bottom:12px;">
+                        <label class="field-label">Titel (optional)</label>
+                        <input type="text" id="social-post-title" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;" placeholder="z.B. Neuer Credit-Card-Hack">
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <label class="field-label">Inhalt</label>
+                        <textarea id="social-post-content" style="width:100%;min-height:120px;padding:12px;border:1px solid #e5e7eb;border-radius:8px;font-family:inherit;" placeholder="Der Basisinhalt — wird pro Plattform automatisch angepasst..."></textarea>
+                    </div>
+                    <div style="margin-bottom:16px;">
+                        <label class="field-label">Bild-URL (Pflicht für Pinterest &amp; Instagram)</label>
+                        <input type="text" id="social-post-image" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;" placeholder="https://...">
+                    </div>
+                    <div style="margin-bottom:16px;">
+                        <label class="field-label" style="display:block;margin-bottom:8px;">Plattformen</label>
+                        <label style="margin-right:16px;"><input type="checkbox" class="social-platform-checkbox" value="twitter" checked> 🐦 Twitter</label>
+                        <label style="margin-right:16px;"><input type="checkbox" class="social-platform-checkbox" value="reddit"> 🤖 Reddit</label>
+                        <label style="margin-right:16px;"><input type="checkbox" class="social-platform-checkbox" value="pinterest"> 📌 Pinterest</label>
+                        <label style="margin-right:16px;"><input type="checkbox" class="social-platform-checkbox" value="instagram"> 📸 Instagram</label>
+                        <label><input type="checkbox" class="social-platform-checkbox" value="linkedin"> 💼 LinkedIn</label>
+                    </div>
+                    <button class="btn btn-secondary" onclick="generateSocialPostPreview()" id="social-generate-btn">✨ Vorschau generieren (KI)</button>
+                    <div id="social-preview-container" style="margin-top:16px;display:none;"></div>
+
+                    <div id="social-publish-section" style="margin-top:20px;padding-top:20px;border-top:1px solid #e5e7eb;display:none;">
+                        <label class="field-label">Veröffentlichungszeitpunkt (leer = sofort)</label>
+                        <input type="datetime-local" id="social-scheduled-at" style="padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:12px;">
+                        <br>
+                        <button class="btn btn-primary" onclick="publishSocialPost()" id="social-publish-btn">🚀 Veröffentlichen / Planen</button>
+                        <div id="social-publish-result" style="margin-top:12px;"></div>
+                    </div>
+                </div>
+
+                <div style="background:white;border-radius:12px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                        <h4 style="margin:0;">Verlauf</h4>
+                        <button class="btn btn-secondary" onclick="loadSocialHistory()" style="padding:6px 12px;font-size:13px;">🔄 Aktualisieren</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr><th>Plattform</th><th>Inhalt</th><th>Status</th><th>Zeitpunkt</th></tr>
+                            </thead>
+                            <tbody id="social-history-table">
+                                <tr><td colspan="4" style="text-align:center;padding:20px;">Lädt...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SOCIAL MEDIA: Add Account Modal -->
+            <div id="social-account-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Account verbinden</h2>
+                        <button class="close-modal" onclick="closeAddSocialAccountModal()">✕</button>
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <label class="field-label">Plattform</label>
+                        <select id="social-account-platform" onchange="renderSocialAccountFields()" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;">
+                            <option value="twitter">🐦 Twitter</option>
+                            <option value="reddit">🤖 Reddit</option>
+                            <option value="pinterest">📌 Pinterest</option>
+                            <option value="instagram">📸 Instagram</option>
+                            <option value="linkedin">💼 LinkedIn</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <label class="field-label">Anzeigename (frei wählbar)</label>
+                        <input type="text" id="social-account-name" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;" placeholder="z.B. TravelSmarter Hauptaccount">
+                    </div>
+                    <div id="social-account-fields"></div>
+                    <div id="social-account-modal-result" style="margin:8px 0;"></div>
+                    <button class="btn btn-primary" onclick="submitAddSocialAccount()" id="social-account-submit-btn">Verbinden</button>
+                    <button class="btn btn-secondary" onclick="closeAddSocialAccountModal()">Abbrechen</button>
                 </div>
             </div>
 

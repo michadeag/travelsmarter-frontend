@@ -88,7 +88,7 @@ function switchTab(tabName) {
         'email-templates': 'Email Templates', broadcast: '📣 Broadcast Email', analytics: 'Analytics', settings: 'Settings',
         reddit: '🤖 Reddit', linkedin: '💼 LinkedIn', pinterest: '📌 Pinterest',
         instagram: '📸 Instagram', wordpress: '📝 WordPress', quora: '❓ Quora', blogger: '📰 Blogger', slideshare: '📊 SlideShare',
-        outreach: '📮 Outreach', twitter: '🐦 Twitter', youtube: '▶️ YouTube',
+        outreach: '📮 Outreach', 'social-media': '📱 Social Media', twitter: '🐦 Twitter', youtube: '▶️ YouTube',
         'hidden-gem': '🗺️ Hidden Gem', 'partner-deals': '🤝 Partner Deals', medium: '✍️ Medium'
     };
     document.getElementById('page-title').textContent = titles[tabName] || tabName;
@@ -109,6 +109,7 @@ function switchTab(tabName) {
     if (tabName === 'broadcast') { initBroadcastTab(); }
     if (tabName === 'hidden-gem') { initHiddenGemTab(); }
     if (tabName === 'outreach') { initOutreachTab(); }
+    if (tabName === 'social-media') { initSocialMediaTab(); }
 }
 
 // ─── BROADCAST ────────────────────────────────────────────────────────────────
@@ -4191,4 +4192,317 @@ async function deletePartnerDeal(id) {
     await fetch(`${API_URL}/api/partner-deals/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
     showAlert('✅ Deal gelöscht.', 'success');
     loadPartnerDeals();
+}
+
+// ─── SOCIAL MEDIA ───────────────────────────────────────────────────────────
+
+// Mirrors each adapter's getConfig() in the backend — used client-side only
+// to show a live character count against the limit in the preview.
+const SOCIAL_PLATFORM_LIMITS = {
+    twitter: 280, reddit: 40000, pinterest: 500, instagram: 2200, linkedin: 1300
+};
+const SOCIAL_PLATFORM_LABELS = {
+    twitter: '🐦 Twitter', reddit: '🤖 Reddit', pinterest: '📌 Pinterest', instagram: '📸 Instagram', linkedin: '💼 LinkedIn'
+};
+
+let currentSocialPostId = null;
+let currentSocialPlatforms = [];
+
+async function initSocialMediaTab() {
+    await loadSocialAccounts();
+    await loadSocialHistory();
+}
+
+function getSelectedSocialPlatforms() {
+    return Array.from(document.querySelectorAll('.social-platform-checkbox:checked')).map(cb => cb.value);
+}
+
+// ── Connected accounts ──
+
+async function loadSocialAccounts() {
+    try {
+        const res = await fetch(`${API_URL}/api/social-media/accounts`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const data = await res.json();
+        const tbody = document.getElementById('social-accounts-table');
+        if (!data.success || !data.accounts || data.accounts.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:20px;color:#9ca3af;">Noch kein Account verbunden</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = data.accounts.map(a => `
+            <tr>
+                <td>${SOCIAL_PLATFORM_LABELS[a.platform] || a.platform}</td>
+                <td>${a.account_name}</td>
+                <td>${a.is_active ? '<span style="color:#10b981;font-weight:600;">✓ Aktiv</span>' : '<span style="color:#9ca3af;">Deaktiviert</span>'}</td>
+                <td><a href="#" onclick="removeSocialAccount('${a.id}');return false;" style="color:#ef4444;">Entfernen</a></td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        document.getElementById('social-accounts-table').innerHTML = `<tr><td colspan="4" style="color:red;text-align:center;padding:20px;">Fehler: ${err.message}</td></tr>`;
+    }
+}
+
+async function removeSocialAccount(id) {
+    if (!confirm('Diesen Account wirklich entfernen?')) return;
+    try {
+        const res = await fetch(`${API_URL}/api/social-media/accounts/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+            showAlert('✅ Account entfernt.', 'success');
+            loadSocialAccounts();
+        } else {
+            showAlert(data.error || data.message || 'Fehler beim Entfernen', 'error');
+        }
+    } catch (err) {
+        showAlert('Fehler: ' + err.message, 'error');
+    }
+}
+
+function openAddSocialAccountModal() {
+    document.getElementById('social-account-name').value = '';
+    document.getElementById('social-account-modal-result').innerHTML = '';
+    renderSocialAccountFields();
+    document.getElementById('social-account-modal').classList.add('active');
+}
+
+function closeAddSocialAccountModal() {
+    document.getElementById('social-account-modal').classList.remove('active');
+}
+
+// Each platform's adapter expects different credential fields (see
+// services/socialMedia/adapters/*.js authenticate()) — this renders the
+// right form fields for whichever platform is selected.
+const SOCIAL_ACCOUNT_FIELD_SPECS = {
+    twitter: [
+        { key: 'apiKey', label: 'API Key' },
+        { key: 'apiSecret', label: 'API Secret' },
+        { key: 'accessToken', label: 'Access Token' },
+        { key: 'accessSecret', label: 'Access Secret' },
+    ],
+    reddit: [
+        { key: 'clientId', label: 'Client ID' },
+        { key: 'clientSecret', label: 'Client Secret' },
+        { key: 'username', label: 'Reddit-Username' },
+        { key: 'password', label: 'Reddit-Passwort' },
+    ],
+    pinterest: [
+        { key: 'accessToken', label: 'Access Token' },
+        { key: 'businessAccountId', label: 'Business Account ID (optional)', optional: true },
+        { key: 'boardId', label: 'Board ID (optional)', optional: true },
+    ],
+    instagram: [
+        { key: 'accessToken', label: 'Access Token' },
+        { key: 'businessAccountId', label: 'Business Account ID' },
+    ],
+    linkedin: [
+        { key: 'accessToken', label: 'Access Token' },
+        { key: 'organizationId', label: 'Organization ID (optional)', optional: true },
+    ],
+};
+
+function renderSocialAccountFields() {
+    const platform = document.getElementById('social-account-platform').value;
+    const fields = SOCIAL_ACCOUNT_FIELD_SPECS[platform] || [];
+    document.getElementById('social-account-fields').innerHTML = fields.map(f => `
+        <div style="margin-bottom:12px;">
+            <label class="field-label">${f.label}</label>
+            <input type="text" id="social-field-${f.key}" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;">
+        </div>
+    `).join('');
+}
+
+async function submitAddSocialAccount() {
+    const platform = document.getElementById('social-account-platform').value;
+    const accountName = document.getElementById('social-account-name').value.trim();
+    const fields = SOCIAL_ACCOUNT_FIELD_SPECS[platform] || [];
+    const resultEl = document.getElementById('social-account-modal-result');
+
+    if (!accountName) {
+        resultEl.innerHTML = '<span style="color:#ef4444;">Bitte einen Anzeigenamen eingeben.</span>';
+        return;
+    }
+
+    const values = {};
+    for (const f of fields) {
+        values[f.key] = document.getElementById(`social-field-${f.key}`).value.trim();
+        if (!f.optional && !values[f.key]) {
+            resultEl.innerHTML = `<span style="color:#ef4444;">Feld "${f.label}" ist erforderlich.</span>`;
+            return;
+        }
+    }
+
+    // access_token is a required top-level column regardless of platform —
+    // accessToken maps directly for platforms that have one; Reddit doesn't
+    // use OAuth tokens at all, so its password doubles up to satisfy the
+    // column (the adapter itself only ever reads it from account_data).
+    const accessToken = values.accessToken || values.password || '';
+    const accountData = { ...values };
+    delete accountData.accessToken;
+
+    try {
+        const res = await fetch(`${API_URL}/api/social-media/accounts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getAuthToken()}` },
+            body: JSON.stringify({ platform, account_name: accountName, access_token: accessToken, account_data: accountData })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showAlert('✅ Account verbunden.', 'success');
+            closeAddSocialAccountModal();
+            loadSocialAccounts();
+        } else {
+            resultEl.innerHTML = `<span style="color:#ef4444;">${data.error || data.message || 'Verbindung fehlgeschlagen'}</span>`;
+        }
+    } catch (err) {
+        resultEl.innerHTML = `<span style="color:#ef4444;">Fehler: ${err.message}</span>`;
+    }
+}
+
+// ── Compose + preview ──
+
+async function generateSocialPostPreview() {
+    const title = document.getElementById('social-post-title').value.trim();
+    const content = document.getElementById('social-post-content').value.trim();
+    const image_url = document.getElementById('social-post-image').value.trim();
+    const platforms = getSelectedSocialPlatforms();
+    const btn = document.getElementById('social-generate-btn');
+    const previewContainer = document.getElementById('social-preview-container');
+
+    if (!content) {
+        showAlert('Bitte einen Inhalt eingeben.', 'error');
+        return;
+    }
+    if (platforms.length === 0) {
+        showAlert('Bitte mindestens eine Plattform auswählen.', 'error');
+        return;
+    }
+    if ((platforms.includes('pinterest') || platforms.includes('instagram')) && !image_url) {
+        showAlert('Pinterest und Instagram benötigen eine Bild-URL.', 'error');
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '✨ Generiere...';
+    previewContainer.style.display = 'none';
+
+    try {
+        const res = await fetch(`${API_URL}/api/social-media/posts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getAuthToken()}` },
+            body: JSON.stringify({ title, content, post_type: 'travel_tip', image_url, platforms })
+        });
+        const data = await res.json();
+
+        if (!data.success) {
+            showAlert(data.message || 'Fehler beim Erstellen', 'error');
+            return;
+        }
+
+        currentSocialPostId = data.postId;
+        currentSocialPlatforms = platforms;
+
+        previewContainer.style.display = 'block';
+        previewContainer.innerHTML = platforms.map(p => {
+            const text = (data.platformVersions && data.platformVersions[p]) || content;
+            const limit = SOCIAL_PLATFORM_LIMITS[p] || 0;
+            const over = text.length > limit;
+            return `
+                <div style="border:1px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:10px;">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                        <strong>${SOCIAL_PLATFORM_LABELS[p] || p}</strong>
+                        <span style="font-size:12px;color:${over ? '#ef4444' : '#9ca3af'};">${text.length} / ${limit} Zeichen</span>
+                    </div>
+                    <div style="white-space:pre-wrap;font-size:14px;color:#374151;">${text}</div>
+                </div>
+            `;
+        }).join('');
+
+        document.getElementById('social-publish-section').style.display = 'block';
+    } catch (err) {
+        showAlert('Fehler: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '✨ Vorschau generieren (KI)';
+    }
+}
+
+async function publishSocialPost() {
+    if (!currentSocialPostId) {
+        showAlert('Bitte zuerst eine Vorschau generieren.', 'error');
+        return;
+    }
+    const scheduledAtInput = document.getElementById('social-scheduled-at').value;
+    const scheduledAt = scheduledAtInput ? new Date(scheduledAtInput).toISOString() : null;
+    const btn = document.getElementById('social-publish-btn');
+    const resultEl = document.getElementById('social-publish-result');
+
+    btn.disabled = true;
+    btn.textContent = scheduledAt ? 'Plane...' : 'Veröffentliche...';
+
+    try {
+        const res = await fetch(`${API_URL}/api/social-media/posts/${currentSocialPostId}/publish`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getAuthToken()}` },
+            body: JSON.stringify({ platforms: currentSocialPlatforms, scheduledAt })
+        });
+        const data = await res.json();
+
+        resultEl.innerHTML = (data.results || []).map(r => {
+            if (r.scheduled) return `<div style="color:#667eea;">📅 ${SOCIAL_PLATFORM_LABELS[r.platform] || r.platform}: geplant für ${new Date(r.scheduledAt).toLocaleString('de-DE')}</div>`;
+            if (r.success) return `<div style="color:#10b981;">✓ ${SOCIAL_PLATFORM_LABELS[r.platform] || r.platform}: veröffentlicht${r.url ? ` — <a href="${r.url}" target="_blank">ansehen</a>` : ''}</div>`;
+            return `<div style="color:#ef4444;">✗ ${SOCIAL_PLATFORM_LABELS[r.platform] || r.platform}: ${r.error}</div>`;
+        }).join('');
+
+        if (data.success || (data.results || []).some(r => r.scheduled)) {
+            // Reset composer for the next post
+            document.getElementById('social-post-title').value = '';
+            document.getElementById('social-post-content').value = '';
+            document.getElementById('social-post-image').value = '';
+            document.getElementById('social-scheduled-at').value = '';
+            document.getElementById('social-preview-container').style.display = 'none';
+            document.getElementById('social-publish-section').style.display = 'none';
+            currentSocialPostId = null;
+            loadSocialHistory();
+        }
+    } catch (err) {
+        resultEl.innerHTML = `<span style="color:#ef4444;">Fehler: ${err.message}</span>`;
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '🚀 Veröffentlichen / Planen';
+    }
+}
+
+// ── History ──
+
+async function loadSocialHistory() {
+    try {
+        const res = await fetch(`${API_URL}/api/social-media/scheduled`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const data = await res.json();
+        const tbody = document.getElementById('social-history-table');
+        if (!data.success || !data.scheduledPosts || data.scheduledPosts.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:20px;color:#9ca3af;">Noch keine Posts</td></tr>`;
+            return;
+        }
+        const statusLabels = {
+            posted: '<span style="color:#10b981;font-weight:600;">✓ Veröffentlicht</span>',
+            pending: '<span style="color:#667eea;">📅 Geplant</span>',
+            failed: '<span style="color:#ef4444;">✗ Fehlgeschlagen</span>',
+        };
+        tbody.innerHTML = data.scheduledPosts.map(sp => `
+            <tr>
+                <td>${SOCIAL_PLATFORM_LABELS[sp.platform] || sp.platform}</td>
+                <td style="max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(sp.content || '').replace(/"/g, '&quot;')}">${sp.title || sp.content}</td>
+                <td>${statusLabels[sp.status] || sp.status}${sp.error_message ? `<br><span style="font-size:11px;color:#9ca3af;">${sp.error_message}</span>` : ''}</td>
+                <td>${new Date(sp.posted_at || sp.scheduled_at).toLocaleString('de-DE')}</td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        document.getElementById('social-history-table').innerHTML = `<tr><td colspan="4" style="color:red;text-align:center;padding:20px;">Fehler: ${err.message}</td></tr>`;
+    }
 }
