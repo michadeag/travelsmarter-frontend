@@ -4622,7 +4622,7 @@ async function loadLocalSeoCandidates() {
         const data = await res.json();
         const tbody = document.getElementById('ls-candidates-table');
         if (!data.success || !data.combinations || data.combinations.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:20px;color:#9ca3af;">Noch keine Kombinationen — oben Kandidaten vorschlagen lassen</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:20px;color:#9ca3af;">Noch keine Kombinationen — oben Kandidaten vorschlagen lassen</td></tr>`;
             return;
         }
         tbody.innerHTML = data.combinations.map(c => `
@@ -4632,26 +4632,29 @@ async function loadLocalSeoCandidates() {
                 <td>${c.search_volume_estimate ?? '–'}</td>
                 <td>R$ ${c.lead_price_estimate ?? '–'}</td>
                 <td>${c.ranking_potential_score ?? '–'}</td>
+                <td>${c.page1_ctr_estimate ?? '–'}%</td>
+                <td>R$ ${c.monthly_value_estimate ?? '–'}</td>
                 <td><strong>${c.combined_score ?? '–'}</strong></td>
                 <td><span style="font-size:11px;color:${c.data_source === 'manual' ? '#667eea' : '#9ca3af'};">${c.data_source === 'manual' ? 'Manuell' : 'KI-Schätzung'}</span></td>
                 <td>${LS_STATUS_LABELS[c.status] || c.status}</td>
                 <td style="white-space:nowrap;">
                     <a href="#" onclick="viewLsDetail('${c.id}');return false;">Verwalten</a> ·
-                    <a href="#" onclick="openLsEditModal('${c.id}', ${c.search_volume_estimate ?? 0}, ${c.lead_price_estimate ?? 0}, ${c.ranking_potential_score ?? 0});return false;">Bearbeiten</a> ·
+                    <a href="#" onclick="openLsEditModal('${c.id}', ${c.search_volume_estimate ?? 0}, ${c.lead_price_estimate ?? 0}, ${c.ranking_potential_score ?? 0}, ${c.page1_ctr_estimate ?? 0});return false;">Bearbeiten</a> ·
                     <a href="#" onclick="deleteLsCandidate('${c.id}');return false;" style="color:#ef4444;">Löschen</a>
                 </td>
             </tr>
         `).join('');
     } catch (err) {
-        document.getElementById('ls-candidates-table').innerHTML = `<tr><td colspan="9" style="color:red;text-align:center;padding:20px;">Fehler: ${err.message}</td></tr>`;
+        document.getElementById('ls-candidates-table').innerHTML = `<tr><td colspan="11" style="color:red;text-align:center;padding:20px;">Fehler: ${err.message}</td></tr>`;
     }
 }
 
-function openLsEditModal(id, volume, price, ranking) {
+function openLsEditModal(id, volume, price, ranking, ctr) {
     document.getElementById('ls-edit-id').value = id;
     document.getElementById('ls-edit-volume').value = volume;
     document.getElementById('ls-edit-price').value = price;
     document.getElementById('ls-edit-ranking').value = ranking;
+    document.getElementById('ls-edit-ctr').value = ctr;
     document.getElementById('ls-edit-modal').classList.add('active');
 }
 
@@ -4664,12 +4667,13 @@ async function submitLsEdit() {
     const search_volume_estimate = parseFloat(document.getElementById('ls-edit-volume').value);
     const lead_price_estimate = parseFloat(document.getElementById('ls-edit-price').value);
     const ranking_potential_score = parseFloat(document.getElementById('ls-edit-ranking').value);
+    const page1_ctr_estimate = parseFloat(document.getElementById('ls-edit-ctr').value);
 
     try {
         const res = await fetch(`${API_URL}/api/local-seo/admin/candidates/${id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getAuthToken()}` },
-            body: JSON.stringify({ search_volume_estimate, lead_price_estimate, ranking_potential_score })
+            body: JSON.stringify({ search_volume_estimate, lead_price_estimate, ranking_potential_score, page1_ctr_estimate })
         });
         const data = await res.json();
         if (data.success) {

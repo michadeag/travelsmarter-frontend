@@ -2364,12 +2364,12 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Stadt</th><th>Beruf</th><th>Suchvol.</th><th>Lead-Preis</th><th>Ranking-Pot.</th>
+                                    <th>Stadt</th><th>Beruf</th><th>Suchvol.</th><th>Lead-Preis</th><th>Ranking-Pot.</th><th>Seite-1-Anteil</th><th>Mtl. Fixwert (Sch.)</th>
                                     <th>Score</th><th>Quelle</th><th>Status</th><th>Aktionen</th>
                                 </tr>
                             </thead>
                             <tbody id="ls-candidates-table">
-                                <tr><td colspan="9" style="text-align:center;padding:20px;">Lädt...</td></tr>
+                                <tr><td colspan="11" style="text-align:center;padding:20px;">Lädt...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -2395,6 +2395,10 @@
                     <div style="margin-bottom:12px;">
                         <label class="field-label">Ranking-Potential (0-100)</label>
                         <input type="number" id="ls-edit-ranking" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;">
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <label class="field-label">Seite-1-Anteil (%) — geschätzter Anteil des Suchvolumens, der bei Top-Ranking zum Lead wird</label>
+                        <input type="number" step="0.01" id="ls-edit-ctr" style="width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;">
                     </div>
                     <button class="btn btn-primary" onclick="submitLsEdit()">Speichern</button>
                     <button class="btn btn-secondary" onclick="closeLsEditModal()">Abbrechen</button>
