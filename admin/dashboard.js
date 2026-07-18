@@ -88,7 +88,7 @@ function switchTab(tabName) {
         'email-templates': 'Email Templates', broadcast: '📣 Broadcast Email', analytics: 'Analytics', settings: 'Settings',
         reddit: '🤖 Reddit', linkedin: '💼 LinkedIn', pinterest: '📌 Pinterest',
         instagram: '📸 Instagram', wordpress: '📝 WordPress', quora: '❓ Quora', blogger: '📰 Blogger', slideshare: '📊 SlideShare',
-        outreach: '📮 Outreach', 'social-media': '📱 Social Media', twitter: '🐦 Twitter', youtube: '▶️ YouTube',
+        outreach: '📮 Outreach', 'social-media': '📱 Social Media', 'local-seo': '🎯 Local SEO', twitter: '🐦 Twitter', youtube: '▶️ YouTube',
         'hidden-gem': '🗺️ Hidden Gem', 'partner-deals': '🤝 Partner Deals', medium: '✍️ Medium'
     };
     document.getElementById('page-title').textContent = titles[tabName] || tabName;
@@ -110,6 +110,7 @@ function switchTab(tabName) {
     if (tabName === 'hidden-gem') { initHiddenGemTab(); }
     if (tabName === 'outreach') { initOutreachTab(); }
     if (tabName === 'social-media') { initSocialMediaTab(); }
+    if (tabName === 'local-seo') { initLocalSeoTab(); }
 }
 
 // ─── BROADCAST ────────────────────────────────────────────────────────────────
@@ -4505,4 +4506,256 @@ async function loadSocialHistory() {
     } catch (err) {
         document.getElementById('social-history-table').innerHTML = `<tr><td colspan="4" style="color:red;text-align:center;padding:20px;">Fehler: ${err.message}</td></tr>`;
     }
+}
+
+// ─── LOCAL SEO ──────────────────────────────────────────────────────────────
+
+let lsPreviewCandidates = [];
+
+async function initLocalSeoTab() {
+    await loadLocalSeoCandidates();
+}
+
+async function generateLocalSeoCandidates() {
+    const count = parseInt(document.getElementById('ls-generate-count').value, 10) || 20;
+    const btn = document.getElementById('ls-generate-btn');
+    const previewEl = document.getElementById('ls-candidates-preview');
+
+    btn.disabled = true;
+    btn.textContent = 'Generiere...';
+    previewEl.innerHTML = '';
+
+    try {
+        const res = await fetch(`${API_URL}/api/local-seo/admin/candidates/generate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getAuthToken()}` },
+            body: JSON.stringify({ count })
+        });
+        const data = await res.json();
+        if (!data.success) {
+            showAlert(data.error || 'Fehler beim Generieren', 'error');
+            return;
+        }
+        lsPreviewCandidates = data.candidates || [];
+        renderLsCandidatesPreview();
+    } catch (err) {
+        showAlert('Fehler: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Kandidaten vorschlagen (KI)';
+    }
+}
+
+function renderLsCandidatesPreview() {
+    const previewEl = document.getElementById('ls-candidates-preview');
+    if (lsPreviewCandidates.length === 0) {
+        previewEl.innerHTML = '<p style="color:#9ca3af;">Keine Vorschläge.</p>';
+        return;
+    }
+    previewEl.innerHTML = `
+        <div style="max-height:300px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:8px;padding:12px;margin-bottom:12px;">
+            ${lsPreviewCandidates.map((c, i) => `
+                <label style="display:block;padding:4px 0;">
+                    <input type="checkbox" class="ls-preview-checkbox" value="${i}" checked>
+                    <strong>${c.city}</strong> — ${c.niche} <span style="color:#9ca3af;">("${c.keyword_phrase}")</span>
+                </label>
+            `).join('')}
+        </div>
+        <button class="btn btn-primary" onclick="confirmLsSelectedCandidates()" id="ls-confirm-btn">Ausgewählte hinzufügen &amp; bewerten</button>
+        <div id="ls-confirm-result" style="margin-top:12px;"></div>
+    `;
+}
+
+async function confirmLsSelectedCandidates() {
+    const selectedIndexes = Array.from(document.querySelectorAll('.ls-preview-checkbox:checked')).map(cb => parseInt(cb.value, 10));
+    const combinations = selectedIndexes.map(i => lsPreviewCandidates[i]);
+    if (combinations.length === 0) {
+        showAlert('Bitte mindestens eine Kombination auswählen.', 'error');
+        return;
+    }
+
+    const btn = document.getElementById('ls-confirm-btn');
+    const resultEl = document.getElementById('ls-confirm-result');
+    btn.disabled = true;
+    btn.textContent = 'Bewerte & speichere...';
+
+    try {
+        const res = await fetch(`${API_URL}/api/local-seo/admin/candidates`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getAuthToken()}` },
+            body: JSON.stringify({ combinations })
+        });
+        const data = await res.json();
+        if (!data.success) {
+            resultEl.innerHTML = `<span style="color:#ef4444;">${data.error || 'Fehler'}</span>`;
+            return;
+        }
+        // The preview container (including resultEl, which lives inside it)
+        // is cleared right below, so the success message goes through the
+        // toast instead of resultEl — otherwise it would be wiped before
+        // ever being seen.
+        showAlert(
+            `✅ ${data.saved.length} hinzugefügt` + (data.failed.length > 0 ? ` — ${data.failed.length} übersprungen (bereits vorhanden oder Fehler)` : ''),
+            data.failed.length > 0 ? 'error' : 'success'
+        );
+        lsPreviewCandidates = [];
+        document.getElementById('ls-candidates-preview').innerHTML = '';
+        loadLocalSeoCandidates();
+    } catch (err) {
+        resultEl.innerHTML = `<span style="color:#ef4444;">Fehler: ${err.message}</span>`;
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Ausgewählte hinzufügen & bewerten';
+    }
+}
+
+const LS_STATUS_LABELS = {
+    confirmed: '<span style="color:#667eea;">Bereit</span>',
+    scripted: '<span style="color:#10b981;font-weight:600;">✓ Verskriptet</span>',
+};
+
+async function loadLocalSeoCandidates() {
+    try {
+        const res = await fetch(`${API_URL}/api/local-seo/admin/candidates`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const data = await res.json();
+        const tbody = document.getElementById('ls-candidates-table');
+        if (!data.success || !data.combinations || data.combinations.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:20px;color:#9ca3af;">Noch keine Kombinationen — oben Kandidaten vorschlagen lassen</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = data.combinations.map(c => `
+            <tr>
+                <td>${c.city}</td>
+                <td>${c.niche}</td>
+                <td>${c.search_volume_estimate ?? '–'}</td>
+                <td>R$ ${c.lead_price_estimate ?? '–'}</td>
+                <td>${c.ranking_potential_score ?? '–'}</td>
+                <td><strong>${c.combined_score ?? '–'}</strong></td>
+                <td><span style="font-size:11px;color:${c.data_source === 'manual' ? '#667eea' : '#9ca3af'};">${c.data_source === 'manual' ? 'Manuell' : 'KI-Schätzung'}</span></td>
+                <td>${LS_STATUS_LABELS[c.status] || c.status}</td>
+                <td style="white-space:nowrap;">
+                    ${c.status === 'scripted' ? `<a href="#" onclick="viewLsDetail('${c.id}');return false;">Skript</a> · ` : ''}
+                    <a href="#" onclick="openLsEditModal('${c.id}', ${c.search_volume_estimate ?? 0}, ${c.lead_price_estimate ?? 0}, ${c.ranking_potential_score ?? 0});return false;">Bearbeiten</a> ·
+                    <a href="#" onclick="deleteLsCandidate('${c.id}');return false;" style="color:#ef4444;">Löschen</a>
+                </td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        document.getElementById('ls-candidates-table').innerHTML = `<tr><td colspan="9" style="color:red;text-align:center;padding:20px;">Fehler: ${err.message}</td></tr>`;
+    }
+}
+
+function openLsEditModal(id, volume, price, ranking) {
+    document.getElementById('ls-edit-id').value = id;
+    document.getElementById('ls-edit-volume').value = volume;
+    document.getElementById('ls-edit-price').value = price;
+    document.getElementById('ls-edit-ranking').value = ranking;
+    document.getElementById('ls-edit-modal').classList.add('active');
+}
+
+function closeLsEditModal() {
+    document.getElementById('ls-edit-modal').classList.remove('active');
+}
+
+async function submitLsEdit() {
+    const id = document.getElementById('ls-edit-id').value;
+    const search_volume_estimate = parseFloat(document.getElementById('ls-edit-volume').value);
+    const lead_price_estimate = parseFloat(document.getElementById('ls-edit-price').value);
+    const ranking_potential_score = parseFloat(document.getElementById('ls-edit-ranking').value);
+
+    try {
+        const res = await fetch(`${API_URL}/api/local-seo/admin/candidates/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getAuthToken()}` },
+            body: JSON.stringify({ search_volume_estimate, lead_price_estimate, ranking_potential_score })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showAlert('✅ Aktualisiert.', 'success');
+            closeLsEditModal();
+            loadLocalSeoCandidates();
+        } else {
+            showAlert(data.error || 'Fehler beim Speichern', 'error');
+        }
+    } catch (err) {
+        showAlert('Fehler: ' + err.message, 'error');
+    }
+}
+
+async function deleteLsCandidate(id) {
+    if (!confirm('Diese Kombination wirklich löschen?')) return;
+    await fetch(`${API_URL}/api/local-seo/admin/candidates/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+    });
+    showAlert('✅ Gelöscht.', 'success');
+    loadLocalSeoCandidates();
+}
+
+async function processLocalSeoBatch() {
+    const batchSize = parseInt(document.getElementById('ls-batch-size').value, 10) || 10;
+    const btn = document.getElementById('ls-batch-btn');
+    const resultEl = document.getElementById('ls-batch-result');
+
+    btn.disabled = true;
+    btn.textContent = 'Verarbeite...';
+
+    try {
+        const res = await fetch(`${API_URL}/api/local-seo/admin/batch/process-next`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getAuthToken()}` },
+            body: JSON.stringify({ batchSize })
+        });
+        const data = await res.json();
+        if (!data.success) {
+            resultEl.innerHTML = `<span style="color:#ef4444;">${data.error || 'Fehler'}</span>`;
+            return;
+        }
+        resultEl.innerHTML = `<span style="color:#10b981;">✓ Batch #${data.batchNumber}: ${data.succeeded} von ${data.processed} erfolgreich verskriptet</span>` +
+            (data.failed > 0 ? ` <span style="color:#ef4444;">— ${data.failed} fehlgeschlagen (bleiben für den nächsten Batch offen)</span>` : '');
+        loadLocalSeoCandidates();
+    } catch (err) {
+        resultEl.innerHTML = `<span style="color:#ef4444;">Fehler: ${err.message}</span>`;
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '🚀 Nächsten Batch bearbeiten';
+    }
+}
+
+async function viewLsDetail(id) {
+    try {
+        const res = await fetch(`${API_URL}/api/local-seo/admin/candidates/${id}`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const data = await res.json();
+        if (!data.success) {
+            showAlert(data.error || 'Fehler beim Laden', 'error');
+            return;
+        }
+        const c = data.combination;
+        document.getElementById('ls-detail-title').textContent = c.youtube_title || `${c.city} — ${c.niche}`;
+        document.getElementById('ls-detail-body').innerHTML = `
+            <div style="margin-bottom:16px;">
+                <label class="field-label">Skript</label>
+                <div style="white-space:pre-wrap;background:#f9fafb;border-radius:8px;padding:14px;font-size:14px;">${c.youtube_script || '–'}</div>
+            </div>
+            <div style="margin-bottom:16px;">
+                <label class="field-label">Beschreibung</label>
+                <div style="white-space:pre-wrap;background:#f9fafb;border-radius:8px;padding:14px;font-size:14px;">${c.youtube_description || '–'}</div>
+            </div>
+            <div>
+                <label class="field-label">Tags</label>
+                <div>${(c.youtube_tags || []).map(t => `<span style="display:inline-block;background:#f3f4f6;padding:3px 10px;border-radius:12px;font-size:12px;margin:2px;">${t}</span>`).join('')}</div>
+            </div>
+        `;
+        document.getElementById('ls-detail-modal').classList.add('active');
+    } catch (err) {
+        showAlert('Fehler: ' + err.message, 'error');
+    }
+}
+
+function closeLsDetailModal() {
+    document.getElementById('ls-detail-modal').classList.remove('active');
 }
