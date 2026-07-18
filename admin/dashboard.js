@@ -4772,7 +4772,11 @@ async function renderLsDetailBody() {
             <label class="field-label">Tags</label>
             <div>${(c.youtube_tags || []).map(t => `<span style="display:inline-block;background:#f3f4f6;padding:3px 10px;border-radius:12px;font-size:12px;margin:2px;">${t}</span>`).join('')}</div>
         </div>
-        ` : ''}
+        ` : `
+        <div style="margin-bottom:20px;padding:14px;background:#fffbeb;border-radius:8px;color:#92400e;font-size:14px;">
+            ⏳ Noch nicht verskriptet — in der Rangliste auf "🚀 Nächsten Batch bearbeiten" klicken, um für diese Kombination YouTube-Titel, Skript, Beschreibung und Tags zu generieren.
+        </div>
+        `}
 
         <div style="border-top:1px solid #e5e7eb;padding-top:16px;margin-bottom:20px;">
             <label class="field-label" style="display:block;margin-bottom:8px;">📞 Telefonnummer</label>
