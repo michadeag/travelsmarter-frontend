@@ -4636,7 +4636,7 @@ async function loadLocalSeoCandidates() {
                 <td><span style="font-size:11px;color:${c.data_source === 'manual' ? '#667eea' : '#9ca3af'};">${c.data_source === 'manual' ? 'Manuell' : 'KI-Schätzung'}</span></td>
                 <td>${LS_STATUS_LABELS[c.status] || c.status}</td>
                 <td style="white-space:nowrap;">
-                    ${c.status === 'scripted' ? `<a href="#" onclick="viewLsDetail('${c.id}');return false;">Skript</a> · ` : ''}
+                    <a href="#" onclick="viewLsDetail('${c.id}');return false;">Verwalten</a> ·
                     <a href="#" onclick="openLsEditModal('${c.id}', ${c.search_volume_estimate ?? 0}, ${c.lead_price_estimate ?? 0}, ${c.ranking_potential_score ?? 0});return false;">Bearbeiten</a> ·
                     <a href="#" onclick="deleteLsCandidate('${c.id}');return false;" style="color:#ef4444;">Löschen</a>
                 </td>
@@ -4724,7 +4724,11 @@ async function processLocalSeoBatch() {
     }
 }
 
+let currentLsCombinationId = null;
+let currentLsCombination = null;
+
 async function viewLsDetail(id) {
+    currentLsCombinationId = id;
     try {
         const res = await fetch(`${API_URL}/api/local-seo/admin/candidates/${id}`, {
             headers: { 'Authorization': `Bearer ${getAuthToken()}` }
@@ -4734,23 +4738,215 @@ async function viewLsDetail(id) {
             showAlert(data.error || 'Fehler beim Laden', 'error');
             return;
         }
-        const c = data.combination;
-        document.getElementById('ls-detail-title').textContent = c.youtube_title || `${c.city} — ${c.niche}`;
-        document.getElementById('ls-detail-body').innerHTML = `
-            <div style="margin-bottom:16px;">
-                <label class="field-label">Skript</label>
-                <div style="white-space:pre-wrap;background:#f9fafb;border-radius:8px;padding:14px;font-size:14px;">${c.youtube_script || '–'}</div>
-            </div>
-            <div style="margin-bottom:16px;">
-                <label class="field-label">Beschreibung</label>
-                <div style="white-space:pre-wrap;background:#f9fafb;border-radius:8px;padding:14px;font-size:14px;">${c.youtube_description || '–'}</div>
-            </div>
-            <div>
-                <label class="field-label">Tags</label>
-                <div>${(c.youtube_tags || []).map(t => `<span style="display:inline-block;background:#f3f4f6;padding:3px 10px;border-radius:12px;font-size:12px;margin:2px;">${t}</span>`).join('')}</div>
-            </div>
-        `;
+        currentLsCombination = data.combination;
+        document.getElementById('ls-detail-title').textContent = data.combination.youtube_title || `${data.combination.city} — ${data.combination.niche}`;
         document.getElementById('ls-detail-modal').classList.add('active');
+        await renderLsDetailBody();
+    } catch (err) {
+        showAlert('Fehler: ' + err.message, 'error');
+    }
+}
+
+async function renderLsDetailBody() {
+    const c = currentLsCombination;
+    const [recipientsRes, callsRes] = await Promise.all([
+        fetch(`${API_URL}/api/local-seo/admin/candidates/${currentLsCombinationId}/recipients`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } }),
+        fetch(`${API_URL}/api/local-seo/admin/candidates/${currentLsCombinationId}/calls`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } }),
+    ]);
+    const recipientsData = await recipientsRes.json();
+    const callsData = await callsRes.json();
+    const recipients = recipientsData.recipients || [];
+    const calls = callsData.calls || [];
+
+    document.getElementById('ls-detail-body').innerHTML = `
+        ${c.youtube_script ? `
+        <div style="margin-bottom:16px;">
+            <label class="field-label">Skript</label>
+            <div style="white-space:pre-wrap;background:#f9fafb;border-radius:8px;padding:14px;font-size:14px;">${c.youtube_script}</div>
+        </div>
+        <div style="margin-bottom:16px;">
+            <label class="field-label">Beschreibung</label>
+            <div style="white-space:pre-wrap;background:#f9fafb;border-radius:8px;padding:14px;font-size:14px;">${c.youtube_description || '–'}</div>
+        </div>
+        <div style="margin-bottom:20px;">
+            <label class="field-label">Tags</label>
+            <div>${(c.youtube_tags || []).map(t => `<span style="display:inline-block;background:#f3f4f6;padding:3px 10px;border-radius:12px;font-size:12px;margin:2px;">${t}</span>`).join('')}</div>
+        </div>
+        ` : ''}
+
+        <div style="border-top:1px solid #e5e7eb;padding-top:16px;margin-bottom:20px;">
+            <label class="field-label" style="display:block;margin-bottom:8px;">📞 Telefonnummer</label>
+            ${c.twilio_phone_number ? `
+                <div style="color:#10b981;font-weight:600;">✓ ${c.twilio_phone_number}</div>
+            ` : `
+                <div style="display:flex;gap:8px;margin-bottom:8px;">
+                    <input type="text" id="ls-phone-city" placeholder="Stadt (z.B. São Paulo)" style="flex:1;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;">
+                    <button class="btn btn-secondary" onclick="searchLsPhoneNumbers()" id="ls-phone-search-btn">Suchen</button>
+                </div>
+                <div id="ls-phone-results"></div>
+            `}
+        </div>
+
+        <div style="border-top:1px solid #e5e7eb;padding-top:16px;margin-bottom:20px;">
+            <label class="field-label" style="display:block;margin-bottom:8px;">👥 Potentielle Kunden (${recipients.length}/3)</label>
+            ${recipients.map(r => `
+                <div style="display:flex;justify-content:space-between;align-items:center;background:#f9fafb;border-radius:8px;padding:10px 12px;margin-bottom:6px;">
+                    <div>
+                        <strong>${r.name}</strong>${r.company_name ? ` (${r.company_name})` : ''}<br>
+                        <span style="font-size:12px;color:#6b7280;">${r.phone}${r.email ? ' · ' + r.email : ''}</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <label style="font-size:12px;"><input type="checkbox" ${r.is_main_recipient ? 'checked' : ''} onchange="toggleLsMainRecipient('${r.id}', this.checked)"> Hauptabnehmer</label>
+                        <a href="#" onclick="deleteLsRecipient('${r.id}');return false;" style="color:#ef4444;font-size:12px;">Entfernen</a>
+                    </div>
+                </div>
+            `).join('')}
+            ${recipients.length < 3 ? `
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+                    <input type="text" id="ls-recipient-name" placeholder="Name" style="flex:1;min-width:120px;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;">
+                    <input type="text" id="ls-recipient-company" placeholder="Firma (optional)" style="flex:1;min-width:120px;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;">
+                    <input type="text" id="ls-recipient-phone" placeholder="Telefon" style="flex:1;min-width:120px;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;">
+                    <input type="text" id="ls-recipient-email" placeholder="Email (optional)" style="flex:1;min-width:120px;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;">
+                    <input type="text" id="ls-recipient-notes" placeholder="Notizen (optional)" style="flex:1;min-width:120px;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;">
+                    <button class="btn btn-primary" onclick="addLsRecipient()">Hinzufügen</button>
+                </div>
+            ` : ''}
+        </div>
+
+        <div style="border-top:1px solid #e5e7eb;padding-top:16px;">
+            <label class="field-label" style="display:block;margin-bottom:8px;">📊 Anruf-Verlauf</label>
+            ${calls.length === 0 ? '<p style="color:#9ca3af;font-size:13px;">Noch keine Anrufe.</p>' : `
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>Von</th><th>Status</th><th>Beantwortet von</th><th>Dauer</th><th>Zeitpunkt</th></tr></thead>
+                        <tbody>
+                            ${calls.map(call => `
+                                <tr>
+                                    <td>${call.caller_number || '–'}</td>
+                                    <td>${call.status}</td>
+                                    <td>${call.answered_by_name || '–'}</td>
+                                    <td>${call.duration_seconds ? call.duration_seconds + 's' : '–'}</td>
+                                    <td>${new Date(call.created_at).toLocaleString('de-DE')}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `}
+        </div>
+    `;
+}
+
+async function searchLsPhoneNumbers() {
+    const city = document.getElementById('ls-phone-city').value.trim();
+    if (!city) {
+        showAlert('Bitte eine Stadt eingeben.', 'error');
+        return;
+    }
+    const btn = document.getElementById('ls-phone-search-btn');
+    const resultsEl = document.getElementById('ls-phone-results');
+    btn.disabled = true;
+    btn.textContent = 'Suche...';
+    try {
+        const res = await fetch(`${API_URL}/api/local-seo/admin/twilio/available-numbers?city=${encodeURIComponent(city)}`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const data = await res.json();
+        if (!data.success) {
+            resultsEl.innerHTML = `<span style="color:#ef4444;">${data.error || 'Fehler'}</span>`;
+            return;
+        }
+        if (data.numbers.length === 0) {
+            resultsEl.innerHTML = '<p style="color:#9ca3af;font-size:13px;">Keine verfügbaren Nummern gefunden.</p>';
+            return;
+        }
+        resultsEl.innerHTML = data.numbers.map(n => `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f3f4f6;">
+                <span>${n.phoneNumber} <span style="color:#9ca3af;font-size:12px;">(${n.locality || n.region || ''})</span></span>
+                <button class="btn btn-primary" style="padding:6px 14px;font-size:13px;" onclick="purchaseLsPhoneNumber('${n.phoneNumber}')">Kaufen</button>
+            </div>
+        `).join('');
+    } catch (err) {
+        resultsEl.innerHTML = `<span style="color:#ef4444;">Fehler: ${err.message}</span>`;
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Suchen';
+    }
+}
+
+async function purchaseLsPhoneNumber(phoneNumber) {
+    if (!confirm(`Nummer ${phoneNumber} wirklich kaufen? Das ist ein echter, kostenpflichtiger Kauf über dein Twilio-Konto.`)) return;
+    try {
+        const res = await fetch(`${API_URL}/api/local-seo/admin/candidates/${currentLsCombinationId}/phone-number`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getAuthToken()}` },
+            body: JSON.stringify({ phoneNumber })
+        });
+        const data = await res.json();
+        if (!data.success) {
+            showAlert(data.error || 'Kauf fehlgeschlagen', 'error');
+            return;
+        }
+        showAlert(`✅ Nummer ${data.phoneNumber} gekauft und verknüpft.`, 'success');
+        currentLsCombination.twilio_phone_number = data.phoneNumber;
+        renderLsDetailBody();
+        loadLocalSeoCandidates();
+    } catch (err) {
+        showAlert('Fehler: ' + err.message, 'error');
+    }
+}
+
+async function addLsRecipient() {
+    const name = document.getElementById('ls-recipient-name').value.trim();
+    const company_name = document.getElementById('ls-recipient-company').value.trim();
+    const phone = document.getElementById('ls-recipient-phone').value.trim();
+    const email = document.getElementById('ls-recipient-email').value.trim();
+    const notes = document.getElementById('ls-recipient-notes').value.trim();
+
+    if (!name || !phone) {
+        showAlert('Name und Telefon sind erforderlich.', 'error');
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_URL}/api/local-seo/admin/candidates/${currentLsCombinationId}/recipients`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getAuthToken()}` },
+            body: JSON.stringify({ name, company_name, phone, email, notes })
+        });
+        const data = await res.json();
+        if (!data.success) {
+            showAlert(data.error || 'Fehler beim Hinzufügen', 'error');
+            return;
+        }
+        showAlert('✅ Hinzugefügt.', 'success');
+        renderLsDetailBody();
+    } catch (err) {
+        showAlert('Fehler: ' + err.message, 'error');
+    }
+}
+
+async function toggleLsMainRecipient(recipientId, checked) {
+    try {
+        await fetch(`${API_URL}/api/local-seo/admin/recipients/${recipientId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getAuthToken()}` },
+            body: JSON.stringify({ is_main_recipient: checked })
+        });
+        renderLsDetailBody();
+    } catch (err) {
+        showAlert('Fehler: ' + err.message, 'error');
+    }
+}
+
+async function deleteLsRecipient(recipientId) {
+    if (!confirm('Diesen Kontakt wirklich entfernen?')) return;
+    try {
+        await fetch(`${API_URL}/api/local-seo/admin/recipients/${recipientId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        renderLsDetailBody();
     } catch (err) {
         showAlert('Fehler: ' + err.message, 'error');
     }
