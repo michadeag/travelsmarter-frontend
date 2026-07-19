@@ -4819,6 +4819,10 @@ async function renderLsDetailBody() {
     const calls = callsData.calls || [];
 
     document.getElementById('ls-detail-body').innerHTML = `
+        <div style="margin-bottom:16px;">
+            <label class="field-label">Keyword-Cluster — dieses eine Video wird für alle diese Begriffe optimiert</label>
+            <div>${(c.target_keywords && c.target_keywords.length > 0 ? c.target_keywords : [c.keyword_phrase]).map(k => `<span style="display:inline-block;background:#f0f4ff;color:#4338ca;padding:3px 10px;border-radius:12px;font-size:12px;margin:2px;">${k}</span>`).join('')}</div>
+        </div>
         ${c.youtube_script ? `
         <div style="margin-bottom:16px;">
             <label class="field-label">Skript</label>
