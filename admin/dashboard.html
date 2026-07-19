@@ -2364,8 +2364,17 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Stadt</th><th>Beruf</th><th>Suchvol.</th><th>Lead-Preis</th><th>Ranking-Pot.</th><th>Seite-1-Anteil</th><th>Mtl. Fixwert (Sch.)</th>
-                                    <th>Score</th><th>Quelle</th><th>Status</th><th>Aktionen</th>
+                                    <th id="ls-th-city" onclick="sortLsCandidates('city')" style="cursor:pointer;user-select:none;">Stadt</th>
+                                    <th id="ls-th-niche" onclick="sortLsCandidates('niche')" style="cursor:pointer;user-select:none;">Beruf</th>
+                                    <th id="ls-th-search_volume_estimate" onclick="sortLsCandidates('search_volume_estimate')" style="cursor:pointer;user-select:none;">Suchvol.</th>
+                                    <th id="ls-th-lead_price_estimate" onclick="sortLsCandidates('lead_price_estimate')" style="cursor:pointer;user-select:none;">Lead-Preis</th>
+                                    <th id="ls-th-ranking_potential_score" onclick="sortLsCandidates('ranking_potential_score')" style="cursor:pointer;user-select:none;">Ranking-Pot.</th>
+                                    <th id="ls-th-page1_ctr_estimate" onclick="sortLsCandidates('page1_ctr_estimate')" style="cursor:pointer;user-select:none;">Seite-1-Anteil</th>
+                                    <th id="ls-th-monthly_value_estimate" onclick="sortLsCandidates('monthly_value_estimate')" style="cursor:pointer;user-select:none;">Mtl. Fixwert (Sch.)</th>
+                                    <th id="ls-th-combined_score" onclick="sortLsCandidates('combined_score')" style="cursor:pointer;user-select:none;">Score</th>
+                                    <th id="ls-th-data_source" onclick="sortLsCandidates('data_source')" style="cursor:pointer;user-select:none;">Quelle</th>
+                                    <th id="ls-th-status" onclick="sortLsCandidates('status')" style="cursor:pointer;user-select:none;">Status</th>
+                                    <th>Aktionen</th>
                                 </tr>
                             </thead>
                             <tbody id="ls-candidates-table">
