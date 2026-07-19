@@ -4809,20 +4809,64 @@ async function viewLsDetail(id) {
 
 async function renderLsDetailBody() {
     const c = currentLsCombination;
-    const [recipientsRes, callsRes] = await Promise.all([
+    const [recipientsRes, callsRes, rankingRes] = await Promise.all([
         fetch(`${API_URL}/api/local-seo/admin/candidates/${currentLsCombinationId}/recipients`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } }),
         fetch(`${API_URL}/api/local-seo/admin/candidates/${currentLsCombinationId}/calls`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } }),
+        fetch(`${API_URL}/api/local-seo/admin/candidates/${currentLsCombinationId}/ranking-history`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } }),
     ]);
     const recipientsData = await recipientsRes.json();
     const callsData = await callsRes.json();
+    const rankingData = await rankingRes.json();
     const recipients = recipientsData.recipients || [];
     const calls = callsData.calls || [];
+    const rankingChecks = rankingData.checks || [];
+    const clusterKeywords = c.target_keywords && c.target_keywords.length > 0 ? c.target_keywords : [c.keyword_phrase];
+
+    // Latest check per keyword, for a compact "current ranking" view above the full history
+    const latestByKeyword = {};
+    for (const check of rankingChecks) {
+        if (!latestByKeyword[check.keyword]) latestByKeyword[check.keyword] = check;
+    }
 
     document.getElementById('ls-detail-body').innerHTML = `
         <div style="margin-bottom:16px;">
             <label class="field-label">Keyword-Cluster — dieses eine Video wird für alle diese Begriffe optimiert</label>
-            <div>${(c.target_keywords && c.target_keywords.length > 0 ? c.target_keywords : [c.keyword_phrase]).map(k => `<span style="display:inline-block;background:#f0f4ff;color:#4338ca;padding:3px 10px;border-radius:12px;font-size:12px;margin:2px;">${k}</span>`).join('')}</div>
+            <div>${clusterKeywords.map(k => `<span style="display:inline-block;background:#f0f4ff;color:#4338ca;padding:3px 10px;border-radius:12px;font-size:12px;margin:2px;">${k}</span>`).join('')}</div>
         </div>
+
+        <div style="border-top:1px solid #e5e7eb;padding-top:16px;margin-bottom:20px;">
+            <label class="field-label" style="display:block;margin-bottom:8px;">📈 YouTube-Video &amp; Ranking</label>
+            ${c.youtube_video_id ? `
+                <div style="margin-bottom:12px;">✓ <a href="${c.youtube_video_url}" target="_blank">${c.youtube_video_url}</a></div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+                    <button class="btn btn-secondary" onclick="checkLsRanking('primary')" id="ls-check-primary-btn">Hauptbegriff prüfen</button>
+                    <button class="btn btn-secondary" onclick="checkLsRanking('cluster')" id="ls-check-cluster-btn">Ganzen Cluster prüfen (${clusterKeywords.length} Begriffe)</button>
+                </div>
+                <p style="font-size:11px;color:#9ca3af;margin-bottom:12px;">Hinweis: Jede Prüfung eines Begriffs kostet YouTube-API-Kontingent — "Hauptbegriff" prüft nur den einen Haupt-Suchbegriff, "Ganzer Cluster" prüft alle ${clusterKeywords.length} Begriffe auf einmal.</p>
+                ${Object.keys(latestByKeyword).length > 0 ? `
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>Keyword</th><th>Position</th><th>Zuletzt geprüft</th></tr></thead>
+                            <tbody>
+                                ${Object.values(latestByKeyword).map(check => `
+                                    <tr>
+                                        <td>${check.keyword}</td>
+                                        <td>${check.position ? `#${check.position}` : 'Nicht in Top 50'}</td>
+                                        <td>${new Date(check.checked_at).toLocaleString('de-DE')}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                ` : '<p style="color:#9ca3af;font-size:13px;">Noch nicht geprüft.</p>'}
+            ` : `
+                <div style="display:flex;gap:8px;">
+                    <input type="text" id="ls-video-url" placeholder="https://youtube.com/watch?v=..." style="flex:1;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;">
+                    <button class="btn btn-primary" onclick="saveLsVideoUrl()" id="ls-video-save-btn">Speichern</button>
+                </div>
+            `}
+        </div>
+
         ${c.youtube_script ? `
         <div style="margin-bottom:16px;">
             <label class="field-label">Skript</label>
@@ -4905,6 +4949,78 @@ async function renderLsDetailBody() {
     `;
 }
 
+async function saveLsVideoUrl() {
+    const videoUrl = document.getElementById('ls-video-url').value.trim();
+    if (!videoUrl) {
+        showAlert('Bitte einen YouTube-Link eingeben.', 'error');
+        return;
+    }
+    const btn = document.getElementById('ls-video-save-btn');
+    btn.disabled = true;
+    try {
+        const res = await fetch(`${API_URL}/api/local-seo/admin/candidates/${currentLsCombinationId}/video`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getAuthToken()}` },
+            body: JSON.stringify({ videoUrl })
+        });
+        const data = await res.json();
+        if (!data.success) {
+            showAlert(data.error || 'Fehler beim Speichern', 'error');
+            return;
+        }
+        currentLsCombination.youtube_video_id = data.combination.youtube_video_id;
+        currentLsCombination.youtube_video_url = data.combination.youtube_video_url;
+        showAlert('✅ Video verknüpft.', 'success');
+        await renderLsDetailBody();
+    } catch (err) {
+        showAlert('Fehler: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+async function checkLsRanking(mode) {
+    const clusterKeywords = currentLsCombination.target_keywords && currentLsCombination.target_keywords.length > 0
+        ? currentLsCombination.target_keywords
+        : [currentLsCombination.keyword_phrase];
+
+    if (mode === 'cluster' && !confirm(`Ranking für alle ${clusterKeywords.length} Begriffe prüfen? Das verbraucht YouTube-API-Kontingent für jeden einzelnen Begriff.`)) {
+        return;
+    }
+
+    const btnId = mode === 'cluster' ? 'ls-check-cluster-btn' : 'ls-check-primary-btn';
+    const btn = document.getElementById(btnId);
+    btn.disabled = true;
+    btn.textContent = 'Prüfe...';
+
+    try {
+        const res = await fetch(`${API_URL}/api/local-seo/admin/candidates/${currentLsCombinationId}/check-ranking`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getAuthToken()}` },
+            body: JSON.stringify(mode === 'cluster' ? { keywords: clusterKeywords } : {})
+        });
+        const data = await res.json();
+        if (!data.success) {
+            showAlert(data.error || 'Fehler beim Prüfen', 'error');
+            return;
+        }
+        // renderLsDetailBody() below replaces this whole section (including
+        // any element we'd write a result into here), so the summary goes
+        // through the toast instead of a result div that would just get
+        // wiped immediately — the refreshed table shows the same info anyway.
+        const failedCount = data.results.filter(r => r.error).length;
+        showAlert(
+            `✅ ${data.results.length - failedCount} von ${data.results.length} Begriff(en) geprüft` + (failedCount > 0 ? ` — ${failedCount} fehlgeschlagen` : ''),
+            failedCount > 0 ? 'error' : 'success'
+        );
+        await renderLsDetailBody();
+    } catch (err) {
+        showAlert('Fehler: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
+    }
+}
+
 async function searchLsPhoneNumbers() {
     const city = document.getElementById('ls-phone-city').value.trim();
     if (!city) {
@@ -4957,7 +5073,7 @@ async function purchaseLsPhoneNumber(phoneNumber) {
         }
         showAlert(`✅ Nummer ${data.phoneNumber} gekauft und verknüpft.`, 'success');
         currentLsCombination.twilio_phone_number = data.phoneNumber;
-        renderLsDetailBody();
+        await renderLsDetailBody();
         loadLocalSeoCandidates();
     } catch (err) {
         showAlert('Fehler: ' + err.message, 'error');
@@ -4988,7 +5104,7 @@ async function addLsRecipient() {
             return;
         }
         showAlert('✅ Hinzugefügt.', 'success');
-        renderLsDetailBody();
+        await renderLsDetailBody();
     } catch (err) {
         showAlert('Fehler: ' + err.message, 'error');
     }
@@ -5001,7 +5117,7 @@ async function toggleLsMainRecipient(recipientId, checked) {
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getAuthToken()}` },
             body: JSON.stringify({ is_main_recipient: checked })
         });
-        renderLsDetailBody();
+        await renderLsDetailBody();
     } catch (err) {
         showAlert('Fehler: ' + err.message, 'error');
     }
@@ -5014,7 +5130,7 @@ async function deleteLsRecipient(recipientId) {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${getAuthToken()}` }
         });
-        renderLsDetailBody();
+        await renderLsDetailBody();
     } catch (err) {
         showAlert('Fehler: ' + err.message, 'error');
     }
