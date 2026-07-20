@@ -3668,6 +3668,10 @@ async function loadSocialSettings() {
         set('google-client-secret', 'google_client_secret');
         set('blogger-frequency', 'blogger_frequency_hours');
         chk('blogger-auto', 'blogger_auto_posting');
+        set('local-seo-wordpress-site-url', 'local_seo_wordpress_site_url');
+        set('local-seo-wordpress-username', 'local_seo_wordpress_username');
+        set('local-seo-wordpress-app-password', 'local_seo_wordpress_app_password');
+        set('local-seo-blogger-blog-id', 'local_seo_blogger_blog_id');
     } catch (err) { console.warn('Could not load social settings:', err.message); }
 }
 
@@ -3716,6 +3720,10 @@ async function saveSocialSettings() {
         google_client_secret: val('google-client-secret'),
         blogger_frequency_hours: val('blogger-frequency') || '24',
         blogger_auto_posting: chk('blogger-auto'),
+        local_seo_wordpress_site_url: val('local-seo-wordpress-site-url'),
+        local_seo_wordpress_username: val('local-seo-wordpress-username'),
+        local_seo_wordpress_app_password: val('local-seo-wordpress-app-password'),
+        local_seo_blogger_blog_id: val('local-seo-blogger-blog-id'),
     };
     await fetch(`${API_URL}/api/admin/settings/batch/update`, {
         method: 'POST',
@@ -3725,6 +3733,74 @@ async function saveSocialSettings() {
     // Reload services with new credentials
     for (const platform of ['twitter', 'pinterest', 'reddit', 'linkedin', 'instagram', 'wordpress', 'blogger']) {
         fetch(`${API_URL}/api/${platform}/reload-settings`, { method: 'POST', headers: { 'Authorization': `Bearer ${getAuthToken()}` } }).catch(() => {});
+    }
+}
+
+// ─── LOCAL SEO: own WordPress/Blogger accounts (ranking-boost distribution) ───
+async function testLocalSeoWordpressConnection() {
+    const resultEl = document.getElementById('local-seo-wordpress-test-result');
+    resultEl.textContent = 'Teste...';
+    try {
+        const res = await fetch(`${API_URL}/api/local-seo/admin/wordpress/test-connection`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const data = await res.json();
+        resultEl.innerHTML = data.success
+            ? `<span style="color:#10b981;">✓ Verbunden als ${data.name} (${data.url})</span>`
+            : `<span style="color:#ef4444;">Fehler: ${data.error}</span>`;
+    } catch (err) {
+        resultEl.innerHTML = `<span style="color:#ef4444;">Fehler: ${err.message}</span>`;
+    }
+}
+
+async function getLocalSeoBloggerAuthUrl() {
+    try {
+        const res = await fetch(`${API_URL}/api/local-seo/admin/blogger/auth-url`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Unbekannter Fehler');
+        const popup = window.open(data.authUrl, 'Local SEO Blogger Auth', 'width=600,height=700');
+        const status = document.getElementById('local-seo-blogger-auth-status');
+        status.textContent = '⏳ Warte auf Autorisierung...';
+        const check = setInterval(() => {
+            if (popup.closed) {
+                clearInterval(check);
+                status.textContent = '✅ Verbunden — "Blogs laden" klicken, um den Ziel-Blog auszuwählen.';
+            }
+        }, 1000);
+    } catch (err) {
+        alert('Fehler: ' + err.message);
+    }
+}
+
+async function loadLocalSeoBloggerBlogs() {
+    const listEl = document.getElementById('local-seo-blogger-blogs-list');
+    listEl.innerHTML = 'Lädt...';
+    try {
+        const res = await fetch(`${API_URL}/api/local-seo/admin/blogger/blogs`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        const data = await res.json();
+        if (!data.success) { listEl.innerHTML = `<span style="color:#ef4444;">Fehler: ${data.error}</span>`; return; }
+        listEl.innerHTML = data.blogs.map(b => `
+            <div style="padding:6px 0;">
+                <a href="#" onclick="selectLocalSeoBloggerBlog('${b.id}', '${b.name.replace(/'/g, "\\'")}');return false;">${b.name}</a>
+                <span style="color:#9ca3af;font-size:12px;"> — ${b.url}</span>
+            </div>`).join('') || '<p style="color:#9ca3af;">Keine Blogs gefunden.</p>';
+    } catch (err) {
+        listEl.innerHTML = `<span style="color:#ef4444;">Fehler: ${err.message}</span>`;
+    }
+}
+
+async function selectLocalSeoBloggerBlog(blogId, blogName) {
+    try {
+        await fetch(`${API_URL}/api/local-seo/admin/blogger/select-blog`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getAuthToken()}` },
+            body: JSON.stringify({ blogId })
+        });
+        document.getElementById('local-seo-blogger-blog-id').value = blogId;
+        document.getElementById('local-seo-blogger-auth-status').innerHTML = `<span style="color:#10b981;">✓ Blog ausgewählt: ${blogName}</span>`;
+    } catch (err) {
+        alert('Fehler: ' + err.message);
     }
 }
 
@@ -4809,17 +4885,21 @@ async function viewLsDetail(id) {
 
 async function renderLsDetailBody() {
     const c = currentLsCombination;
-    const [recipientsRes, callsRes, rankingRes] = await Promise.all([
+    const [recipientsRes, callsRes, rankingRes, distributionRes] = await Promise.all([
         fetch(`${API_URL}/api/local-seo/admin/candidates/${currentLsCombinationId}/recipients`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } }),
         fetch(`${API_URL}/api/local-seo/admin/candidates/${currentLsCombinationId}/calls`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } }),
         fetch(`${API_URL}/api/local-seo/admin/candidates/${currentLsCombinationId}/ranking-history`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } }),
+        fetch(`${API_URL}/api/local-seo/admin/candidates/${currentLsCombinationId}/distribution`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } }),
     ]);
     const recipientsData = await recipientsRes.json();
     const callsData = await callsRes.json();
     const rankingData = await rankingRes.json();
+    const distributionData = await distributionRes.json();
     const recipients = recipientsData.recipients || [];
     const calls = callsData.calls || [];
     const rankingChecks = rankingData.checks || [];
+    const distributionHistory = distributionData.history || [];
+    window.currentLsDistributionHistory = distributionHistory;
     const clusterKeywords = c.target_keywords && c.target_keywords.length > 0 ? c.target_keywords : [c.keyword_phrase];
 
     // Latest check per keyword, for a compact "current ranking" view above the full history
@@ -4900,6 +4980,38 @@ async function renderLsDetailBody() {
         </div>
 
         <div style="border-top:1px solid #e5e7eb;padding-top:16px;margin-bottom:20px;">
+            <label class="field-label" style="display:block;margin-bottom:8px;">📡 Ranking-Boost / Verteilung</label>
+            <p style="font-size:12px;color:#6b7280;margin-bottom:10px;">Generiert einen Blog-Artikel (pt-BR) mit Video-Embed und Telefon-CTA für diese Kombination und veröffentlicht ihn auf den ausgewählten Plattformen. WordPress/Blogger werden live gepostet (eigener Account, siehe Settings → Local SEO Accounts); Pinterest/Google Sites liefern Inhalt zum manuellen Einfügen (Copy-Paste).</p>
+            ${!c.youtube_video_id ? '<p style="font-size:12px;color:#92400e;background:#fffbeb;padding:8px 12px;border-radius:6px;margin-bottom:10px;">Hinweis: Noch kein Video hinterlegt — der Artikel wird ohne Embed generiert.</p>' : ''}
+            <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
+                <label style="font-size:13px;"><input type="checkbox" class="ls-dist-platform" value="wordpress" checked> WordPress</label>
+                <label style="font-size:13px;"><input type="checkbox" class="ls-dist-platform" value="blogger" checked> Blogger</label>
+                <label style="font-size:13px;"><input type="checkbox" class="ls-dist-platform" value="pinterest" checked> Pinterest</label>
+                <label style="font-size:13px;"><input type="checkbox" class="ls-dist-platform" value="google_sites" checked> Google Sites</label>
+                <button class="btn btn-primary" onclick="distributeLsContent()" id="ls-distribute-btn">Jetzt verteilen</button>
+            </div>
+            <div id="ls-distribute-result" style="margin-bottom:10px;"></div>
+            ${distributionHistory.length === 0 ? '<p style="color:#9ca3af;font-size:13px;">Noch nichts verteilt.</p>' : `
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>Plattform</th><th>Status</th><th>Titel</th><th>Link / Inhalt</th><th>Zeitpunkt</th></tr></thead>
+                        <tbody>
+                            ${distributionHistory.map(d => `
+                                <tr>
+                                    <td>${{wordpress:'WordPress',blogger:'Blogger',pinterest:'Pinterest',google_sites:'Google Sites'}[d.platform] || d.platform}</td>
+                                    <td>${d.status === 'published' ? '✅ Veröffentlicht' : d.status === 'draft' ? '📋 Entwurf (Copy-Paste)' : `❌ Fehler${d.error_message ? ': ' + d.error_message : ''}`}</td>
+                                    <td>${d.title || '–'}</td>
+                                    <td>${d.external_url ? `<a href="${d.external_url}" target="_blank">Öffnen</a>` : (d.status === 'draft' ? `<a href="#" onclick="viewLsDistributionContent('${d.id}');return false;">Inhalt anzeigen</a>` : '–')}</td>
+                                    <td>${new Date(d.created_at).toLocaleString('de-DE')}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `}
+        </div>
+
+        <div style="border-top:1px solid #e5e7eb;padding-top:16px;margin-bottom:20px;">
             <label class="field-label" style="display:block;margin-bottom:8px;">👥 Potentielle Kunden (${recipients.length}/3)</label>
             ${recipients.map(r => `
                 <div style="display:flex;justify-content:space-between;align-items:center;background:#f9fafb;border-radius:8px;padding:10px 12px;margin-bottom:6px;">
@@ -4947,6 +5059,53 @@ async function renderLsDetailBody() {
             `}
         </div>
     `;
+}
+
+async function distributeLsContent() {
+    const platforms = Array.from(document.querySelectorAll('.ls-dist-platform:checked')).map(el => el.value);
+    const resultEl = document.getElementById('ls-distribute-result');
+    if (platforms.length === 0) {
+        resultEl.innerHTML = '<p style="color:#ef4444;font-size:13px;">Mindestens eine Plattform auswählen.</p>';
+        return;
+    }
+    const btn = document.getElementById('ls-distribute-btn');
+    btn.disabled = true;
+    btn.textContent = 'Wird generiert & veröffentlicht...';
+    resultEl.innerHTML = '';
+    try {
+        const res = await fetch(`${API_URL}/api/local-seo/admin/candidates/${currentLsCombinationId}/distribute`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getAuthToken()}` },
+            body: JSON.stringify({ platforms })
+        });
+        const data = await res.json();
+        if (!data.success) {
+            resultEl.innerHTML = `<p style="color:#ef4444;font-size:13px;">Fehler: ${data.error || 'Unbekannter Fehler'}</p>`;
+        } else {
+            const failed = data.results.filter(r => r.status === 'failed');
+            resultEl.innerHTML = failed.length > 0
+                ? `<p style="color:#ef4444;font-size:13px;">${failed.length} von ${data.results.length} fehlgeschlagen — siehe Tabelle unten.</p>`
+                : `<p style="color:#10b981;font-size:13px;">✓ Verteilung abgeschlossen.</p>`;
+            await renderLsDetailBody();
+        }
+    } catch (err) {
+        resultEl.innerHTML = `<p style="color:#ef4444;font-size:13px;">Fehler: ${err.message}</p>`;
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Jetzt verteilen';
+    }
+}
+
+function viewLsDistributionContent(distributionId) {
+    const entry = (window.currentLsDistributionHistory || []).find(d => d.id === distributionId);
+    if (!entry) return;
+    document.getElementById('ls-content-title').textContent = entry.title || 'Inhalt';
+    document.getElementById('ls-content-body').value = entry.body || '';
+    document.getElementById('ls-content-modal').classList.add('active');
+}
+
+function closeLsContentModal() {
+    document.getElementById('ls-content-modal').classList.remove('active');
 }
 
 async function saveLsVideoUrl() {

@@ -2425,6 +2425,18 @@
                 </div>
             </div>
 
+            <!-- LOCAL SEO: Distribution draft content (copy-paste for Pinterest/Google Sites) -->
+            <div id="ls-content-modal" class="modal">
+                <div class="modal-content" style="max-width:700px;">
+                    <div class="modal-header">
+                        <h2 id="ls-content-title">Inhalt</h2>
+                        <button class="close-modal" onclick="closeLsContentModal()">✕</button>
+                    </div>
+                    <p style="font-size:12px;color:#6b7280;margin-bottom:8px;">Zum manuellen Einfügen kopieren:</p>
+                    <textarea id="ls-content-body" readonly style="width:100%;height:300px;padding:12px;border:1px solid #e5e7eb;border-radius:8px;font-family:monospace;font-size:12px;"></textarea>
+                </div>
+            </div>
+
             <!-- SETTINGS TAB -->
             <div id="settings" class="tab-content">
                 <h3>Platform Settings</h3>
@@ -2602,6 +2614,23 @@
                         <div class="form-group"><label><input type="checkbox" id="blogger-auto"> Enable Auto-Posting</label></div>
                         <p style="color:#6b7280;font-size:0.85em;">After saving, go to the Blogger tab to authorize and connect your blog.</p>
                     </div>
+
+                    <!-- Local SEO Accounts (separate from the WordPress/Blogger settings above,
+                         which belong to TravelSmarter's own travel-hacks blog/board) -->
+                    <h4 style="margin-top:30px;margin-bottom:8px;">🎯 Local SEO Accounts</h4>
+                    <p style="color:#6b7280;font-size:0.85em;margin-bottom:16px;">Eigene Accounts für die Ranking-Boost-Verteilung der Local-SEO-Kombinationen (pt-BR Handwerker-Nische) — bewusst getrennt von den TravelSmarter-Accounts oben, damit sich die Inhalte nie vermischen.</p>
+                    <div class="form-group"><label>WordPress Site URL</label><input type="text" id="local-seo-wordpress-site-url" placeholder="https://deine-handwerker-seite.com"></div>
+                    <div class="form-group"><label>WordPress Benutzername</label><input type="text" id="local-seo-wordpress-username" placeholder="WordPress Login-Name"></div>
+                    <div class="form-group"><label>WordPress App Password</label><input type="password" id="local-seo-wordpress-app-password" placeholder="xxxx xxxx xxxx xxxx xxxx xxxx"></div>
+                    <button class="btn btn-secondary" onclick="testLocalSeoWordpressConnection()" style="margin-bottom:16px;">Verbindung testen</button>
+                    <div id="local-seo-wordpress-test-result" style="margin-bottom:16px;font-size:13px;"></div>
+
+                    <div class="form-group"><label>Blogger Blog ID</label><input type="text" id="local-seo-blogger-blog-id" placeholder="Wird nach dem Verbinden unten ausgewählt"></div>
+                    <p style="color:#6b7280;font-size:0.8em;margin-bottom:8px;">Nutzt dieselbe Google-App (Client ID/Secret oben bei Blogger) — nur der verbundene Google-Account/Blog ist ein eigener, getrennter von TravelSmarter.</p>
+                    <button class="btn btn-secondary" onclick="getLocalSeoBloggerAuthUrl()">🔗 Google-Account verbinden</button>
+                    <button class="btn btn-secondary" onclick="loadLocalSeoBloggerBlogs()">Blogs laden</button>
+                    <div id="local-seo-blogger-auth-status" style="margin-top:8px;font-size:13px;"></div>
+                    <div id="local-seo-blogger-blogs-list" style="margin-top:8px;"></div>
 
                     <button class="btn btn-primary" onclick="saveSettings()" style="margin-top:20px;">Save All Settings</button>
                 </div>
