@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Budget Calculator — What Will Your Trip Cost? | TravelSmarter</title>
+    <meta name="description" content="Estimate your trip cost for 80 destinations — free instant calculator with a daily budget breakdown by accommodation, food, transport, and activities.">
+    <link rel="canonical" href="https://travelsmarterapp.com/travel-budget-calculator.html">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Travel Budget Calculator — What Will Your Trip Cost?">
+    <meta property="og:description" content="Instant free calculator: estimate your trip cost with a full daily budget breakdown.">
+    <meta property="og:url" content="https://travelsmarterapp.com/travel-budget-calculator.html">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Travel Budget Calculator — What Will Your Trip Cost?">
+    <meta name="twitter:description" content="Instant free calculator: estimate your trip cost with a full daily budget breakdown.">
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-470B6E2DKF"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-470B6E2DKF');
+    </script>
+
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+            background:#f9fafb; color:#1f2937; line-height:1.6;
+        }
+        header {
+            background:linear-gradient(135deg,#1a2744 0%,#2d3f6b 100%);
+            color:white; padding:18px 0;
+        }
+        header .container { max-width:760px; margin:0 auto; padding:0 20px; }
+        header a { color:#ff6b4a; font-weight:800; font-size:1.2em; text-decoration:none; }
+        .hero { max-width:760px; margin:0 auto; padding:50px 20px 20px; text-align:center; }
+        .hero h1 { font-size:1.9em; color:#1a2744; margin-bottom:14px; }
+        .hero p { color:#6b7280; font-size:1.05em; max-width:600px; margin:0 auto; }
+        .container { max-width:760px; margin:0 auto; padding:30px 20px 60px; }
+        .card {
+            background:white; border-radius:12px; padding:32px;
+            box-shadow:0 4px 20px rgba(0,0,0,0.06); margin-bottom:24px;
+        }
+        .grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+        label { display:block; font-weight:600; font-size:14px; margin-bottom:6px; color:#374151; }
+        select, input[type="number"], input[type="email"], input[type="text"] {
+            width:100%; padding:11px 14px; border:1px solid #e5e7eb; border-radius:8px;
+            font-size:15px; margin-bottom:18px;
+        }
+        .btn {
+            display:inline-block; background:#ff6b4a; color:white; border:none;
+            padding:13px 28px; border-radius:8px; font-weight:700; font-size:15px;
+            cursor:pointer; width:100%;
+        }
+        .btn:disabled { opacity:0.6; cursor:default; }
+        .btn-secondary { background:#1a2744; }
+        #result { display:none; }
+        .result-headline {
+            background:#f0f4ff; border-radius:10px; padding:20px; font-weight:700;
+            color:#1a2744; margin-bottom:16px; font-size:1.05em;
+        }
+        .breakdown-table { width:100%; border-collapse:collapse; margin-bottom:14px; font-size:14.5px; }
+        .breakdown-table td { padding:8px 4px; border-bottom:1px solid #f0f0f0; }
+        .breakdown-table td:first-child { color:#6b7280; }
+        .breakdown-table td:last-child { text-align:right; font-weight:600; color:#1a2744; }
+        #pdf-section { display:none; border-top:1px solid #e5e7eb; margin-top:24px; padding-top:24px; }
+        #pdf-section p { color:#6b7280; font-size:14px; margin-bottom:14px; }
+        .alert { padding:12px 16px; border-radius:8px; font-size:14px; margin-bottom:14px; display:none; }
+        .alert-error { background:#fee2e2; color:#991b1b; }
+        .content-block h2 { font-size:1.3em; color:#1a2744; margin-bottom:12px; }
+        .content-block p { color:#4b5563; margin-bottom:14px; font-size:15px; }
+        footer { text-align:center; padding:30px 20px; color:#9ca3af; font-size:13px; }
+        footer a { color:#667eea; text-decoration:none; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container"><a href="index.html">✈️ TravelSmarter</a></div>
+    </header>
+
+    <div class="hero">
+        <h1>Travel Budget Calculator</h1>
+        <p>Pick your destination, trip length, and travel style to get an instant cost estimate with a full breakdown — free, no sign-up required.</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div id="form-section">
+                <label for="destination">Destination</label>
+                <select id="destination"></select>
+
+                <div class="grid-3">
+                    <div>
+                        <label for="days">Trip length (days)</label>
+                        <input type="number" id="days" value="7" min="1" max="60">
+                    </div>
+                    <div style="grid-column: span 2;">
+                        <label for="style">Travel style</label>
+                        <select id="style">
+                            <option value="budget">Budget</option>
+                            <option value="mid-range" selected>Mid-range</option>
+                            <option value="luxury">Luxury</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="calc-alert" class="alert alert-error"></div>
+                <button class="btn" id="calc-btn" onclick="calculate()">Calculate My Budget</button>
+            </div>
+
+            <div id="result">
+                <div class="result-headline" id="result-headline"></div>
+                <table class="breakdown-table" id="breakdown-table"></table>
+
+                <div id="pdf-section">
+                    <p><strong>Want the full report?</strong> Get a PDF with the complete breakdown and money-saving tips — free.</p>
+                    <input type="text" id="firstName" placeholder="First name (optional)">
+                    <input type="email" id="email" placeholder="Email address" required>
+                    <div id="pdf-alert" class="alert alert-error"></div>
+                    <button class="btn btn-secondary" id="pdf-btn" onclick="downloadPdf()">Get Your Free PDF Report</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card content-block">
+            <h2>Why the same trip costs so differently by destination</h2>
+            <p>A "mid-range" trip covers roughly the same standard of hotel, food, and activities everywhere — but local prices vary enormously. Southeast Asia, parts of South America, and North Africa can cost a third of what the same standard of travel costs in Western Europe, Australia, or overwater destinations like the Maldives and Bora Bora.</p>
+            <p>These estimates cover accommodation, food, local transport, and activities per person per day — they don't include international flights, which vary too much by origin city and booking timing to estimate generically (use our <a href="best-time-to-book-flights.html">flight timing calculator</a> for that).</p>
+        </div>
+    </div>
+
+    <footer>
+        Part of <a href="sales-page.html">TravelSmarter</a> — 87 verified travel hacks, price alerts, and more.
+    </footer>
+
+    <script>
+        let API_URL;
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            API_URL = 'http://localhost:5000';
+        } else {
+            API_URL = 'https://api.travelsmarterapp.com';
+        }
+
+        const DESTINATIONS = [
+            ["paris","Paris"],["london","London"],["rome","Rome"],["barcelona","Barcelona"],["amsterdam","Amsterdam"],
+            ["lisbon","Lisbon"],["dublin","Dublin"],["athens","Athens"],["reykjavik","Reykjavik"],["madrid","Madrid"],
+            ["venice","Venice"],["prague","Prague"],["vienna","Vienna"],["berlin","Berlin"],["santorini","Santorini"],
+            ["zurich","Zurich"],["munich","Munich"],["milan","Milan"],["copenhagen","Copenhagen"],["stockholm","Stockholm"],
+            ["budapest","Budapest"],["istanbul","Istanbul"],["edinburgh","Edinburgh"],["nice","Nice"],
+            ["tokyo","Tokyo"],["bangkok","Bangkok"],["bali","Bali"],["singapore","Singapore"],["seoul","Seoul"],
+            ["hong-kong","Hong Kong"],["sydney","Sydney"],["auckland","Auckland"],["ho-chi-minh-city","Ho Chi Minh City"],
+            ["manila","Manila"],["phuket","Phuket"],["kuala-lumpur","Kuala Lumpur"],["beijing","Beijing"],["delhi","Delhi"],
+            ["maldives","Maldives"],["taipei","Taipei"],["colombo","Colombo"],["siem-reap","Siem Reap"],["fiji","Fiji"],["bora-bora","Bora Bora"],
+            ["cancun","Cancún"],["punta-cana","Punta Cana"],["san-juan","San Juan"],["nassau","Nassau"],["montego-bay","Montego Bay"],
+            ["cabo-san-lucas","Cabo San Lucas"],["aruba","Aruba"],["turks-and-caicos","Turks and Caicos"],["st-lucia","St. Lucia"],["san-jose-costa-rica","San José"],
+            ["vancouver","Vancouver"],["toronto","Toronto"],["montreal","Montreal"],["quebec-city","Quebec City"],["calgary","Calgary"],
+            ["dubai","Dubai"],["marrakech","Marrakech"],["cape-town","Cape Town"],["rio-de-janeiro","Rio de Janeiro"],["buenos-aires","Buenos Aires"],
+            ["bogota","Bogotá"],["lima","Lima"],["cusco","Cusco"],["santiago","Santiago"],["cartagena","Cartagena"],
+            ["panama-city","Panama City"],["belize-city","Belize City"],["grand-cayman","Grand Cayman"],["antigua","Antigua"],["curacao","Curaçao"],
+            ["doha","Doha"],["tel-aviv","Tel Aviv"],["abu-dhabi","Abu Dhabi"],["zanzibar","Zanzibar"],["nairobi","Nairobi"],["casablanca","Casablanca"],
+        ];
+        const destSelect = document.getElementById('destination');
+        DESTINATIONS.forEach(([slug, name]) => {
+            const opt = document.createElement('option');
+            opt.value = slug;
+            opt.textContent = name;
+            destSelect.appendChild(opt);
+        });
+
+        let lastResult = null;
+
+        function renderBreakdown(breakdown) {
+            const table = document.getElementById('breakdown-table');
+            table.innerHTML = Object.entries(breakdown).map(([cat, v]) =>
+                `<tr><td>${cat.charAt(0).toUpperCase() + cat.slice(1)}</td><td>$${v.daily}/day ($${v.total.toLocaleString()} total)</td></tr>`
+            ).join('');
+        }
+
+        async function calculate() {
+            const destination = document.getElementById('destination').value;
+            const days = document.getElementById('days').value;
+            const style = document.getElementById('style').value;
+            const alertEl = document.getElementById('calc-alert');
+            alertEl.style.display = 'none';
+
+            if (!days || days < 1) {
+                alertEl.textContent = 'Please enter a valid trip length.';
+                alertEl.style.display = 'block';
+                return;
+            }
+
+            const btn = document.getElementById('calc-btn');
+            btn.disabled = true;
+            btn.textContent = 'Calculating...';
+
+            try {
+                const res = await fetch(`${API_URL}/api/tools/budget-calculator/calculate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ destination, days, style }),
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error || 'Something went wrong');
+
+                lastResult = data.result;
+                gtag('event', 'tool_calculate', { tool: 'travel_budget_calculator' });
+
+                document.getElementById('result-headline').textContent = data.result.headline;
+                renderBreakdown(data.result.breakdown);
+                document.getElementById('result').style.display = 'block';
+                document.getElementById('pdf-section').style.display = 'block';
+            } catch (err) {
+                alertEl.textContent = err.message;
+                alertEl.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Calculate My Budget';
+            }
+        }
+
+        async function downloadPdf() {
+            const email = document.getElementById('email').value.trim();
+            const firstName = document.getElementById('firstName').value.trim();
+            const alertEl = document.getElementById('pdf-alert');
+            alertEl.style.display = 'none';
+
+            if (!email || !email.includes('@')) {
+                alertEl.textContent = 'Please enter a valid email address.';
+                alertEl.style.display = 'block';
+                return;
+            }
+            if (!lastResult) return;
+
+            const btn = document.getElementById('pdf-btn');
+            btn.disabled = true;
+            btn.textContent = 'Generating your PDF...';
+
+            try {
+                const res = await fetch(`${API_URL}/api/tools/budget-calculator/pdf`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email, firstName,
+                        destination: lastResult.destination,
+                        days: lastResult.days,
+                        style: lastResult.style,
+                    }),
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error || 'Failed to generate PDF');
+                }
+
+                gtag('event', 'generate_lead', { tool: 'travel_budget_calculator' });
+
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'travel-budget-calculator.pdf';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+
+                btn.textContent = '✓ Downloaded — check your email too!';
+            } catch (err) {
+                alertEl.textContent = err.message;
+                alertEl.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = 'Get Your Free PDF Report';
+            }
+        }
+    </script>
+</body>
+</html>
