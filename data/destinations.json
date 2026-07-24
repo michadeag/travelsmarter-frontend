@@ -168,7 +168,7 @@
     "region": "Asia-Pacific",
     "airportCode": "SIN",
     "tripType": "long_haul_asia_pacific",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "seoul",
@@ -177,7 +177,7 @@
     "region": "Asia-Pacific",
     "airportCode": "ICN",
     "tripType": "long_haul_asia_pacific",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "hong-kong",
@@ -186,7 +186,7 @@
     "region": "Asia-Pacific",
     "airportCode": "HKG",
     "tripType": "long_haul_asia_pacific",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "sydney",
@@ -195,7 +195,7 @@
     "region": "Asia-Pacific",
     "airportCode": "SYD",
     "tripType": "long_haul_asia_pacific",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "ho-chi-minh-city",
@@ -204,7 +204,7 @@
     "region": "Asia-Pacific",
     "airportCode": "SGN",
     "tripType": "long_haul_asia_pacific",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "manila",
@@ -213,7 +213,7 @@
     "region": "Asia-Pacific",
     "airportCode": "MNL",
     "tripType": "long_haul_asia_pacific",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "auckland",
@@ -222,7 +222,7 @@
     "region": "Asia-Pacific",
     "airportCode": "AKL",
     "tripType": "long_haul_asia_pacific",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "phuket",
@@ -231,7 +231,7 @@
     "region": "Asia-Pacific",
     "airportCode": "HKT",
     "tripType": "long_haul_asia_pacific",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "kuala-lumpur",
@@ -240,7 +240,7 @@
     "region": "Asia-Pacific",
     "airportCode": "KUL",
     "tripType": "long_haul_asia_pacific",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "beijing",
@@ -249,7 +249,7 @@
     "region": "Asia-Pacific",
     "airportCode": "PEK",
     "tripType": "long_haul_asia_pacific",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "delhi",
@@ -258,7 +258,7 @@
     "region": "Asia-Pacific",
     "airportCode": "DEL",
     "tripType": "long_haul_asia_pacific",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "maldives",
@@ -267,7 +267,7 @@
     "region": "Asia-Pacific",
     "airportCode": "MLE",
     "tripType": "long_haul_asia_pacific",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "cancun",
@@ -276,7 +276,7 @@
     "region": "Caribbean & Mexico",
     "airportCode": "CUN",
     "tripType": "short_haul",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "punta-cana",
@@ -285,7 +285,7 @@
     "region": "Caribbean & Mexico",
     "airportCode": "PUJ",
     "tripType": "short_haul",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "san-juan",
@@ -294,7 +294,7 @@
     "region": "Caribbean & Mexico",
     "airportCode": "SJU",
     "tripType": "short_haul",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "nassau",
@@ -303,7 +303,7 @@
     "region": "Caribbean & Mexico",
     "airportCode": "NAS",
     "tripType": "short_haul",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "montego-bay",
@@ -312,7 +312,7 @@
     "region": "Caribbean & Mexico",
     "airportCode": "MBJ",
     "tripType": "short_haul",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "cabo-san-lucas",
@@ -321,7 +321,7 @@
     "region": "Caribbean & Mexico",
     "airportCode": "SJD",
     "tripType": "short_haul",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "aruba",
@@ -330,7 +330,7 @@
     "region": "Caribbean & Mexico",
     "airportCode": "AUA",
     "tripType": "short_haul",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "turks-and-caicos",
@@ -339,7 +339,7 @@
     "region": "Caribbean & Mexico",
     "airportCode": "PLS",
     "tripType": "short_haul",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "st-lucia",
@@ -348,7 +348,7 @@
     "region": "Caribbean & Mexico",
     "airportCode": "UVF",
     "tripType": "short_haul",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "san-jose-costa-rica",
@@ -357,7 +357,7 @@
     "region": "Caribbean & Mexico",
     "airportCode": "SJO",
     "tripType": "short_haul",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "vancouver",
@@ -366,7 +366,7 @@
     "region": "Canada",
     "airportCode": "YVR",
     "tripType": "short_haul",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "toronto",
@@ -375,7 +375,7 @@
     "region": "Canada",
     "airportCode": "YYZ",
     "tripType": "short_haul",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "montreal",
@@ -384,7 +384,7 @@
     "region": "Canada",
     "airportCode": "YUL",
     "tripType": "short_haul",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "quebec-city",
@@ -393,7 +393,7 @@
     "region": "Canada",
     "airportCode": "YQB",
     "tripType": "short_haul",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "calgary",
@@ -402,7 +402,7 @@
     "region": "Canada",
     "airportCode": "YYC",
     "tripType": "short_haul",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "dubai",
@@ -411,7 +411,7 @@
     "region": "Middle East & Africa",
     "airportCode": "DXB",
     "tripType": "long_haul_transatlantic",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "marrakech",
@@ -420,7 +420,7 @@
     "region": "Middle East & Africa",
     "airportCode": "RAK",
     "tripType": "long_haul_transatlantic",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "cape-town",
@@ -429,7 +429,7 @@
     "region": "Middle East & Africa",
     "airportCode": "CPT",
     "tripType": "long_haul_asia_pacific",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "rio-de-janeiro",
@@ -438,7 +438,7 @@
     "region": "South America",
     "airportCode": "GIG",
     "tripType": "long_haul_transatlantic",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "buenos-aires",
@@ -447,7 +447,7 @@
     "region": "South America",
     "airportCode": "EZE",
     "tripType": "long_haul_transatlantic",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "bogota",
@@ -456,7 +456,7 @@
     "region": "South America",
     "airportCode": "BOG",
     "tripType": "short_haul",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "lima",
@@ -465,7 +465,7 @@
     "region": "South America",
     "airportCode": "LIM",
     "tripType": "long_haul_transatlantic",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "cusco",
@@ -474,7 +474,7 @@
     "region": "South America",
     "airportCode": "CUZ",
     "tripType": "long_haul_transatlantic",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "santiago",
@@ -483,7 +483,7 @@
     "region": "South America",
     "airportCode": "SCL",
     "tripType": "long_haul_transatlantic",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "cartagena",
@@ -492,7 +492,7 @@
     "region": "South America",
     "airportCode": "CTG",
     "tripType": "short_haul",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "zurich",
@@ -546,7 +546,7 @@
     "region": "Europe",
     "airportCode": "BUD",
     "tripType": "long_haul_transatlantic",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "istanbul",
@@ -555,7 +555,7 @@
     "region": "Europe",
     "airportCode": "IST",
     "tripType": "long_haul_transatlantic",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "edinburgh",
@@ -564,7 +564,7 @@
     "region": "Europe",
     "airportCode": "EDI",
     "tripType": "long_haul_transatlantic",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "nice",
@@ -573,7 +573,7 @@
     "region": "Europe",
     "airportCode": "NCE",
     "tripType": "long_haul_transatlantic",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "taipei",
@@ -582,7 +582,7 @@
     "region": "Asia-Pacific",
     "airportCode": "TPE",
     "tripType": "long_haul_asia_pacific",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "colombo",
@@ -591,7 +591,7 @@
     "region": "Asia-Pacific",
     "airportCode": "CMB",
     "tripType": "long_haul_asia_pacific",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "siem-reap",
@@ -600,7 +600,7 @@
     "region": "Asia-Pacific",
     "airportCode": "REP",
     "tripType": "long_haul_asia_pacific",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "fiji",
@@ -609,7 +609,7 @@
     "region": "Asia-Pacific",
     "airportCode": "NAN",
     "tripType": "long_haul_asia_pacific",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "bora-bora",
@@ -618,7 +618,7 @@
     "region": "Asia-Pacific",
     "airportCode": "BOB",
     "tripType": "long_haul_asia_pacific",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "panama-city",
@@ -627,7 +627,7 @@
     "region": "Caribbean & Mexico",
     "airportCode": "PTY",
     "tripType": "short_haul",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "belize-city",
@@ -636,7 +636,7 @@
     "region": "Caribbean & Mexico",
     "airportCode": "BZE",
     "tripType": "short_haul",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "grand-cayman",
@@ -645,7 +645,7 @@
     "region": "Caribbean & Mexico",
     "airportCode": "GCM",
     "tripType": "short_haul",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "antigua",
@@ -654,7 +654,7 @@
     "region": "Caribbean & Mexico",
     "airportCode": "ANU",
     "tripType": "short_haul",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "curacao",
@@ -663,7 +663,7 @@
     "region": "Caribbean & Mexico",
     "airportCode": "CUR",
     "tripType": "short_haul",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "doha",
@@ -672,7 +672,7 @@
     "region": "Middle East & Africa",
     "airportCode": "DOH",
     "tripType": "long_haul_asia_pacific",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "tel-aviv",
@@ -681,7 +681,7 @@
     "region": "Middle East & Africa",
     "airportCode": "TLV",
     "tripType": "long_haul_transatlantic",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "abu-dhabi",
@@ -690,7 +690,7 @@
     "region": "Middle East & Africa",
     "airportCode": "AUH",
     "tripType": "long_haul_asia_pacific",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "zanzibar",
@@ -699,7 +699,7 @@
     "region": "Middle East & Africa",
     "airportCode": "ZNZ",
     "tripType": "long_haul_asia_pacific",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "nairobi",
@@ -708,7 +708,7 @@
     "region": "Middle East & Africa",
     "airportCode": "NBO",
     "tripType": "long_haul_asia_pacific",
-    "status": "planned"
+    "status": "live"
   },
   {
     "slug": "casablanca",
@@ -717,6 +717,6 @@
     "region": "Middle East & Africa",
     "airportCode": "CMN",
     "tripType": "long_haul_transatlantic",
-    "status": "planned"
+    "status": "live"
   }
 ]
