@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://travelsmarterapp.com/sitemap.xml
