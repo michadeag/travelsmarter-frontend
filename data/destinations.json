@@ -1,56 +1,722 @@
 [
-  { "slug": "paris", "city": "Paris", "country": "France", "region": "Europe", "airportCode": "CDG", "tripType": "long_haul_transatlantic", "status": "live" },
-  { "slug": "london", "city": "London", "country": "United Kingdom", "region": "Europe", "airportCode": "LHR", "tripType": "long_haul_transatlantic", "status": "live" },
-  { "slug": "rome", "city": "Rome", "country": "Italy", "region": "Europe", "airportCode": "FCO", "tripType": "long_haul_transatlantic", "status": "live" },
-  { "slug": "barcelona", "city": "Barcelona", "country": "Spain", "region": "Europe", "airportCode": "BCN", "tripType": "long_haul_transatlantic", "status": "live" },
-  { "slug": "amsterdam", "city": "Amsterdam", "country": "Netherlands", "region": "Europe", "airportCode": "AMS", "tripType": "long_haul_transatlantic", "status": "live" },
-  { "slug": "lisbon", "city": "Lisbon", "country": "Portugal", "region": "Europe", "airportCode": "LIS", "tripType": "long_haul_transatlantic", "status": "live" },
-  { "slug": "dublin", "city": "Dublin", "country": "Ireland", "region": "Europe", "airportCode": "DUB", "tripType": "long_haul_transatlantic", "status": "planned" },
-  { "slug": "athens", "city": "Athens", "country": "Greece", "region": "Europe", "airportCode": "ATH", "tripType": "long_haul_transatlantic", "status": "planned" },
-  { "slug": "reykjavik", "city": "Reykjavik", "country": "Iceland", "region": "Europe", "airportCode": "KEF", "tripType": "long_haul_transatlantic", "status": "planned" },
-  { "slug": "madrid", "city": "Madrid", "country": "Spain", "region": "Europe", "airportCode": "MAD", "tripType": "long_haul_transatlantic", "status": "planned" },
-  { "slug": "venice", "city": "Venice", "country": "Italy", "region": "Europe", "airportCode": "VCE", "tripType": "long_haul_transatlantic", "status": "planned" },
-  { "slug": "prague", "city": "Prague", "country": "Czech Republic", "region": "Europe", "airportCode": "PRG", "tripType": "long_haul_transatlantic", "status": "planned" },
-  { "slug": "vienna", "city": "Vienna", "country": "Austria", "region": "Europe", "airportCode": "VIE", "tripType": "long_haul_transatlantic", "status": "planned" },
-  { "slug": "berlin", "city": "Berlin", "country": "Germany", "region": "Europe", "airportCode": "BER", "tripType": "long_haul_transatlantic", "status": "planned" },
-  { "slug": "santorini", "city": "Santorini", "country": "Greece", "region": "Europe", "airportCode": "JTR", "tripType": "long_haul_transatlantic", "status": "planned" },
-
-  { "slug": "tokyo", "city": "Tokyo", "country": "Japan", "region": "Asia-Pacific", "airportCode": "HND", "tripType": "long_haul_asia_pacific", "status": "planned" },
-  { "slug": "bangkok", "city": "Bangkok", "country": "Thailand", "region": "Asia-Pacific", "airportCode": "BKK", "tripType": "long_haul_asia_pacific", "status": "planned" },
-  { "slug": "bali", "city": "Bali", "country": "Indonesia", "region": "Asia-Pacific", "airportCode": "DPS", "tripType": "long_haul_asia_pacific", "status": "planned" },
-  { "slug": "singapore", "city": "Singapore", "country": "Singapore", "region": "Asia-Pacific", "airportCode": "SIN", "tripType": "long_haul_asia_pacific", "status": "planned" },
-  { "slug": "seoul", "city": "Seoul", "country": "South Korea", "region": "Asia-Pacific", "airportCode": "ICN", "tripType": "long_haul_asia_pacific", "status": "planned" },
-  { "slug": "hong-kong", "city": "Hong Kong", "country": "Hong Kong", "region": "Asia-Pacific", "airportCode": "HKG", "tripType": "long_haul_asia_pacific", "status": "planned" },
-  { "slug": "sydney", "city": "Sydney", "country": "Australia", "region": "Asia-Pacific", "airportCode": "SYD", "tripType": "long_haul_asia_pacific", "status": "planned" },
-  { "slug": "ho-chi-minh-city", "city": "Ho Chi Minh City", "country": "Vietnam", "region": "Asia-Pacific", "airportCode": "SGN", "tripType": "long_haul_asia_pacific", "status": "planned" },
-  { "slug": "manila", "city": "Manila", "country": "Philippines", "region": "Asia-Pacific", "airportCode": "MNL", "tripType": "long_haul_asia_pacific", "status": "planned" },
-  { "slug": "auckland", "city": "Auckland", "country": "New Zealand", "region": "Asia-Pacific", "airportCode": "AKL", "tripType": "long_haul_asia_pacific", "status": "planned" },
-  { "slug": "phuket", "city": "Phuket", "country": "Thailand", "region": "Asia-Pacific", "airportCode": "HKT", "tripType": "long_haul_asia_pacific", "status": "planned" },
-  { "slug": "kuala-lumpur", "city": "Kuala Lumpur", "country": "Malaysia", "region": "Asia-Pacific", "airportCode": "KUL", "tripType": "long_haul_asia_pacific", "status": "planned" },
-  { "slug": "beijing", "city": "Beijing", "country": "China", "region": "Asia-Pacific", "airportCode": "PEK", "tripType": "long_haul_asia_pacific", "status": "planned" },
-  { "slug": "delhi", "city": "Delhi", "country": "India", "region": "Asia-Pacific", "airportCode": "DEL", "tripType": "long_haul_asia_pacific", "status": "planned" },
-  { "slug": "maldives", "city": "Maldives", "country": "Maldives", "region": "Asia-Pacific", "airportCode": "MLE", "tripType": "long_haul_asia_pacific", "status": "planned" },
-
-  { "slug": "cancun", "city": "Cancún", "country": "Mexico", "region": "Caribbean & Mexico", "airportCode": "CUN", "tripType": "short_haul", "status": "planned" },
-  { "slug": "punta-cana", "city": "Punta Cana", "country": "Dominican Republic", "region": "Caribbean & Mexico", "airportCode": "PUJ", "tripType": "short_haul", "status": "planned" },
-  { "slug": "san-juan", "city": "San Juan", "country": "Puerto Rico", "region": "Caribbean & Mexico", "airportCode": "SJU", "tripType": "short_haul", "status": "planned" },
-  { "slug": "nassau", "city": "Nassau", "country": "Bahamas", "region": "Caribbean & Mexico", "airportCode": "NAS", "tripType": "short_haul", "status": "planned" },
-  { "slug": "montego-bay", "city": "Montego Bay", "country": "Jamaica", "region": "Caribbean & Mexico", "airportCode": "MBJ", "tripType": "short_haul", "status": "planned" },
-  { "slug": "cabo-san-lucas", "city": "Cabo San Lucas", "country": "Mexico", "region": "Caribbean & Mexico", "airportCode": "SJD", "tripType": "short_haul", "status": "planned" },
-  { "slug": "aruba", "city": "Aruba", "country": "Aruba", "region": "Caribbean & Mexico", "airportCode": "AUA", "tripType": "short_haul", "status": "planned" },
-  { "slug": "turks-and-caicos", "city": "Turks and Caicos", "country": "Turks and Caicos", "region": "Caribbean & Mexico", "airportCode": "PLS", "tripType": "short_haul", "status": "planned" },
-  { "slug": "st-lucia", "city": "St. Lucia", "country": "St. Lucia", "region": "Caribbean & Mexico", "airportCode": "UVF", "tripType": "short_haul", "status": "planned" },
-  { "slug": "san-jose-costa-rica", "city": "San José", "country": "Costa Rica", "region": "Caribbean & Mexico", "airportCode": "SJO", "tripType": "short_haul", "status": "planned" },
-
-  { "slug": "vancouver", "city": "Vancouver", "country": "Canada", "region": "Canada", "airportCode": "YVR", "tripType": "short_haul", "status": "planned" },
-  { "slug": "toronto", "city": "Toronto", "country": "Canada", "region": "Canada", "airportCode": "YYZ", "tripType": "short_haul", "status": "planned" },
-  { "slug": "montreal", "city": "Montreal", "country": "Canada", "region": "Canada", "airportCode": "YUL", "tripType": "short_haul", "status": "planned" },
-  { "slug": "quebec-city", "city": "Quebec City", "country": "Canada", "region": "Canada", "airportCode": "YQB", "tripType": "short_haul", "status": "planned" },
-  { "slug": "calgary", "city": "Calgary", "country": "Canada", "region": "Canada", "airportCode": "YYC", "tripType": "short_haul", "status": "planned" },
-
-  { "slug": "dubai", "city": "Dubai", "country": "United Arab Emirates", "region": "Middle East & Africa", "airportCode": "DXB", "tripType": "long_haul_transatlantic", "status": "planned" },
-  { "slug": "marrakech", "city": "Marrakech", "country": "Morocco", "region": "Middle East & Africa", "airportCode": "RAK", "tripType": "long_haul_transatlantic", "status": "planned" },
-  { "slug": "cape-town", "city": "Cape Town", "country": "South Africa", "region": "Middle East & Africa", "airportCode": "CPT", "tripType": "long_haul_asia_pacific", "status": "planned" },
-  { "slug": "rio-de-janeiro", "city": "Rio de Janeiro", "country": "Brazil", "region": "South America", "airportCode": "GIG", "tripType": "long_haul_transatlantic", "status": "planned" },
-  { "slug": "buenos-aires", "city": "Buenos Aires", "country": "Argentina", "region": "South America", "airportCode": "EZE", "tripType": "long_haul_transatlantic", "status": "planned" }
+  {
+    "slug": "paris",
+    "city": "Paris",
+    "country": "France",
+    "region": "Europe",
+    "airportCode": "CDG",
+    "tripType": "long_haul_transatlantic",
+    "status": "live"
+  },
+  {
+    "slug": "london",
+    "city": "London",
+    "country": "United Kingdom",
+    "region": "Europe",
+    "airportCode": "LHR",
+    "tripType": "long_haul_transatlantic",
+    "status": "live"
+  },
+  {
+    "slug": "rome",
+    "city": "Rome",
+    "country": "Italy",
+    "region": "Europe",
+    "airportCode": "FCO",
+    "tripType": "long_haul_transatlantic",
+    "status": "live"
+  },
+  {
+    "slug": "barcelona",
+    "city": "Barcelona",
+    "country": "Spain",
+    "region": "Europe",
+    "airportCode": "BCN",
+    "tripType": "long_haul_transatlantic",
+    "status": "live"
+  },
+  {
+    "slug": "amsterdam",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "region": "Europe",
+    "airportCode": "AMS",
+    "tripType": "long_haul_transatlantic",
+    "status": "live"
+  },
+  {
+    "slug": "lisbon",
+    "city": "Lisbon",
+    "country": "Portugal",
+    "region": "Europe",
+    "airportCode": "LIS",
+    "tripType": "long_haul_transatlantic",
+    "status": "live"
+  },
+  {
+    "slug": "dublin",
+    "city": "Dublin",
+    "country": "Ireland",
+    "region": "Europe",
+    "airportCode": "DUB",
+    "tripType": "long_haul_transatlantic",
+    "status": "live"
+  },
+  {
+    "slug": "athens",
+    "city": "Athens",
+    "country": "Greece",
+    "region": "Europe",
+    "airportCode": "ATH",
+    "tripType": "long_haul_transatlantic",
+    "status": "live"
+  },
+  {
+    "slug": "reykjavik",
+    "city": "Reykjavik",
+    "country": "Iceland",
+    "region": "Europe",
+    "airportCode": "KEF",
+    "tripType": "long_haul_transatlantic",
+    "status": "live"
+  },
+  {
+    "slug": "madrid",
+    "city": "Madrid",
+    "country": "Spain",
+    "region": "Europe",
+    "airportCode": "MAD",
+    "tripType": "long_haul_transatlantic",
+    "status": "live"
+  },
+  {
+    "slug": "venice",
+    "city": "Venice",
+    "country": "Italy",
+    "region": "Europe",
+    "airportCode": "VCE",
+    "tripType": "long_haul_transatlantic",
+    "status": "live"
+  },
+  {
+    "slug": "prague",
+    "city": "Prague",
+    "country": "Czech Republic",
+    "region": "Europe",
+    "airportCode": "PRG",
+    "tripType": "long_haul_transatlantic",
+    "status": "live"
+  },
+  {
+    "slug": "vienna",
+    "city": "Vienna",
+    "country": "Austria",
+    "region": "Europe",
+    "airportCode": "VIE",
+    "tripType": "long_haul_transatlantic",
+    "status": "live"
+  },
+  {
+    "slug": "berlin",
+    "city": "Berlin",
+    "country": "Germany",
+    "region": "Europe",
+    "airportCode": "BER",
+    "tripType": "long_haul_transatlantic",
+    "status": "live"
+  },
+  {
+    "slug": "santorini",
+    "city": "Santorini",
+    "country": "Greece",
+    "region": "Europe",
+    "airportCode": "JTR",
+    "tripType": "long_haul_transatlantic",
+    "status": "live"
+  },
+  {
+    "slug": "tokyo",
+    "city": "Tokyo",
+    "country": "Japan",
+    "region": "Asia-Pacific",
+    "airportCode": "HND",
+    "tripType": "long_haul_asia_pacific",
+    "status": "live"
+  },
+  {
+    "slug": "bangkok",
+    "city": "Bangkok",
+    "country": "Thailand",
+    "region": "Asia-Pacific",
+    "airportCode": "BKK",
+    "tripType": "long_haul_asia_pacific",
+    "status": "live"
+  },
+  {
+    "slug": "bali",
+    "city": "Bali",
+    "country": "Indonesia",
+    "region": "Asia-Pacific",
+    "airportCode": "DPS",
+    "tripType": "long_haul_asia_pacific",
+    "status": "live"
+  },
+  {
+    "slug": "singapore",
+    "city": "Singapore",
+    "country": "Singapore",
+    "region": "Asia-Pacific",
+    "airportCode": "SIN",
+    "tripType": "long_haul_asia_pacific",
+    "status": "planned"
+  },
+  {
+    "slug": "seoul",
+    "city": "Seoul",
+    "country": "South Korea",
+    "region": "Asia-Pacific",
+    "airportCode": "ICN",
+    "tripType": "long_haul_asia_pacific",
+    "status": "planned"
+  },
+  {
+    "slug": "hong-kong",
+    "city": "Hong Kong",
+    "country": "Hong Kong",
+    "region": "Asia-Pacific",
+    "airportCode": "HKG",
+    "tripType": "long_haul_asia_pacific",
+    "status": "planned"
+  },
+  {
+    "slug": "sydney",
+    "city": "Sydney",
+    "country": "Australia",
+    "region": "Asia-Pacific",
+    "airportCode": "SYD",
+    "tripType": "long_haul_asia_pacific",
+    "status": "planned"
+  },
+  {
+    "slug": "ho-chi-minh-city",
+    "city": "Ho Chi Minh City",
+    "country": "Vietnam",
+    "region": "Asia-Pacific",
+    "airportCode": "SGN",
+    "tripType": "long_haul_asia_pacific",
+    "status": "planned"
+  },
+  {
+    "slug": "manila",
+    "city": "Manila",
+    "country": "Philippines",
+    "region": "Asia-Pacific",
+    "airportCode": "MNL",
+    "tripType": "long_haul_asia_pacific",
+    "status": "planned"
+  },
+  {
+    "slug": "auckland",
+    "city": "Auckland",
+    "country": "New Zealand",
+    "region": "Asia-Pacific",
+    "airportCode": "AKL",
+    "tripType": "long_haul_asia_pacific",
+    "status": "planned"
+  },
+  {
+    "slug": "phuket",
+    "city": "Phuket",
+    "country": "Thailand",
+    "region": "Asia-Pacific",
+    "airportCode": "HKT",
+    "tripType": "long_haul_asia_pacific",
+    "status": "planned"
+  },
+  {
+    "slug": "kuala-lumpur",
+    "city": "Kuala Lumpur",
+    "country": "Malaysia",
+    "region": "Asia-Pacific",
+    "airportCode": "KUL",
+    "tripType": "long_haul_asia_pacific",
+    "status": "planned"
+  },
+  {
+    "slug": "beijing",
+    "city": "Beijing",
+    "country": "China",
+    "region": "Asia-Pacific",
+    "airportCode": "PEK",
+    "tripType": "long_haul_asia_pacific",
+    "status": "planned"
+  },
+  {
+    "slug": "delhi",
+    "city": "Delhi",
+    "country": "India",
+    "region": "Asia-Pacific",
+    "airportCode": "DEL",
+    "tripType": "long_haul_asia_pacific",
+    "status": "planned"
+  },
+  {
+    "slug": "maldives",
+    "city": "Maldives",
+    "country": "Maldives",
+    "region": "Asia-Pacific",
+    "airportCode": "MLE",
+    "tripType": "long_haul_asia_pacific",
+    "status": "planned"
+  },
+  {
+    "slug": "cancun",
+    "city": "Cancún",
+    "country": "Mexico",
+    "region": "Caribbean & Mexico",
+    "airportCode": "CUN",
+    "tripType": "short_haul",
+    "status": "planned"
+  },
+  {
+    "slug": "punta-cana",
+    "city": "Punta Cana",
+    "country": "Dominican Republic",
+    "region": "Caribbean & Mexico",
+    "airportCode": "PUJ",
+    "tripType": "short_haul",
+    "status": "planned"
+  },
+  {
+    "slug": "san-juan",
+    "city": "San Juan",
+    "country": "Puerto Rico",
+    "region": "Caribbean & Mexico",
+    "airportCode": "SJU",
+    "tripType": "short_haul",
+    "status": "planned"
+  },
+  {
+    "slug": "nassau",
+    "city": "Nassau",
+    "country": "Bahamas",
+    "region": "Caribbean & Mexico",
+    "airportCode": "NAS",
+    "tripType": "short_haul",
+    "status": "planned"
+  },
+  {
+    "slug": "montego-bay",
+    "city": "Montego Bay",
+    "country": "Jamaica",
+    "region": "Caribbean & Mexico",
+    "airportCode": "MBJ",
+    "tripType": "short_haul",
+    "status": "planned"
+  },
+  {
+    "slug": "cabo-san-lucas",
+    "city": "Cabo San Lucas",
+    "country": "Mexico",
+    "region": "Caribbean & Mexico",
+    "airportCode": "SJD",
+    "tripType": "short_haul",
+    "status": "planned"
+  },
+  {
+    "slug": "aruba",
+    "city": "Aruba",
+    "country": "Aruba",
+    "region": "Caribbean & Mexico",
+    "airportCode": "AUA",
+    "tripType": "short_haul",
+    "status": "planned"
+  },
+  {
+    "slug": "turks-and-caicos",
+    "city": "Turks and Caicos",
+    "country": "Turks and Caicos",
+    "region": "Caribbean & Mexico",
+    "airportCode": "PLS",
+    "tripType": "short_haul",
+    "status": "planned"
+  },
+  {
+    "slug": "st-lucia",
+    "city": "St. Lucia",
+    "country": "St. Lucia",
+    "region": "Caribbean & Mexico",
+    "airportCode": "UVF",
+    "tripType": "short_haul",
+    "status": "planned"
+  },
+  {
+    "slug": "san-jose-costa-rica",
+    "city": "San José",
+    "country": "Costa Rica",
+    "region": "Caribbean & Mexico",
+    "airportCode": "SJO",
+    "tripType": "short_haul",
+    "status": "planned"
+  },
+  {
+    "slug": "vancouver",
+    "city": "Vancouver",
+    "country": "Canada",
+    "region": "Canada",
+    "airportCode": "YVR",
+    "tripType": "short_haul",
+    "status": "planned"
+  },
+  {
+    "slug": "toronto",
+    "city": "Toronto",
+    "country": "Canada",
+    "region": "Canada",
+    "airportCode": "YYZ",
+    "tripType": "short_haul",
+    "status": "planned"
+  },
+  {
+    "slug": "montreal",
+    "city": "Montreal",
+    "country": "Canada",
+    "region": "Canada",
+    "airportCode": "YUL",
+    "tripType": "short_haul",
+    "status": "planned"
+  },
+  {
+    "slug": "quebec-city",
+    "city": "Quebec City",
+    "country": "Canada",
+    "region": "Canada",
+    "airportCode": "YQB",
+    "tripType": "short_haul",
+    "status": "planned"
+  },
+  {
+    "slug": "calgary",
+    "city": "Calgary",
+    "country": "Canada",
+    "region": "Canada",
+    "airportCode": "YYC",
+    "tripType": "short_haul",
+    "status": "planned"
+  },
+  {
+    "slug": "dubai",
+    "city": "Dubai",
+    "country": "United Arab Emirates",
+    "region": "Middle East & Africa",
+    "airportCode": "DXB",
+    "tripType": "long_haul_transatlantic",
+    "status": "planned"
+  },
+  {
+    "slug": "marrakech",
+    "city": "Marrakech",
+    "country": "Morocco",
+    "region": "Middle East & Africa",
+    "airportCode": "RAK",
+    "tripType": "long_haul_transatlantic",
+    "status": "planned"
+  },
+  {
+    "slug": "cape-town",
+    "city": "Cape Town",
+    "country": "South Africa",
+    "region": "Middle East & Africa",
+    "airportCode": "CPT",
+    "tripType": "long_haul_asia_pacific",
+    "status": "planned"
+  },
+  {
+    "slug": "rio-de-janeiro",
+    "city": "Rio de Janeiro",
+    "country": "Brazil",
+    "region": "South America",
+    "airportCode": "GIG",
+    "tripType": "long_haul_transatlantic",
+    "status": "planned"
+  },
+  {
+    "slug": "buenos-aires",
+    "city": "Buenos Aires",
+    "country": "Argentina",
+    "region": "South America",
+    "airportCode": "EZE",
+    "tripType": "long_haul_transatlantic",
+    "status": "planned"
+  },
+  {
+    "slug": "bogota",
+    "city": "Bogotá",
+    "country": "Colombia",
+    "region": "South America",
+    "airportCode": "BOG",
+    "tripType": "short_haul",
+    "status": "planned"
+  },
+  {
+    "slug": "lima",
+    "city": "Lima",
+    "country": "Peru",
+    "region": "South America",
+    "airportCode": "LIM",
+    "tripType": "long_haul_transatlantic",
+    "status": "planned"
+  },
+  {
+    "slug": "cusco",
+    "city": "Cusco",
+    "country": "Peru",
+    "region": "South America",
+    "airportCode": "CUZ",
+    "tripType": "long_haul_transatlantic",
+    "status": "planned"
+  },
+  {
+    "slug": "santiago",
+    "city": "Santiago",
+    "country": "Chile",
+    "region": "South America",
+    "airportCode": "SCL",
+    "tripType": "long_haul_transatlantic",
+    "status": "planned"
+  },
+  {
+    "slug": "cartagena",
+    "city": "Cartagena",
+    "country": "Colombia",
+    "region": "South America",
+    "airportCode": "CTG",
+    "tripType": "short_haul",
+    "status": "planned"
+  },
+  {
+    "slug": "zurich",
+    "city": "Zurich",
+    "country": "Switzerland",
+    "region": "Europe",
+    "airportCode": "ZRH",
+    "tripType": "long_haul_transatlantic",
+    "status": "live"
+  },
+  {
+    "slug": "munich",
+    "city": "Munich",
+    "country": "Germany",
+    "region": "Europe",
+    "airportCode": "MUC",
+    "tripType": "long_haul_transatlantic",
+    "status": "live"
+  },
+  {
+    "slug": "milan",
+    "city": "Milan",
+    "country": "Italy",
+    "region": "Europe",
+    "airportCode": "MXP",
+    "tripType": "long_haul_transatlantic",
+    "status": "live"
+  },
+  {
+    "slug": "copenhagen",
+    "city": "Copenhagen",
+    "country": "Denmark",
+    "region": "Europe",
+    "airportCode": "CPH",
+    "tripType": "long_haul_transatlantic",
+    "status": "live"
+  },
+  {
+    "slug": "stockholm",
+    "city": "Stockholm",
+    "country": "Sweden",
+    "region": "Europe",
+    "airportCode": "ARN",
+    "tripType": "long_haul_transatlantic",
+    "status": "live"
+  },
+  {
+    "slug": "budapest",
+    "city": "Budapest",
+    "country": "Hungary",
+    "region": "Europe",
+    "airportCode": "BUD",
+    "tripType": "long_haul_transatlantic",
+    "status": "planned"
+  },
+  {
+    "slug": "istanbul",
+    "city": "Istanbul",
+    "country": "Turkey",
+    "region": "Europe",
+    "airportCode": "IST",
+    "tripType": "long_haul_transatlantic",
+    "status": "planned"
+  },
+  {
+    "slug": "edinburgh",
+    "city": "Edinburgh",
+    "country": "United Kingdom",
+    "region": "Europe",
+    "airportCode": "EDI",
+    "tripType": "long_haul_transatlantic",
+    "status": "planned"
+  },
+  {
+    "slug": "nice",
+    "city": "Nice",
+    "country": "France",
+    "region": "Europe",
+    "airportCode": "NCE",
+    "tripType": "long_haul_transatlantic",
+    "status": "planned"
+  },
+  {
+    "slug": "taipei",
+    "city": "Taipei",
+    "country": "Taiwan",
+    "region": "Asia-Pacific",
+    "airportCode": "TPE",
+    "tripType": "long_haul_asia_pacific",
+    "status": "planned"
+  },
+  {
+    "slug": "colombo",
+    "city": "Colombo",
+    "country": "Sri Lanka",
+    "region": "Asia-Pacific",
+    "airportCode": "CMB",
+    "tripType": "long_haul_asia_pacific",
+    "status": "planned"
+  },
+  {
+    "slug": "siem-reap",
+    "city": "Siem Reap",
+    "country": "Cambodia",
+    "region": "Asia-Pacific",
+    "airportCode": "REP",
+    "tripType": "long_haul_asia_pacific",
+    "status": "planned"
+  },
+  {
+    "slug": "fiji",
+    "city": "Fiji",
+    "country": "Fiji",
+    "region": "Asia-Pacific",
+    "airportCode": "NAN",
+    "tripType": "long_haul_asia_pacific",
+    "status": "planned"
+  },
+  {
+    "slug": "bora-bora",
+    "city": "Bora Bora",
+    "country": "French Polynesia",
+    "region": "Asia-Pacific",
+    "airportCode": "BOB",
+    "tripType": "long_haul_asia_pacific",
+    "status": "planned"
+  },
+  {
+    "slug": "panama-city",
+    "city": "Panama City",
+    "country": "Panama",
+    "region": "Caribbean & Mexico",
+    "airportCode": "PTY",
+    "tripType": "short_haul",
+    "status": "planned"
+  },
+  {
+    "slug": "belize-city",
+    "city": "Belize City",
+    "country": "Belize",
+    "region": "Caribbean & Mexico",
+    "airportCode": "BZE",
+    "tripType": "short_haul",
+    "status": "planned"
+  },
+  {
+    "slug": "grand-cayman",
+    "city": "Grand Cayman",
+    "country": "Cayman Islands",
+    "region": "Caribbean & Mexico",
+    "airportCode": "GCM",
+    "tripType": "short_haul",
+    "status": "planned"
+  },
+  {
+    "slug": "antigua",
+    "city": "Antigua",
+    "country": "Antigua and Barbuda",
+    "region": "Caribbean & Mexico",
+    "airportCode": "ANU",
+    "tripType": "short_haul",
+    "status": "planned"
+  },
+  {
+    "slug": "curacao",
+    "city": "Curaçao",
+    "country": "Curaçao",
+    "region": "Caribbean & Mexico",
+    "airportCode": "CUR",
+    "tripType": "short_haul",
+    "status": "planned"
+  },
+  {
+    "slug": "doha",
+    "city": "Doha",
+    "country": "Qatar",
+    "region": "Middle East & Africa",
+    "airportCode": "DOH",
+    "tripType": "long_haul_asia_pacific",
+    "status": "planned"
+  },
+  {
+    "slug": "tel-aviv",
+    "city": "Tel Aviv",
+    "country": "Israel",
+    "region": "Middle East & Africa",
+    "airportCode": "TLV",
+    "tripType": "long_haul_transatlantic",
+    "status": "planned"
+  },
+  {
+    "slug": "abu-dhabi",
+    "city": "Abu Dhabi",
+    "country": "United Arab Emirates",
+    "region": "Middle East & Africa",
+    "airportCode": "AUH",
+    "tripType": "long_haul_asia_pacific",
+    "status": "planned"
+  },
+  {
+    "slug": "zanzibar",
+    "city": "Zanzibar",
+    "country": "Tanzania",
+    "region": "Middle East & Africa",
+    "airportCode": "ZNZ",
+    "tripType": "long_haul_asia_pacific",
+    "status": "planned"
+  },
+  {
+    "slug": "nairobi",
+    "city": "Nairobi",
+    "country": "Kenya",
+    "region": "Middle East & Africa",
+    "airportCode": "NBO",
+    "tripType": "long_haul_asia_pacific",
+    "status": "planned"
+  },
+  {
+    "slug": "casablanca",
+    "city": "Casablanca",
+    "country": "Morocco",
+    "region": "Middle East & Africa",
+    "airportCode": "CMN",
+    "tripType": "long_haul_transatlantic",
+    "status": "planned"
+  }
 ]
