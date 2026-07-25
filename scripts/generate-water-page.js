@@ -55,7 +55,9 @@ function render(c, allCountries) {
     <meta property="og:title" content="Is Tap Water Safe to Drink in ${c.name}?">
     <meta property="og:description" content="Instant free checker: ${h}">
     <meta property="og:url" content="https://travelsmarterapp.com/water-safety-checker-${c.slug}.html">
+    <meta property="og:image" content="https://travelsmarterapp.com/og-images/water-safety-checker.png">
     <meta name="twitter:card" content="summary">
+    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/water-safety-checker.png">
     <meta name="twitter:title" content="Is Tap Water Safe to Drink in ${c.name}?">
     <meta name="twitter:description" content="Instant free checker: ${h}">
 

@@ -52,7 +52,9 @@ function render(a, allAirports) {
     <meta property="og:title" content="${a.name} Airport Transfer Cost Calculator">
     <meta property="og:description" content="Instant free calculator: ${headline}">
     <meta property="og:url" content="https://travelsmarterapp.com/airport-transfer-calculator-${a.slug}.html">
+    <meta property="og:image" content="https://travelsmarterapp.com/og-images/airport-transfer-calculator.png">
     <meta name="twitter:card" content="summary">
+    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/airport-transfer-calculator.png">
     <meta name="twitter:title" content="${a.name} Airport Transfer Cost Calculator">
     <meta name="twitter:description" content="Instant free calculator: ${headline}">
 

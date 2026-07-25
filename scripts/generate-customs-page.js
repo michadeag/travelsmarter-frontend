@@ -65,7 +65,9 @@ function render(c, allCountries) {
     <meta property="og:title" content="Duty-Free Allowance from ${c.name}">
     <meta property="og:description" content="Instant free checker: ${h}">
     <meta property="og:url" content="https://travelsmarterapp.com/customs-checker-${c.slug}.html">
+    <meta property="og:image" content="https://travelsmarterapp.com/og-images/customs-checker.png">
     <meta name="twitter:card" content="summary">
+    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/customs-checker.png">
     <meta name="twitter:title" content="Duty-Free Allowance from ${c.name}">
     <meta name="twitter:description" content="Instant free checker: ${h}">
 

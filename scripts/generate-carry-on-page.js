@@ -44,7 +44,9 @@ function render(a) {
     <meta property="og:title" content="${a.name} Carry-On Size Checker">
     <meta property="og:description" content="Check if your bag fits ${a.name}'s carry-on limit — instant free checker plus a PDF packing report.">
     <meta property="og:url" content="https://travelsmarterapp.com/carry-on-size-checker-${a.slug}.html">
+    <meta property="og:image" content="https://travelsmarterapp.com/og-images/carry-on-size-checker.png">
     <meta name="twitter:card" content="summary">
+    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/carry-on-size-checker.png">
     <meta name="twitter:title" content="${a.name} Carry-On Size Checker">
     <meta name="twitter:description" content="Check if your bag fits ${a.name}'s carry-on limit — instant free checker plus a PDF packing report.">
 

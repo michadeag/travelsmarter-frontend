@@ -53,7 +53,9 @@ function render(a, allAirports) {
     <meta property="og:title" content="${a.name} WiFi & Amenities Guide">
     <meta property="og:description" content="Instant free checker: ${h}">
     <meta property="og:url" content="https://travelsmarterapp.com/airport-amenities-checker-${a.slug}.html">
+    <meta property="og:image" content="https://travelsmarterapp.com/og-images/airport-amenities-checker.png">
     <meta name="twitter:card" content="summary">
+    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/airport-amenities-checker.png">
     <meta name="twitter:title" content="${a.name} WiFi & Amenities Guide">
     <meta name="twitter:description" content="Instant free checker: ${h}">
 
