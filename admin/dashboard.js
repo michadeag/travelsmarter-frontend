@@ -85,7 +85,8 @@ function switchTab(tabName) {
         dashboard: 'Dashboard', users: 'Users Management', subscriptions: 'Subscriptions',
         deals: 'Deals Management', hacks: 'Hacks & Modules', promos: 'Promo Codes',
         affiliates: 'Affiliate Links',
-        'email-templates': 'Email Templates', broadcast: '📣 Broadcast Email', analytics: 'Analytics', settings: 'Settings',
+        'email-templates': 'Email Templates', broadcast: '📣 Broadcast Email', analytics: 'Analytics',
+        'free-tools-analytics': '🧰 Free Tools Analytics', settings: 'Settings',
         reddit: '🤖 Reddit', linkedin: '💼 LinkedIn', pinterest: '📌 Pinterest',
         instagram: '📸 Instagram', wordpress: '📝 WordPress', quora: '❓ Quora', blogger: '📰 Blogger', slideshare: '📊 SlideShare',
         outreach: '📮 Outreach', 'social-media': '📱 Social Media', 'local-seo': '🎯 Local SEO', twitter: '🐦 Twitter', youtube: '▶️ YouTube',
@@ -95,6 +96,7 @@ function switchTab(tabName) {
 
     // Auto-load data when switching to platform tabs
     if (tabName === 'analytics') { loadAnalytics(); loadPageviews(); loadPinterestPageviews(); }
+    if (tabName === 'free-tools-analytics') { loadFreeToolsAnalytics(); }
     if (tabName === 'twitter') { loadTwitterStatus(); loadTwitterRecentPosts(); }
     if (tabName === 'reddit') { initRedditTab(); }
     if (tabName === 'linkedin') { initLinkedInTab(); }
@@ -111,6 +113,90 @@ function switchTab(tabName) {
     if (tabName === 'outreach') { initOutreachTab(); }
     if (tabName === 'social-media') { initSocialMediaTab(); }
     if (tabName === 'local-seo') { initLocalSeoTab(); }
+}
+
+// ─── FREE TOOLS ANALYTICS ───────────────────────────────────────────────────────
+
+function prettifySlug(slug) {
+    if (!slug) return '—';
+    return slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+async function loadFreeToolsAnalytics() {
+    try {
+        const res = await fetch(`${API_URL}/api/analytics/free-tools/summary`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        if (res.ok) {
+            const { summary } = await res.json();
+            document.getElementById('ft-today').innerHTML = `<h3>Today</h3><div class="number">${summary.today}</div>`;
+            document.getElementById('ft-yesterday').innerHTML = `<h3>Yesterday</h3><div class="number">${summary.yesterday}</div>`;
+            document.getElementById('ft-7d').innerHTML = `<h3>Last 7 Days</h3><div class="number">${summary.last_7_days}</div>`;
+            document.getElementById('ft-30d').innerHTML = `<h3>Last 30 Days</h3><div class="number">${summary.last_30_days}</div>`;
+            document.getElementById('ft-all-time').innerHTML = `<h3>All Time</h3><div class="number">${summary.all_time}</div>`;
+        }
+    } catch (error) {
+        console.error('Error loading free tools summary:', error);
+    }
+
+    try {
+        const res = await fetch(`${API_URL}/api/analytics/free-tools/daily?days=30`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const dailyEl = document.getElementById('ft-daily-table');
+        if (res.ok && dailyEl) {
+            const { data } = await res.json();
+            if (!data || data.length === 0) {
+                dailyEl.innerHTML = '<tr><td colspan="2" style="color:#9ca3af;">No pageviews recorded yet.</td></tr>';
+            } else {
+                dailyEl.innerHTML = [...data].reverse().map(r =>
+                    `<tr><td>${r.date}</td><td>${r.views}</td></tr>`
+                ).join('');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading free tools daily breakdown:', error);
+    }
+
+    loadFreeToolsTop();
+}
+
+async function loadFreeToolsTop() {
+    const tbody = document.getElementById('ft-top-table');
+    if (!tbody) return;
+    const period = document.getElementById('ft-top-period')?.value || 'today';
+    const groupBy = document.getElementById('ft-top-groupby')?.value || 'page';
+    const isTool = groupBy === 'tool';
+    document.getElementById('ft-top-col-header').textContent = isTool ? 'Tool' : 'Page';
+    const toolHeaderEl = document.getElementById('ft-top-col-tool-header');
+    if (toolHeaderEl) toolHeaderEl.style.display = isTool ? 'none' : '';
+    const colspan = isTool ? 3 : 4;
+
+    try {
+        const res = await fetch(`${API_URL}/api/analytics/free-tools/top?period=${period}&groupBy=${groupBy}&limit=10`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        if (!res.ok) {
+            tbody.innerHTML = `<tr><td colspan="${colspan}" style="color:#ef4444;">Failed to load top pages</td></tr>`;
+            return;
+        }
+        const { data } = await res.json();
+        if (!data || data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="${colspan}" style="color:#9ca3af;">No pageviews recorded for this period.</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = data.map((row, i) => `
+            <tr>
+                <td>${i + 1}</td>
+                <td>${isTool ? prettifySlug(row.tool_slug) : row.page_path}</td>
+                ${isTool ? '' : `<td>${prettifySlug(row.tool_slug)}</td>`}
+                <td>${row.views}</td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading free tools top pages:', error);
+        tbody.innerHTML = `<tr><td colspan="${colspan}" style="color:#ef4444;">Error loading top pages</td></tr>`;
+    }
 }
 
 // ─── BROADCAST ────────────────────────────────────────────────────────────────
