@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Insurance Cost Estimator | TravelSmarter</title>
+    <meta name="description" content="How much will travel insurance cost for your trip? Free instant estimator based on trip cost, age, duration, and destination type.">
+    <link rel="canonical" href="https://travelsmarterapp.com/insurance-cost-estimator.html">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Travel Insurance Cost Estimator">
+    <meta property="og:description" content="Instant free estimator: how much will travel insurance cost for your trip?">
+    <meta property="og:url" content="https://travelsmarterapp.com/insurance-cost-estimator.html">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Travel Insurance Cost Estimator">
+    <meta name="twitter:description" content="Instant free estimator: how much will travel insurance cost for your trip?">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How much does travel insurance typically cost?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Travel insurance typically costs 4% to 12% of your total prepaid, non-refundable trip cost, depending mainly on your age, trip length, and how comprehensive the coverage is." }
+        },
+        {
+          "@type": "Question",
+          "name": "Is comprehensive coverage worth the extra cost?",
+          "acceptedAnswer": { "@type": "Answer", "text": "For expensive trips, older travelers, or destinations with adventure activities, comprehensive coverage — especially strong emergency medical evacuation limits — is usually worth the roughly 30% premium over a basic policy." }
+        },
+        {
+          "@type": "Question",
+          "name": "What is cancel-for-any-reason (CFAR) coverage?",
+          "acceptedAnswer": { "@type": "Answer", "text": "CFAR lets you cancel for reasons a standard policy wouldn't cover, but it typically costs 40-60% more than a standard plan, must be purchased within 14-21 days of your first trip deposit, and only reimburses a portion (often 50-75%) of your trip cost." }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need travel insurance for a domestic trip?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Often less critical than for international travel, since your existing health insurance usually covers emergency care — but trip cancellation coverage can still be worth it for an expensive, non-refundable domestic trip." }
+        }
+      ]
+    }
+    </script>
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-470B6E2DKF"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-470B6E2DKF');
+    </script>
+
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+            background:#f9fafb; color:#1f2937; line-height:1.6;
+        }
+        header {
+            background:linear-gradient(135deg,#1a2744 0%,#2d3f6b 100%);
+            color:white; padding:18px 0;
+        }
+        header .container { max-width:760px; margin:0 auto; padding:0 20px; }
+        header a { color:#ff6b4a; font-weight:800; font-size:1.2em; text-decoration:none; }
+        .hero { max-width:760px; margin:0 auto; padding:50px 20px 20px; text-align:center; }
+        .hero h1 { font-size:1.9em; color:#1a2744; margin-bottom:14px; }
+        .hero p { color:#6b7280; font-size:1.05em; max-width:600px; margin:0 auto; }
+        .container { max-width:760px; margin:0 auto; padding:30px 20px 60px; }
+        .card {
+            background:white; border-radius:12px; padding:32px;
+            box-shadow:0 4px 20px rgba(0,0,0,0.06); margin-bottom:24px;
+        }
+        .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        label { display:block; font-weight:600; font-size:14px; margin-bottom:6px; color:#374151; }
+        select, input[type="number"], input[type="email"], input[type="text"] {
+            width:100%; padding:11px 14px; border:1px solid #e5e7eb; border-radius:8px;
+            font-size:15px; margin-bottom:18px;
+        }
+        .btn {
+            display:inline-block; background:#ff6b4a; color:white; border:none;
+            padding:13px 28px; border-radius:8px; font-weight:700; font-size:15px;
+            cursor:pointer; width:100%;
+        }
+        .btn:disabled { opacity:0.6; cursor:default; }
+        .btn-secondary { background:#1a2744; }
+        #result { display:none; }
+        .result-headline {
+            background:#f0f4ff; border-radius:10px; padding:20px; font-weight:700;
+            color:#1a2744; margin-bottom:16px; font-size:1.05em;
+        }
+        .tier-table { width:100%; border-collapse:collapse; margin-bottom:14px; font-size:14.5px; }
+        .tier-table td { padding:8px 4px; border-bottom:1px solid #f0f0f0; }
+        .tier-table td:first-child { color:#6b7280; }
+        .tier-table td:last-child { text-align:right; font-weight:600; color:#1a2744; }
+        .result-meta { color:#6b7280; font-size:14px; margin-bottom:20px; }
+        #pdf-section { display:none; border-top:1px solid #e5e7eb; margin-top:24px; padding-top:24px; }
+        #pdf-section p { color:#6b7280; font-size:14px; margin-bottom:14px; }
+        .alert { padding:12px 16px; border-radius:8px; font-size:14px; margin-bottom:14px; display:none; }
+        .alert-error { background:#fee2e2; color:#991b1b; }
+        .content-block h2 { font-size:1.3em; color:#1a2744; margin-bottom:12px; }
+        .content-block p { color:#4b5563; margin-bottom:14px; font-size:15px; }
+        .faq-item { margin-bottom:18px; }
+        .faq-item h3 { font-size:1.02em; color:#1a2744; margin-bottom:6px; }
+        .faq-item p { color:#4b5563; font-size:14.5px; }
+        footer { text-align:center; padding:30px 20px; color:#9ca3af; font-size:13px; }
+        footer a { color:#667eea; text-decoration:none; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container"><a href="index.html">✈️ TravelSmarter</a></div>
+    </header>
+
+    <div class="hero">
+        <h1>Travel Insurance Cost Estimator</h1>
+        <p>Estimate what travel insurance will cost for your trip, and which coverage tier makes sense — free, no sign-up required.</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div id="form-section">
+                <label for="tripCost">Total prepaid trip cost (USD)</label>
+                <input type="number" id="tripCost" min="1" step="1" placeholder="e.g. 3000" value="3000">
+
+                <div class="grid-2">
+                    <div>
+                        <label for="tripLength">Trip length (days)</label>
+                        <input type="number" id="tripLength" min="1" step="1" placeholder="e.g. 10" value="10">
+                    </div>
+                    <div>
+                        <label for="ageBand">Traveler age</label>
+                        <select id="ageBand">
+                            <option value="under-35">Under 35</option>
+                            <option value="35-59">35–59</option>
+                            <option value="60-69">60–69</option>
+                            <option value="70-plus">70+</option>
+                        </select>
+                    </div>
+                </div>
+
+                <label for="destinationType">Trip type</label>
+                <select id="destinationType">
+                    <option value="domestic">Domestic</option>
+                    <option value="international" selected>International</option>
+                    <option value="adventure">International with adventure activities</option>
+                </select>
+
+                <div id="calc-alert" class="alert alert-error"></div>
+                <button class="btn" id="calc-btn" onclick="calculate()">Estimate Insurance Cost</button>
+            </div>
+
+            <div id="result">
+                <div class="result-headline" id="result-headline"></div>
+                <table class="tier-table">
+                    <tr><td>Basic</td><td id="tier-basic"></td></tr>
+                    <tr><td>Comprehensive</td><td id="tier-comprehensive"></td></tr>
+                    <tr><td>Cancel-for-any-reason (CFAR)</td><td id="tier-cfar"></td></tr>
+                </table>
+                <div class="result-meta" id="result-meta"></div>
+
+                <div id="pdf-section">
+                    <p><strong>Want the full report?</strong> Get a PDF with the breakdown and buying tips — free.</p>
+                    <input type="text" id="firstName" placeholder="First name (optional)">
+                    <input type="email" id="email" placeholder="Email address" required>
+                    <div id="pdf-alert" class="alert alert-error"></div>
+                    <button class="btn btn-secondary" id="pdf-btn" onclick="downloadPdf()">Get Your Free PDF Report</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card content-block">
+            <h2>Frequently asked questions</h2>
+            <div class="faq-item">
+                <h3>How much does travel insurance typically cost?</h3>
+                <p>Travel insurance typically costs 4% to 12% of your total prepaid, non-refundable trip cost, depending mainly on your age, trip length, and how comprehensive the coverage is.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Is comprehensive coverage worth the extra cost?</h3>
+                <p>For expensive trips, older travelers, or destinations with adventure activities, comprehensive coverage — especially strong emergency medical evacuation limits — is usually worth the roughly 30% premium over a basic policy.</p>
+            </div>
+            <div class="faq-item">
+                <h3>What is cancel-for-any-reason (CFAR) coverage?</h3>
+                <p>CFAR lets you cancel for reasons a standard policy wouldn't cover, but it typically costs 40-60% more than a standard plan, must be purchased within 14-21 days of your first trip deposit, and only reimburses a portion (often 50-75%) of your trip cost.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Do I need travel insurance for a domestic trip?</h3>
+                <p>Often less critical than for international travel, since your existing health insurance usually covers emergency care — but trip cancellation coverage can still be worth it for an expensive, non-refundable domestic trip.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Part of <a href="sales-page.html">TravelSmarter</a> — 87 verified travel hacks, price alerts, and more.
+    </footer>
+
+    <script>
+        let API_URL;
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            API_URL = 'http://localhost:5000';
+        } else {
+            API_URL = 'https://api.travelsmarterapp.com';
+        }
+
+        let lastResult = null;
+
+        async function calculate() {
+            const tripCostUSD = document.getElementById('tripCost').value;
+            const tripLengthDays = document.getElementById('tripLength').value;
+            const ageBand = document.getElementById('ageBand').value;
+            const destinationType = document.getElementById('destinationType').value;
+            const alertEl = document.getElementById('calc-alert');
+            alertEl.style.display = 'none';
+
+            const btn = document.getElementById('calc-btn');
+            btn.disabled = true;
+            btn.textContent = 'Estimating...';
+
+            try {
+                const res = await fetch(`${API_URL}/api/tools/insurance-cost-estimator/calculate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tripCostUSD, tripLengthDays, ageBand, destinationType }),
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error || 'Something went wrong');
+
+                lastResult = data.result;
+                gtag('event', 'tool_calculate', { tool: 'insurance_cost_estimator' });
+
+                document.getElementById('result-headline').textContent = data.result.headline;
+                document.getElementById('tier-basic').textContent = `$${data.result.basicCostUSD} (${data.result.basicRatePercent}%)`;
+                document.getElementById('tier-comprehensive').textContent = `$${data.result.comprehensiveCostUSD} (${data.result.comprehensiveRatePercent}%)`;
+                document.getElementById('tier-cfar').textContent = `$${data.result.cfarCostUSD} (${data.result.cfarRatePercent}%)`;
+                document.getElementById('result-meta').textContent = data.result.recommendation;
+                document.getElementById('result').style.display = 'block';
+                document.getElementById('pdf-section').style.display = 'block';
+            } catch (err) {
+                alertEl.textContent = err.message;
+                alertEl.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Estimate Insurance Cost';
+            }
+        }
+
+        async function downloadPdf() {
+            const email = document.getElementById('email').value.trim();
+            const firstName = document.getElementById('firstName').value.trim();
+            const alertEl = document.getElementById('pdf-alert');
+            alertEl.style.display = 'none';
+
+            if (!email || !email.includes('@')) {
+                alertEl.textContent = 'Please enter a valid email address.';
+                alertEl.style.display = 'block';
+                return;
+            }
+            if (!lastResult) return;
+
+            const btn = document.getElementById('pdf-btn');
+            btn.disabled = true;
+            btn.textContent = 'Generating your PDF...';
+
+            try {
+                const res = await fetch(`${API_URL}/api/tools/insurance-cost-estimator/pdf`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email, firstName,
+                        tripCostUSD: lastResult.tripCostUSD,
+                        tripLengthDays: lastResult.tripLengthDays,
+                        ageBand: lastResult.ageBand,
+                        destinationType: lastResult.destinationType,
+                    }),
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error || 'Failed to generate PDF');
+                }
+
+                gtag('event', 'generate_lead', { tool: 'insurance_cost_estimator' });
+
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'insurance-cost-estimator.pdf';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+
+                btn.textContent = '✓ Downloaded — check your email too!';
+            } catch (err) {
+                alertEl.textContent = err.message;
+                alertEl.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = 'Get Your Free PDF Report';
+            }
+        }
+    </script>
+</body>
+</html>
