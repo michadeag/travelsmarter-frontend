@@ -1450,6 +1450,44 @@
                         </tbody>
                     </table>
                 </div>
+
+                <h3 style="margin-top: 30px; margin-bottom: 8px;">📝 Tool Promo WordPress Posts</h3>
+                <p style="color:#6b7280; margin-bottom:20px;">Auto-posted 1x/day at a random time, a full article about one random free-tool page with a backlink — new tools are picked up automatically.</p>
+                <div class="cards-grid">
+                    <div class="card" id="ft-wp-today">
+                        <h3>Today</h3>
+                        <div class="number" style="opacity: 0.5;">Loading...</div>
+                    </div>
+                    <div class="card" id="ft-wp-7d">
+                        <h3>Last 7 Days</h3>
+                        <div class="number" style="opacity: 0.5;">Loading...</div>
+                    </div>
+                    <div class="card" id="ft-wp-30d">
+                        <h3>Last 30 Days</h3>
+                        <div class="number" style="opacity: 0.5;">Loading...</div>
+                    </div>
+                    <div class="card" id="ft-wp-all-time">
+                        <h3>All Time</h3>
+                        <div class="number" style="opacity: 0.5;">Loading...</div>
+                    </div>
+                </div>
+                <div style="margin:16px 0;">
+                    <button class="btn btn-primary" id="ft-wp-post-now-btn" onclick="postToolPromoWordpressNow()">Post One Now</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Posted</th>
+                                <th>Page</th>
+                                <th>Article</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ft-wp-recent-table">
+                            <tr><td colspan="3" style="color:#9ca3af;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- TWITTER TAB -->

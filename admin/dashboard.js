@@ -161,6 +161,7 @@ async function loadFreeToolsAnalytics() {
     loadFreeToolsTop();
     loadToolPromoTweets();
     loadToolPromoBlogPosts();
+    loadToolPromoWordpressPosts();
 }
 
 async function loadFreeToolsTop() {
@@ -307,6 +308,69 @@ async function postToolPromoBlogNow() {
         }
     } catch (error) {
         console.error('postToolPromoBlogNow error:', error);
+        alert(`Error: ${error.message}`);
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
+    }
+}
+
+async function loadToolPromoWordpressPosts() {
+    try {
+        const res = await fetch(`${API_URL}/api/analytics/free-tools/wordpress-posts`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        if (!res.ok) return;
+        const { summary, recent } = await res.json();
+
+        document.getElementById('ft-wp-today').innerHTML = `<h3>Today</h3><div class="number">${summary.today}</div>`;
+        document.getElementById('ft-wp-7d').innerHTML = `<h3>Last 7 Days</h3><div class="number">${summary.last_7_days}</div>`;
+        document.getElementById('ft-wp-30d').innerHTML = `<h3>Last 30 Days</h3><div class="number">${summary.last_30_days}</div>`;
+        document.getElementById('ft-wp-all-time').innerHTML = `<h3>All Time</h3><div class="number">${summary.all_time}</div>`;
+
+        const tbody = document.getElementById('ft-wp-recent-table');
+        if (!tbody) return;
+        if (!recent || recent.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="color:#9ca3af;">No tool-promo WordPress posts published yet.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = recent.map(row => `
+            <tr>
+                <td>${new Date(row.posted_at).toLocaleString()}</td>
+                <td>${prettifySlug(row.tool_slug)}</td>
+                <td>${row.wp_url ? `<a href="${row.wp_url}" target="_blank" rel="noopener">${row.title || 'View post'}</a>` : '—'}</td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading tool-promo WordPress posts:', error);
+    }
+}
+
+async function postToolPromoWordpressNow() {
+    const btn = document.getElementById('ft-wp-post-now-btn');
+    const originalLabel = btn ? btn.textContent : null;
+    if (btn) { btn.disabled = true; btn.textContent = 'Generating article… (10-20s)'; }
+    try {
+        const res = await fetch(`${API_URL}/api/wordpress/post-tool-promo`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        let data;
+        try {
+            data = await res.json();
+        } catch (parseErr) {
+            console.error('postToolPromoWordpressNow: non-JSON response', res.status, await res.text().catch(() => ''));
+            alert(`Error: server returned ${res.status} (not JSON) — check backend logs.`);
+            return;
+        }
+        console.log('postToolPromoWordpressNow response:', res.status, data);
+        if (data.success) {
+            alert(`Published! ${data.url}`);
+            loadToolPromoWordpressPosts();
+        } else {
+            alert(`Failed: ${data.message || 'unknown error'}${data.error ? ' — ' + data.error : ''}`);
+        }
+    } catch (error) {
+        console.error('postToolPromoWordpressNow error:', error);
         alert(`Error: ${error.message}`);
     } finally {
         if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
