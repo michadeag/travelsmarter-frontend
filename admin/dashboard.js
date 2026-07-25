@@ -235,20 +235,34 @@ async function loadToolPromoTweets() {
 }
 
 async function postToolPromoTweetNow() {
+    const btn = document.getElementById('ft-tw-post-now-btn');
+    const originalLabel = btn ? btn.textContent : null;
+    if (btn) { btn.disabled = true; btn.textContent = 'Posting…'; }
     try {
         const res = await fetch(`${API_URL}/api/twitter/post-tool-promo`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${getAuthToken()}` }
         });
-        const data = await res.json();
+        let data;
+        try {
+            data = await res.json();
+        } catch (parseErr) {
+            console.error('postToolPromoTweetNow: non-JSON response', res.status, await res.text().catch(() => ''));
+            alert(`Error: server returned ${res.status} (not JSON) — check backend logs.`);
+            return;
+        }
+        console.log('postToolPromoTweetNow response:', res.status, data);
         if (data.success) {
             alert(`Posted! ${data.url}`);
             loadToolPromoTweets();
         } else {
-            alert(`Failed: ${data.message || 'unknown error'}`);
+            alert(`Failed: ${data.message || 'unknown error'}${data.error ? ' — ' + data.error : ''}`);
         }
     } catch (error) {
+        console.error('postToolPromoTweetNow error:', error);
         alert(`Error: ${error.message}`);
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
     }
 }
 
