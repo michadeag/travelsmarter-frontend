@@ -62,6 +62,18 @@ function render(a, allAirports) {
       gtag('config', 'G-470B6E2DKF');
     </script>
 
+    <script>
+      (function () {
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') return;
+        fetch('https://api.travelsmarterapp.com/api/analytics/free-tools/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path: window.location.pathname }),
+          keepalive: true
+        }).catch(function () {});
+      })();
+    </script>
+
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
