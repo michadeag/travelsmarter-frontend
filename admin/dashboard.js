@@ -160,6 +160,7 @@ async function loadFreeToolsAnalytics() {
 
     loadFreeToolsTop();
     loadToolPromoTweets();
+    loadToolPromoBlogPosts();
 }
 
 async function loadFreeToolsTop() {
@@ -241,6 +242,55 @@ async function postToolPromoTweetNow() {
         if (data.success) {
             alert(`Posted! ${data.url}`);
             loadToolPromoTweets();
+        } else {
+            alert(`Failed: ${data.message || 'unknown error'}`);
+        }
+    } catch (error) {
+        alert(`Error: ${error.message}`);
+    }
+}
+
+async function loadToolPromoBlogPosts() {
+    try {
+        const res = await fetch(`${API_URL}/api/analytics/free-tools/blogger-posts`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        if (!res.ok) return;
+        const { summary, recent } = await res.json();
+
+        document.getElementById('ft-bl-today').innerHTML = `<h3>Today</h3><div class="number">${summary.today}</div>`;
+        document.getElementById('ft-bl-7d').innerHTML = `<h3>Last 7 Days</h3><div class="number">${summary.last_7_days}</div>`;
+        document.getElementById('ft-bl-30d').innerHTML = `<h3>Last 30 Days</h3><div class="number">${summary.last_30_days}</div>`;
+        document.getElementById('ft-bl-all-time').innerHTML = `<h3>All Time</h3><div class="number">${summary.all_time}</div>`;
+
+        const tbody = document.getElementById('ft-bl-recent-table');
+        if (!tbody) return;
+        if (!recent || recent.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="color:#9ca3af;">No tool-promo blog posts published yet.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = recent.map(row => `
+            <tr>
+                <td>${new Date(row.posted_at).toLocaleString()}</td>
+                <td>${prettifySlug(row.tool_slug)}</td>
+                <td>${row.blogger_url ? `<a href="${row.blogger_url}" target="_blank" rel="noopener">${row.title || 'View post'}</a>` : '—'}</td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading tool-promo blog posts:', error);
+    }
+}
+
+async function postToolPromoBlogNow() {
+    try {
+        const res = await fetch(`${API_URL}/api/blogger/post-tool-promo`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+            alert(`Published! ${data.url}`);
+            loadToolPromoBlogPosts();
         } else {
             alert(`Failed: ${data.message || 'unknown error'}`);
         }
