@@ -282,20 +282,34 @@ async function loadToolPromoBlogPosts() {
 }
 
 async function postToolPromoBlogNow() {
+    const btn = document.getElementById('ft-bl-post-now-btn');
+    const originalLabel = btn ? btn.textContent : null;
+    if (btn) { btn.disabled = true; btn.textContent = 'Generating article… (10-20s)'; }
     try {
         const res = await fetch(`${API_URL}/api/blogger/post-tool-promo`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${getAuthToken()}` }
         });
-        const data = await res.json();
+        let data;
+        try {
+            data = await res.json();
+        } catch (parseErr) {
+            console.error('postToolPromoBlogNow: non-JSON response', res.status, await res.text().catch(() => ''));
+            alert(`Error: server returned ${res.status} (not JSON) — check backend logs.`);
+            return;
+        }
+        console.log('postToolPromoBlogNow response:', res.status, data);
         if (data.success) {
             alert(`Published! ${data.url}`);
             loadToolPromoBlogPosts();
         } else {
-            alert(`Failed: ${data.message || 'unknown error'}`);
+            alert(`Failed: ${data.message || 'unknown error'}${data.error ? ' — ' + data.error : ''}`);
         }
     } catch (error) {
+        console.error('postToolPromoBlogNow error:', error);
         alert(`Error: ${error.message}`);
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
     }
 }
 
