@@ -251,6 +251,7 @@ ${faqHtml}
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         email, firstName,
+                        sourcePage: window.location.pathname,
                         country: lastResult.country,
                     }),
                 });

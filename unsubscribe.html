@@ -50,7 +50,12 @@
             ? 'http://localhost:5000'
             : 'https://api.travelsmarterapp.com';
 
-        const token = new URLSearchParams(window.location.search).get('token');
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+        // Leads captured by the free tools (PDF downloads) have no user
+        // account, so they unsubscribe via a separate endpoint keyed to
+        // tool_leads.unsubscribe_token instead of users.unsubscribe_token.
+        const unsubscribeEndpoint = params.get('type') === 'lead' ? 'unsubscribe-lead' : 'unsubscribe';
 
         async function doUnsubscribe() {
             if (!token) {
@@ -59,7 +64,7 @@
                 return;
             }
             try {
-                const res = await fetch(`${API_URL}/api/auth/unsubscribe?token=${token}`);
+                const res = await fetch(`${API_URL}/api/auth/${unsubscribeEndpoint}?token=${token}`);
                 const data = await res.json();
                 if (data.success) {
                     document.getElementById('confirm-state').style.display = 'none';

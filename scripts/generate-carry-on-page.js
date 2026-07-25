@@ -278,6 +278,7 @@ ${faqHtml}
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         email, firstName,
+                        sourcePage: window.location.pathname,
                         airline: lastResult.airline,
                         length: lastResult.bag.l,
                         width: lastResult.bag.w,
