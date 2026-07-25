@@ -162,6 +162,7 @@ async function loadFreeToolsAnalytics() {
     loadToolPromoTweets();
     loadToolPromoBlogPosts();
     loadToolPromoWordpressPosts();
+    loadToolOgImages();
 }
 
 async function loadFreeToolsTop() {
@@ -371,6 +372,60 @@ async function postToolPromoWordpressNow() {
         }
     } catch (error) {
         console.error('postToolPromoWordpressNow error:', error);
+        alert(`Error: ${error.message}`);
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
+    }
+}
+
+async function loadToolOgImages() {
+    try {
+        const res = await fetch(`${API_URL}/api/tool-images`);
+        if (!res.ok) return;
+        const { total, images } = await res.json();
+
+        document.getElementById('ft-img-generated').innerHTML = `<h3>Generated</h3><div class="number">${images.length}</div>`;
+        document.getElementById('ft-img-total').innerHTML = `<h3>Total Tool Categories</h3><div class="number">${total}</div>`;
+
+        const tbody = document.getElementById('ft-img-table');
+        if (!tbody) return;
+        if (!images || images.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="color:#9ca3af;">No images generated yet.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = images.map(row => `
+            <tr>
+                <td>${prettifySlug(row.tool_slug)}</td>
+                <td><img src="${row.image_url}" alt="${row.tool_slug}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;"></td>
+                <td>${new Date(row.generated_at).toLocaleString()}</td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading tool OG images:', error);
+    }
+}
+
+async function generateToolOgImages(force) {
+    const btn = document.getElementById(force ? 'ft-img-regenerate-btn' : 'ft-img-generate-btn');
+    const originalLabel = btn ? btn.textContent : null;
+    if (force && !confirm('Regenerate ALL 30 tool images? This uses Ideogram credits even for images that already exist.')) return;
+    if (btn) { btn.disabled = true; btn.textContent = 'Starting…'; }
+    try {
+        const res = await fetch(`${API_URL}/api/tool-images/generate`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ force: !!force })
+        });
+        const data = await res.json();
+        if (data.success && data.started) {
+            alert(`Started generating ${data.count} image(s) in the background. This runs in small batches — refresh this tab in a minute or two to see progress.`);
+        } else if (data.success) {
+            alert(data.reason || 'Nothing to generate — all tool images already exist. Use "Regenerate All" to force new ones.');
+        } else {
+            alert(`Failed: ${data.message || 'unknown error'}`);
+        }
+        loadToolOgImages();
+    } catch (error) {
         alert(`Error: ${error.message}`);
     } finally {
         if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
