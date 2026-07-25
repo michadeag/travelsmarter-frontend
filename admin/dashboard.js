@@ -159,6 +159,7 @@ async function loadFreeToolsAnalytics() {
     }
 
     loadFreeToolsTop();
+    loadToolPromoTweets();
 }
 
 async function loadFreeToolsTop() {
@@ -196,6 +197,55 @@ async function loadFreeToolsTop() {
     } catch (error) {
         console.error('Error loading free tools top pages:', error);
         tbody.innerHTML = `<tr><td colspan="${colspan}" style="color:#ef4444;">Error loading top pages</td></tr>`;
+    }
+}
+
+async function loadToolPromoTweets() {
+    try {
+        const res = await fetch(`${API_URL}/api/analytics/free-tools/twitter-posts`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        if (!res.ok) return;
+        const { summary, recent } = await res.json();
+
+        document.getElementById('ft-tw-today').innerHTML = `<h3>Today</h3><div class="number">${summary.today}</div>`;
+        document.getElementById('ft-tw-7d').innerHTML = `<h3>Last 7 Days</h3><div class="number">${summary.last_7_days}</div>`;
+        document.getElementById('ft-tw-30d').innerHTML = `<h3>Last 30 Days</h3><div class="number">${summary.last_30_days}</div>`;
+        document.getElementById('ft-tw-all-time').innerHTML = `<h3>All Time</h3><div class="number">${summary.all_time}</div>`;
+
+        const tbody = document.getElementById('ft-tw-recent-table');
+        if (!tbody) return;
+        if (!recent || recent.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="color:#9ca3af;">No tool-promo tweets sent yet.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = recent.map(row => `
+            <tr>
+                <td>${new Date(row.posted_at).toLocaleString()}</td>
+                <td>${prettifySlug(row.tool_slug)}</td>
+                <td>${row.tweet_id ? `<a href="https://twitter.com/i/web/status/${row.tweet_id}" target="_blank" rel="noopener">View tweet</a>` : '—'}</td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading tool-promo tweets:', error);
+    }
+}
+
+async function postToolPromoTweetNow() {
+    try {
+        const res = await fetch(`${API_URL}/api/twitter/post-tool-promo`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+            alert(`Posted! ${data.url}`);
+            loadToolPromoTweets();
+        } else {
+            alert(`Failed: ${data.message || 'unknown error'}`);
+        }
+    } catch (error) {
+        alert(`Error: ${error.message}`);
     }
 }
 
