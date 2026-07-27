@@ -31,7 +31,7 @@ function faqJsonLd(faqs) {
 function render(c, allCountries) {
   const speedTierLabel = SPEED_LABELS[c.speedTier];
   const nomadLabel = NOMAD_LABELS[c.digitalNomadVisa];
-  const headline = `${c.name}'s internet is ${speedTierLabel} On the visa side, ${nomadLabel}.`;
+  const headline = `${c.name}'s internet is ${speedTierLabel}. On the visa side, ${nomadLabel}.`;
 
   const faqs = [
     { q: `How good is the internet in ${c.name}?`, a: `${c.name}'s internet is ${speedTierLabel} ${c.note}` },
