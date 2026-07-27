@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Free Travel Tools & Calculators | TravelSmarter</title>
-    <meta name="description" content="54 free instant travel calculators — flight timing, packing lists, budgets, visas, jet lag, tipping, layovers, and more. No sign-up required.">
+    <title>Free Travel Tools & The Trip Brief | TravelSmarter</title>
+    <meta name="description" content="3 free instant travel calculators, no sign-up required. The other 51 checks — visas, money, health, local laws, and more — are combined into The Trip Brief, one personalized PDF for $19.">
     <link rel="canonical" href="https://travelsmarterapp.com/free-travel-tools.html">
 
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Free Travel Tools & Calculators">
-    <meta property="og:description" content="54 free instant travel calculators — no sign-up required.">
+    <meta property="og:title" content="Free Travel Tools & The Trip Brief">
+    <meta property="og:description" content="3 tools free forever. The other 51 checks combined into one personalized PDF — The Trip Brief.">
     <meta property="og:url" content="https://travelsmarterapp.com/free-travel-tools.html">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="Free Travel Tools & Calculators">
-    <meta name="twitter:description" content="54 free instant travel calculators — no sign-up required.">
+    <meta name="twitter:title" content="Free Travel Tools & The Trip Brief">
+    <meta name="twitter:description" content="3 tools free forever. The other 51 checks combined into one personalized PDF — The Trip Brief.">
 
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-470B6E2DKF"></script>
     <script>
@@ -49,13 +49,32 @@
         header a { color:#ff6b4a; font-weight:800; font-size:1.2em; text-decoration:none; }
         .hero { max-width:760px; margin:0 auto; padding:50px 20px 20px; text-align:center; }
         .hero h1 { font-size:2.1em; color:#1a2744; margin-bottom:14px; }
-        .hero p { color:#6b7280; font-size:1.1em; max-width:600px; margin:0 auto; }
+        .hero p { color:#6b7280; font-size:1.1em; max-width:640px; margin:0 auto; }
+        .hero p a { color:#ff6b4a; font-weight:700; text-decoration:none; }
         .container { max-width:1000px; margin:0 auto; padding:30px 20px 60px; }
+
+        .cta-banner {
+            background:linear-gradient(135deg,#1a2744 0%,#2d3f6b 100%); border-radius:14px;
+            padding:28px 32px; margin-bottom:32px; display:flex; align-items:center;
+            justify-content:space-between; gap:20px; flex-wrap:wrap; color:white;
+        }
+        .cta-banner .text h2 { font-size:1.25em; margin-bottom:6px; }
+        .cta-banner .text p { color:#c7d2fe; font-size:14px; margin:0; }
+        .cta-banner .btn {
+            background:#ff6b4a; color:white; text-decoration:none; font-weight:700;
+            padding:13px 26px; border-radius:8px; font-size:15px; white-space:nowrap; flex-shrink:0;
+        }
+
+        .section-label {
+            font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase;
+            letter-spacing:0.5px; margin:8px 0 14px;
+        }
+
         .tools-grid {
-            display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:24px; margin-top:20px;
+            display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:24px; margin-bottom:36px;
         }
         .tool-card {
-            background:white; border-radius:12px; padding:28px;
+            position:relative; background:white; border-radius:12px; padding:28px;
             box-shadow:0 4px 20px rgba(0,0,0,0.06); text-decoration:none; color:inherit;
             display:block; transition:transform 0.15s, box-shadow 0.15s;
         }
@@ -63,8 +82,26 @@
         .tool-icon { font-size:2.2em; margin-bottom:10px; }
         .tool-card h2 { font-size:1.15em; color:#1a2744; margin-bottom:8px; }
         .tool-card p { color:#6b7280; font-size:14px; margin-bottom:0; }
+
+        .free-badge {
+            position:absolute; top:16px; right:16px; background:#f0fdf4; color:#065f46;
+            font-size:11px; font-weight:700; padding:3px 9px; border-radius:10px;
+        }
+        .tool-card.locked { background:#fbfbfd; box-shadow:0 2px 10px rgba(0,0,0,0.04); }
+        .tool-card.locked .tool-icon { opacity:0.55; }
+        .tool-card.locked h2 { color:#4b5563; }
+        .lock-badge {
+            position:absolute; top:16px; right:16px; background:#fff5f2; color:#c2410c;
+            font-size:11px; font-weight:700; padding:3px 9px; border-radius:10px;
+        }
+
         footer { text-align:center; padding:30px 20px; color:#9ca3af; font-size:13px; }
         footer a { color:#667eea; text-decoration:none; }
+
+        @media (max-width:600px) {
+            .cta-banner { flex-direction:column; align-items:stretch; text-align:center; }
+            .cta-banner .btn { text-align:center; }
+        }
     </style>
 </head>
 <body>
@@ -74,286 +111,117 @@
 
     <div class="hero">
         <h1>Free Travel Tools</h1>
-        <p>54 instant calculators to plan smarter — no sign-up required for the quick answer, with an optional free PDF report for each.</p>
+        <p>3 tools, completely free, no sign-up required. The other 51 checks are combined into <a href="trip-brief.html">The Trip Brief</a> — one personalized PDF with everything for your destination.</p>
     </div>
 
     <div class="container">
+        <div class="cta-banner">
+            <div class="text">
+                <h2>Want all 54 checks for one trip?</h2>
+                <p>Skip clicking through tools one by one — get every relevant answer combined into one PDF.</p>
+            </div>
+            <a href="trip-brief.html" class="btn">Get My Trip Brief — $19 →</a>
+        </div>
+
+        <div class="section-label">Free, no sign-up</div>
         <div class="tools-grid">
             <a class="tool-card" href="best-time-to-book-flights.html">
+                <span class="free-badge">FREE</span>
                 <div class="tool-icon">📅</div>
                 <h2>Best Time to Book Flights</h2>
                 <p>Find the exact window to book your flight for the lowest price, for 80 destinations.</p>
             </a>
             <a class="tool-card" href="carry-on-size-checker.html">
+                <span class="free-badge">FREE</span>
                 <div class="tool-icon">🧳</div>
                 <h2>Carry-On Size Checker</h2>
                 <p>See if your bag fits 13 major airlines' carry-on limits, and whether it's free or paid.</p>
             </a>
             <a class="tool-card" href="visa-requirement-checker.html">
+                <span class="free-badge">FREE</span>
                 <div class="tool-icon">🛂</div>
                 <h2>Visa Requirement Checker</h2>
                 <p>Check entry requirements and passport validity rules for 63 countries.</p>
             </a>
-            <a class="tool-card" href="jet-lag-calculator.html">
-                <div class="tool-icon">🕐</div>
-                <h2>Jet Lag Calculator</h2>
-                <p>See how many time zones you're crossing and how long it'll take to adjust.</p>
-            </a>
-            <a class="tool-card" href="packing-list-generator.html">
-                <div class="tool-icon">🎒</div>
-                <h2>Packing List Generator</h2>
-                <p>Get a climate-adjusted, quantity-scaled packing checklist for your exact trip.</p>
-            </a>
-            <a class="tool-card" href="travel-budget-calculator.html">
-                <div class="tool-icon">💰</div>
-                <h2>Travel Budget Calculator</h2>
-                <p>Estimate your trip cost by destination and travel style, with a full breakdown.</p>
-            </a>
-            <a class="tool-card" href="power-plug-checker.html">
-                <div class="tool-icon">🔌</div>
-                <h2>Power Plug & Voltage Checker</h2>
-                <p>Find out if you need a plug adapter or voltage converter for your destination.</p>
-            </a>
-            <a class="tool-card" href="tipping-calculator.html">
-                <div class="tool-icon">💵</div>
-                <h2>Tipping Calculator</h2>
-                <p>See exactly how much to tip in restaurants around the world.</p>
-            </a>
-            <a class="tool-card" href="layover-checker.html">
-                <div class="tool-icon">🛫</div>
-                <h2>Layover Checker</h2>
-                <p>Check if your connection time is long enough at 31 major airports.</p>
-            </a>
-            <a class="tool-card" href="travel-health-checker.html">
-                <div class="tool-icon">🩺</div>
-                <h2>Travel Health Checker</h2>
-                <p>Get a quick orientation on yellow fever, malaria risk, and recommended vaccines.</p>
-            </a>
-            <a class="tool-card" href="water-safety-checker.html">
-                <div class="tool-icon">💧</div>
-                <h2>Tap Water Safety Checker</h2>
-                <p>Find out if tap water is safe to drink at your destination, with practical tips.</p>
-            </a>
-            <a class="tool-card" href="flight-carbon-calculator.html">
-                <div class="tool-icon">🌍</div>
-                <h2>Flight Carbon Calculator</h2>
-                <p>Estimate your flight's CO2 footprint by destination and cabin class.</p>
-            </a>
-            <a class="tool-card" href="airport-transfer-calculator.html">
-                <div class="tool-icon">🚕</div>
-                <h2>Airport Transfer Cost Calculator</h2>
-                <p>Compare taxi, rideshare, and transit costs from 31 major airports to downtown.</p>
-            </a>
-            <a class="tool-card" href="baggage-fee-calculator.html">
-                <div class="tool-icon">🧳</div>
-                <h2>Checked Baggage Fee Calculator</h2>
-                <p>See exactly what your checked bags will cost across 13 airlines.</p>
-            </a>
-            <a class="tool-card" href="emergency-number-checker.html">
-                <div class="tool-icon">🚨</div>
-                <h2>Emergency Number Checker</h2>
-                <p>Find the local police, fire, and ambulance numbers for your destination.</p>
-            </a>
-            <a class="tool-card" href="rideshare-checker.html">
-                <div class="tool-icon">🚗</div>
-                <h2>Rideshare Availability Checker</h2>
-                <p>Find out if Uber works at your destination, and which local app to use instead.</p>
-            </a>
-            <a class="tool-card" href="driving-checker.html">
-                <div class="tool-icon">🛣️</div>
-                <h2>Driving Side & IDP Checker</h2>
-                <p>Find out which side of the road your destination drives on, and if you need an International Driving Permit.</p>
-            </a>
-            <a class="tool-card" href="sim-checker.html">
-                <div class="tool-icon">📶</div>
-                <h2>SIM Card & eSIM Checker</h2>
-                <p>Find out if a local SIM or an eSIM is the better choice, and whether passport registration is required.</p>
-            </a>
-            <a class="tool-card" href="delay-compensation-checker.html">
-                <div class="tool-icon">💸</div>
-                <h2>Flight Delay & Cancellation Compensation Checker</h2>
-                <p>Find out if you're owed compensation under EU261 or US DOT rules for a delayed, cancelled, or overbooked flight.</p>
-            </a>
-            <a class="tool-card" href="customs-checker.html">
-                <div class="tool-icon">🛃</div>
-                <h2>Duty-Free & Customs Allowance Checker</h2>
-                <p>Find out your US personal exemption, alcohol allowance, and what to watch out for bringing things back home.</p>
-            </a>
-            <a class="tool-card" href="best-month-checker.html">
-                <div class="tool-icon">☀️</div>
-                <h2>Best Time to Visit Checker</h2>
-                <p>Find the best month to visit your destination for weather and crowds, and which months to avoid.</p>
-            </a>
-            <a class="tool-card" href="currency-checker.html">
-                <div class="tool-icon">💳</div>
-                <h2>Currency & Cash Culture Checker</h2>
-                <p>Find out the local currency and whether your destination runs on cash or card.</p>
-            </a>
-            <a class="tool-card" href="language-checker.html">
-                <div class="tool-icon">🗣️</div>
-                <h2>English Proficiency & Language Checker</h2>
-                <p>Find out how far English will get you at your destination, and the local language it's worth knowing.</p>
-            </a>
-            <a class="tool-card" href="transit-checker.html">
-                <div class="tool-icon">🚇</div>
-                <h2>Public Transport Pass Checker</h2>
-                <p>Find out which transit card you need at your destination, and where to buy it.</p>
-            </a>
-            <a class="tool-card" href="airport-amenities-checker.html">
-                <div class="tool-icon">📶</div>
-                <h2>Airport WiFi & Amenities Checker</h2>
-                <p>Find out if your airport has free WiFi, good lounges, and the one amenity worth seeking out.</p>
-            </a>
-            <a class="tool-card" href="drone-checker.html">
-                <div class="tool-icon">🚁</div>
-                <h2>Drone & Photography Laws Checker</h2>
-                <p>Find out if you can fly your drone at your destination, and what photography restrictions apply.</p>
-            </a>
-            <a class="tool-card" href="alcohol-checker.html">
-                <div class="tool-icon">🍷</div>
-                <h2>Alcohol Laws & Dry Countries Checker</h2>
-                <p>Find out if alcohol is freely available at your destination, and what special restrictions apply.</p>
-            </a>
-            <a class="tool-card" href="seat-pitch-checker.html">
-                <div class="tool-icon">💺</div>
-                <h2>Seat Pitch & Legroom Checker</h2>
-                <p>Find out how much legroom you'll get on your flight, and whether a premium seat upgrade is worth it.</p>
-            </a>
-            <a class="tool-card" href="insurance-cost-estimator.html">
-                <div class="tool-icon">🧳</div>
-                <h2>Travel Insurance Cost Estimator</h2>
-                <p>Estimate what travel insurance will cost for your trip, and which coverage tier makes sense.</p>
-            </a>
-            <a class="tool-card" href="pet-travel-checker.html">
-                <div class="tool-icon">🐾</div>
-                <h2>Pet Travel & Import Requirements Checker</h2>
-                <p>Find out how difficult it is to bring your pet to your destination, and what's required.</p>
-            </a>
-            <a class="tool-card" href="passport-validity-checker.html">
-                <div class="tool-icon">🛂</div>
-                <h2>Passport Validity Checker</h2>
-                <p>Enter your passport's expiry date and destination to get your exact latest safe-travel date.</p>
-            </a>
-            <a class="tool-card" href="public-holiday-checker.html">
-                <div class="tool-icon">📅</div>
-                <h2>Public Holiday & Bank Closure Checker</h2>
-                <p>See which public holidays and closures overlap your travel dates, for 45 countries.</p>
-            </a>
-            <a class="tool-card" href="rental-age-checker.html">
-                <div class="tool-icon">🚗</div>
-                <h2>Car Rental Age & Young Driver Fee Checker</h2>
-                <p>Check the minimum rental age and young-driver surcharge for your destination.</p>
-            </a>
-            <a class="tool-card" href="atm-fee-checker.html">
-                <div class="tool-icon">💳</div>
-                <h2>ATM & Foreign Transaction Fee Checker</h2>
-                <p>See typical ATM fees and Dynamic Currency Conversion risk for 47 countries.</p>
-            </a>
-            <a class="tool-card" href="dress-code-checker.html">
-                <div class="tool-icon">👗</div>
-                <h2>Local Dress Code & Etiquette Checker</h2>
-                <p>See the dress code expectation and key etiquette tips for your destination.</p>
-            </a>
-            <a class="tool-card" href="lost-passport-checker.html">
-                <div class="tool-icon">🛂</div>
-                <h2>Lost Passport & Embassy Contact Checker</h2>
-                <p>Get the exact steps to take if your passport is lost or stolen abroad.</p>
-            </a>
-            <a class="tool-card" href="tourist-tax-checker.html">
-                <div class="tool-icon">🏨</div>
-                <h2>Tourist Tax / City Tax Checker</h2>
-                <p>See whether your destination charges a tourist tax, how much, and how it's paid.</p>
-            </a>
-            <a class="tool-card" href="short-term-rental-checker.html">
-                <div class="tool-icon">🏠</div>
-                <h2>Short-Term Rental (Airbnb) Regulations Checker</h2>
-                <p>See how heavily short-term rentals are regulated at your destination.</p>
-            </a>
-            <a class="tool-card" href="uv-index-checker.html">
-                <div class="tool-icon">☀️</div>
-                <h2>UV Index & Sun Safety Checker</h2>
-                <p>See how intense the sun is at your destination, and what SPF to pack.</p>
-            </a>
-            <a class="tool-card" href="departure-tax-checker.html">
-                <div class="tool-icon">🛫</div>
-                <h2>Airport Departure Tax Checker</h2>
-                <p>See whether your destination charges a separate departure tax, and how it's paid.</p>
-            </a>
-            <a class="tool-card" href="wildlife-safety-checker.html">
-                <div class="tool-icon">🐍</div>
-                <h2>Wildlife & Venomous Animal Safety Checker</h2>
-                <p>See the wildlife hazard level and key safety tips for your destination.</p>
-            </a>
-            <a class="tool-card" href="time-zone-checker.html">
-                <div class="tool-icon">🕐</div>
-                <h2>Time Zone Converter & Best Call Time Checker</h2>
-                <p>See the time difference and best call times between two countries.</p>
-            </a>
-            <a class="tool-card" href="drinking-age-checker.html">
-                <div class="tool-icon">🍷</div>
-                <h2>Legal Drinking Age Checker</h2>
-                <p>See the legal drinking age at your destination, and whether you're covered.</p>
-            </a>
-            <a class="tool-card" href="vpn-censorship-checker.html">
-                <div class="tool-icon">🌐</div>
-                <h2>Internet Censorship & VPN Checker</h2>
-                <p>See which apps are blocked, whether you need a VPN, and if VPN use is legal.</p>
-            </a>
-            <a class="tool-card" href="smoking-vaping-checker.html">
-                <div class="tool-icon">🚬</div>
-                <h2>Smoking & Vaping Legality Checker</h2>
-                <p>See the local smoking rules, and whether vapes are legal to bring or use.</p>
-            </a>
-            <a class="tool-card" href="natural-disaster-checker.html">
-                <div class="tool-icon">⛈️</div>
-                <h2>Natural Disaster & Severe Weather Checker</h2>
-                <p>See the main hazard, risk level, and riskiest season for your destination.</p>
-            </a>
-            <a class="tool-card" href="cashless-payment-checker.html">
-                <div class="tool-icon">💳</div>
-                <h2>Card & Cashless Payment Checker</h2>
-                <p>See how widely cards are accepted, and where you'll still need cash.</p>
-            </a>
-            <a class="tool-card" href="etiquette-checker.html">
-                <div class="tool-icon">🤝</div>
-                <h2>Local Etiquette & Taboos Checker</h2>
-                <p>See the key etiquette rules and taboos to know before you go.</p>
-            </a>
-            <a class="tool-card" href="business-hours-checker.html">
-                <div class="tool-icon">🕒</div>
-                <h2>Business Hours & Weekend Checker</h2>
-                <p>See which days are the weekend, and typical business hours.</p>
-            </a>
-            <a class="tool-card" href="internet-speed-checker.html">
-                <div class="tool-icon">📶</div>
-                <h2>Internet Speed & Remote Work Checker</h2>
-                <p>See typical internet speed, and if a digital nomad visa exists.</p>
-            </a>
-            <a class="tool-card" href="airport-arrival-time-checker.html">
-                <div class="tool-icon">🛬</div>
-                <h2>Airport Arrival Time Checker</h2>
-                <p>See exactly how early to arrive, for 31 major airports.</p>
-            </a>
-            <a class="tool-card" href="medication-legality-checker.html">
-                <div class="tool-icon">💊</div>
-                <h2>Medication Legality Checker</h2>
-                <p>See if your prescription medication is restricted abroad.</p>
-            </a>
-            <a class="tool-card" href="vat-refund-checker.html">
-                <div class="tool-icon">🧾</div>
-                <h2>VAT/Tax-Free Shopping Refund Checker</h2>
-                <p>See if you can reclaim VAT on purchases, and the minimum spend.</p>
-            </a>
-            <a class="tool-card" href="resort-fee-checker.html">
-                <div class="tool-icon">🏨</div>
-                <h2>Resort Fee Checker</h2>
-                <p>See how likely hidden hotel resort fees are, and the typical range.</p>
-            </a>
         </div>
+
+        <div class="section-label">Included in The Trip Brief ($19) or TravelSmarter Pro</div>
+        <div class="tools-grid" id="locked-grid"></div>
     </div>
 
     <footer>
         Part of <a href="sales-page.html">TravelSmarter</a> — 87 verified travel hacks, price alerts, and more.
     </footer>
+
+    <script>
+        // Locked tools link to the Trip Brief rather than their own page —
+        // still shown in full so visitors can see the actual breadth of
+        // what's covered, just not click-through-free anymore. The 3 tools
+        // above (highest search volume, each raises a second question) stay
+        // completely free as the acquisition/SEO layer.
+        const LOCKED_TOOLS = [
+            ["🕐","Jet Lag Calculator","See how many time zones you're crossing and how long it'll take to adjust."],
+            ["🎒","Packing List Generator","Get a climate-adjusted, quantity-scaled packing checklist for your exact trip."],
+            ["💰","Travel Budget Calculator","Estimate your trip cost by destination and travel style, with a full breakdown."],
+            ["🔌","Power Plug & Voltage Checker","Find out if you need a plug adapter or voltage converter for your destination."],
+            ["💵","Tipping Calculator","See exactly how much to tip in restaurants around the world."],
+            ["🛫","Layover Checker","Check if your connection time is long enough at 31 major airports."],
+            ["🩺","Travel Health Checker","Get a quick orientation on yellow fever, malaria risk, and recommended vaccines."],
+            ["💧","Tap Water Safety Checker","Find out if tap water is safe to drink at your destination, with practical tips."],
+            ["🌍","Flight Carbon Calculator","Estimate your flight's CO2 footprint by destination and cabin class."],
+            ["🚕","Airport Transfer Cost Calculator","Compare taxi, rideshare, and transit costs from 31 major airports to downtown."],
+            ["🧳","Checked Baggage Fee Calculator","See exactly what your checked bags will cost across 13 airlines."],
+            ["🚨","Emergency Number Checker","Find the local police, fire, and ambulance numbers for your destination."],
+            ["🚗","Rideshare Availability Checker","Find out if Uber works at your destination, and which local app to use instead."],
+            ["🛣️","Driving Side & IDP Checker","Find out which side of the road your destination drives on, and if you need an International Driving Permit."],
+            ["📶","SIM Card & eSIM Checker","Find out if a local SIM or an eSIM is the better choice, and whether passport registration is required."],
+            ["💸","Flight Delay & Cancellation Compensation Checker","Find out if you're owed compensation under EU261 or US DOT rules for a delayed, cancelled, or overbooked flight."],
+            ["🛃","Duty-Free & Customs Allowance Checker","Find out your US personal exemption, alcohol allowance, and what to watch out for bringing things back home."],
+            ["☀️","Best Time to Visit Checker","Find the best month to visit your destination for weather and crowds, and which months to avoid."],
+            ["💳","Currency & Cash Culture Checker","Find out the local currency and whether your destination runs on cash or card."],
+            ["🗣️","English Proficiency & Language Checker","Find out how far English will get you at your destination, and the local language it's worth knowing."],
+            ["🚇","Public Transport Pass Checker","Find out which transit card you need at your destination, and where to buy it."],
+            ["📶","Airport WiFi & Amenities Checker","Find out if your airport has free WiFi, good lounges, and the one amenity worth seeking out."],
+            ["🚁","Drone & Photography Laws Checker","Find out if you can fly your drone at your destination, and what photography restrictions apply."],
+            ["🍷","Alcohol Laws & Dry Countries Checker","Find out if alcohol is freely available at your destination, and what special restrictions apply."],
+            ["💺","Seat Pitch & Legroom Checker","Find out how much legroom you'll get on your flight, and whether a premium seat upgrade is worth it."],
+            ["🧳","Travel Insurance Cost Estimator","Estimate what travel insurance will cost for your trip, and which coverage tier makes sense."],
+            ["🐾","Pet Travel & Import Requirements Checker","Find out how difficult it is to bring your pet to your destination, and what's required."],
+            ["🛂","Passport Validity Checker","Enter your passport's expiry date and destination to get your exact latest safe-travel date."],
+            ["📅","Public Holiday & Bank Closure Checker","See which public holidays and closures overlap your travel dates, for 45 countries."],
+            ["🚗","Car Rental Age & Young Driver Fee Checker","Check the minimum rental age and young-driver surcharge for your destination."],
+            ["💳","ATM & Foreign Transaction Fee Checker","See typical ATM fees and Dynamic Currency Conversion risk for 47 countries."],
+            ["👗","Local Dress Code & Etiquette Checker","See the dress code expectation and key etiquette tips for your destination."],
+            ["🛂","Lost Passport & Embassy Contact Checker","Get the exact steps to take if your passport is lost or stolen abroad."],
+            ["🏨","Tourist Tax / City Tax Checker","See whether your destination charges a tourist tax, how much, and how it's paid."],
+            ["🏠","Short-Term Rental (Airbnb) Regulations Checker","See how heavily short-term rentals are regulated at your destination."],
+            ["☀️","UV Index & Sun Safety Checker","See how intense the sun is at your destination, and what SPF to pack."],
+            ["🛫","Airport Departure Tax Checker","See whether your destination charges a separate departure tax, and how it's paid."],
+            ["🐍","Wildlife & Venomous Animal Safety Checker","See the wildlife hazard level and key safety tips for your destination."],
+            ["🕐","Time Zone Converter & Best Call Time Checker","See the time difference and best call times between two countries."],
+            ["🍷","Legal Drinking Age Checker","See the legal drinking age at your destination, and whether you're covered."],
+            ["🌐","Internet Censorship & VPN Checker","See which apps are blocked, whether you need a VPN, and if VPN use is legal."],
+            ["🚬","Smoking & Vaping Legality Checker","See the local smoking rules, and whether vapes are legal to bring or use."],
+            ["⛈️","Natural Disaster & Severe Weather Checker","See the main hazard, risk level, and riskiest season for your destination."],
+            ["💳","Card & Cashless Payment Checker","See how widely cards are accepted, and where you'll still need cash."],
+            ["🤝","Local Etiquette & Taboos Checker","See the key etiquette rules and taboos to know before you go."],
+            ["🕒","Business Hours & Weekend Checker","See which days are the weekend, and typical business hours."],
+            ["📶","Internet Speed & Remote Work Checker","See typical internet speed, and if a digital nomad visa exists."],
+            ["🛬","Airport Arrival Time Checker","See exactly how early to arrive, for 31 major airports."],
+            ["💊","Medication Legality Checker","See if your prescription medication is restricted abroad."],
+            ["🧾","VAT/Tax-Free Shopping Refund Checker","See if you can reclaim VAT on purchases, and the minimum spend."],
+            ["🏨","Resort Fee Checker","See how likely hidden hotel resort fees are, and the typical range."],
+        ];
+
+        const lockedGrid = document.getElementById('locked-grid');
+        lockedGrid.innerHTML = LOCKED_TOOLS.map(([icon, name, desc]) => `
+            <a class="tool-card locked" href="trip-brief.html">
+                <span class="lock-badge">🔒 TRIP BRIEF</span>
+                <div class="tool-icon">${icon}</div>
+                <h2>${name}</h2>
+                <p>${desc}</p>
+            </a>
+        `).join('');
+    </script>
 </body>
 </html>
