@@ -1,0 +1,57 @@
+// Mirrors server/controllers/vpnCensorshipController.js's COUNTRIES object
+// exactly (kept in sync manually — see other data-*.js files for the same
+// pattern).
+module.exports = [
+  { slug: 'china', name: 'China', level: 'heavy', vpnLegal: 'restricted', note: "Google (including Gmail and Maps), WhatsApp, Instagram, Facebook, X/Twitter, and YouTube are all blocked by the Great Firewall. Only government-approved VPNs are technically legal, though many travelers use commercial VPNs in practice — install one before you arrive, since VPN provider websites are often blocked too." },
+  { slug: 'united-arab-emirates', name: 'United Arab Emirates', level: 'moderate', vpnLegal: 'restricted', note: 'Voice/video calls over apps like WhatsApp, FaceTime, and Skype have historically been blocked (regular messaging usually still works). Using a VPN specifically to access blocked content is illegal — VPNs for general privacy/security are more of a gray area in practice.' },
+  { slug: 'saudi-arabia', name: 'Saudi Arabia', level: 'moderate', vpnLegal: 'restricted', note: 'Similar to the UAE — VoIP calling over some apps has faced restrictions at various points, alongside general content filtering. VPN use to bypass content restrictions specifically is against local regulations.' },
+  { slug: 'turkey', name: 'Turkey', level: 'moderate', vpnLegal: 'legal', note: 'Wikipedia was blocked for several years (since restored) and social media has occasionally been throttled during major news events — VPN use is legal and common.' },
+  { slug: 'vietnam', name: 'Vietnam', level: 'moderate', vpnLegal: 'gray-area', note: 'The government monitors social media and can restrict specific political content, but everyday app access (Google, WhatsApp, Instagram) is generally unaffected for tourists.' },
+  { slug: 'egypt', name: 'Egypt', level: 'moderate', vpnLegal: 'gray-area', note: 'VoIP calling has faced intermittent restrictions historically — general browsing and social media access is typically unaffected for tourists.' },
+  { slug: 'morocco', name: 'Morocco', level: 'moderate', vpnLegal: 'gray-area', note: 'VoIP calls (WhatsApp/Skype voice) have been restricted at various points, sometimes lifted and reinstated — text messaging generally still works.' },
+  { slug: 'india', name: 'India', level: 'light', vpnLegal: 'legal', note: 'Specific apps have occasionally been banned (notably TikTok) for regulatory reasons, but general internet access is unrestricted for tourists — VPN use is legal.' },
+  { slug: 'indonesia', name: 'Indonesia', level: 'light', vpnLegal: 'legal', note: 'Occasional site blocking exists, but general everyday app access is unaffected for tourists.' },
+  { slug: 'thailand', name: 'Thailand', level: 'light', vpnLegal: 'legal', note: 'Some content related to the monarchy can be restricted, but everyday app and internet access is unaffected for tourists.' },
+  { slug: 'singapore', name: 'Singapore', level: 'light', vpnLegal: 'legal', note: 'Some content is filtered for licensing/decency reasons, but everyday app access is unaffected for tourists.' },
+
+  { slug: 'united-states', name: 'United States', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'canada', name: 'Canada', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'mexico', name: 'Mexico', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'brazil', name: 'Brazil', level: 'light', vpnLegal: 'legal', note: 'Specific apps (notably a brief nationwide court-ordered block of X/Twitter in 2024) have occasionally been restricted, but this is uncommon and typically short-lived.' },
+  { slug: 'argentina', name: 'Argentina', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'chile', name: 'Chile', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'colombia', name: 'Colombia', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'peru', name: 'Peru', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'costa-rica', name: 'Costa Rica', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+
+  { slug: 'united-kingdom', name: 'United Kingdom', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'ireland', name: 'Ireland', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'france', name: 'France', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'germany', name: 'Germany', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'italy', name: 'Italy', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'spain', name: 'Spain', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'netherlands', name: 'Netherlands', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'portugal', name: 'Portugal', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'greece', name: 'Greece', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'austria', name: 'Austria', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'switzerland', name: 'Switzerland', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'poland', name: 'Poland', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'czech-republic', name: 'Czech Republic', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'norway', name: 'Norway', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'sweden', name: 'Sweden', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'denmark', name: 'Denmark', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'iceland', name: 'Iceland', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+
+  { slug: 'japan', name: 'Japan', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'south-korea', name: 'South Korea', level: 'light', vpnLegal: 'legal', note: 'A small number of North Korea-affiliated sites are blocked for national security reasons — everyday app access is unaffected for tourists.' },
+  { slug: 'malaysia', name: 'Malaysia', level: 'light', vpnLegal: 'legal', note: 'Some content is filtered for religious/decency reasons, but everyday app access is unaffected for tourists.' },
+  { slug: 'philippines', name: 'Philippines', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+
+  { slug: 'israel', name: 'Israel', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'jordan', name: 'Jordan', level: 'light', vpnLegal: 'legal', note: 'Occasional site blocking exists, but everyday app access is generally unaffected for tourists.' },
+  { slug: 'kenya', name: 'Kenya', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'south-africa', name: 'South Africa', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+
+  { slug: 'australia', name: 'Australia', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+  { slug: 'new-zealand', name: 'New Zealand', level: 'none', vpnLegal: 'legal', note: 'No notable internet restrictions for typical tourist use.' },
+];
