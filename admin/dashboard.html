@@ -1519,6 +1519,31 @@
                         </tbody>
                     </table>
                 </div>
+
+                <h3 style="margin-top: 30px; margin-bottom: 8px;">🎬 Video Script Ideas</h3>
+                <p style="color:#6b7280; margin-bottom:20px;">Short-form (YouTube Shorts / Instagram Reels / TikTok) script ideas, each promoting one free tool. Enter a number and generate — ideas rotate so repeats surface last. YouTube CTA points to the specific tool page (pin it as the first comment); Reels/TikTok CTA is "link in bio" — point your bio link at <a href="https://travelsmarterapp.com/free-travel-tools.html" target="_blank" rel="noopener">free-travel-tools.html</a> since the same bio link has to work across videos about different tools.</p>
+                <div style="display:flex; gap:12px; align-items:center; margin:16px 0;">
+                    <input type="number" id="vs-count" value="3" min="1" max="20" style="width:80px; padding:8px 12px; border-radius:6px; border:1px solid #e5e7eb;">
+                    <button class="btn btn-primary" id="vs-generate-btn" onclick="generateVideoScriptIdeas()">Generate</button>
+                </div>
+                <div id="vs-results" style="display:flex; flex-direction:column; gap:16px; margin-bottom:24px;"></div>
+
+                <h4 style="margin-top:20px; margin-bottom:12px;">All Stored Ideas</h4>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tool</th>
+                                <th>Hook</th>
+                                <th>Times Shown</th>
+                                <th>Last Shown</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vs-all-table">
+                            <tr><td colspan="4" style="color:#9ca3af;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- TWITTER TAB -->

@@ -163,6 +163,7 @@ async function loadFreeToolsAnalytics() {
     loadToolPromoBlogPosts();
     loadToolPromoWordpressPosts();
     loadToolOgImages();
+    loadAllVideoScriptIdeas();
 }
 
 async function loadFreeToolsTop() {
@@ -443,6 +444,75 @@ async function generateToolOgImages(force) {
         alert(`Error: ${error.message}`);
     } finally {
         if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
+    }
+}
+
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function renderVideoScriptCard(idea) {
+    return `
+        <div class="card" style="text-align:left;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <span style="background:#f0f4ff; color:#1a2744; font-weight:700; font-size:13px; padding:4px 10px; border-radius:12px;">${escapeHtml(idea.tool_name)}</span>
+                <span style="color:#9ca3af; font-size:12px;">shown ${idea.times_shown}×</span>
+            </div>
+            <p style="font-weight:700; font-size:16px; margin-bottom:8px;">🎬 ${escapeHtml(idea.hook)}</p>
+            <p style="color:#374151; font-size:14px; line-height:1.6; margin-bottom:12px;">${escapeHtml(idea.voiceover)}</p>
+            <p style="font-size:13px; margin-bottom:4px;"><strong>▶️ YouTube CTA:</strong> ${escapeHtml(idea.cta_youtube)}</p>
+            <p style="font-size:13px; margin-bottom:10px;"><strong>📸 Reels/TikTok CTA:</strong> ${escapeHtml(idea.cta_reels_tiktok)}</p>
+            <p style="font-size:13px; color:#6b7280;"><strong>Caption:</strong> ${escapeHtml(idea.caption)} ${escapeHtml(idea.hashtags)}</p>
+        </div>
+    `;
+}
+
+async function generateVideoScriptIdeas() {
+    const btn = document.getElementById('vs-generate-btn');
+    const originalLabel = btn ? btn.textContent : null;
+    const count = document.getElementById('vs-count').value || 3;
+    if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
+    try {
+        const res = await fetch(`${API_URL}/api/video-scripts/admin/random?count=${count}`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const data = await res.json();
+        if (!data.success) { alert(`Failed: ${data.error || 'unknown error'}`); return; }
+        const resultsEl = document.getElementById('vs-results');
+        resultsEl.innerHTML = data.ideas.map(renderVideoScriptCard).join('');
+        loadAllVideoScriptIdeas();
+    } catch (error) {
+        alert(`Error: ${error.message}`);
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
+    }
+}
+
+async function loadAllVideoScriptIdeas() {
+    try {
+        const res = await fetch(`${API_URL}/api/video-scripts/admin/all`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        if (!res.ok) return;
+        const { ideas } = await res.json();
+        const tbody = document.getElementById('vs-all-table');
+        if (!tbody) return;
+        if (!ideas || ideas.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="color:#9ca3af;">No script ideas yet.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = ideas.map(idea => `
+            <tr>
+                <td>${escapeHtml(idea.tool_name)}</td>
+                <td>${escapeHtml(idea.hook)}</td>
+                <td>${idea.times_shown}</td>
+                <td>${idea.last_shown_at ? new Date(idea.last_shown_at).toLocaleString() : '—'}</td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading video script ideas:', error);
     }
 }
 
