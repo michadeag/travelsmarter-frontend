@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Trip Brief — Every Question About Your Trip, Answered at Once | TravelSmarter</title>
+    <meta name="description" content="Enter your trip once and get a personalized PDF covering entry rules, money, health, local laws, and more — combining 35 checks into one report. $19 per trip, or $99 for unlimited.">
+    <link rel="canonical" href="https://travelsmarterapp.com/trip-brief.html">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="The Trip Brief — Every Open Question About Your Trip, Answered at Once">
+    <meta property="og:description" content="One trip in, one PDF out — 35 checks combined into a single personalized report.">
+    <meta property="og:url" content="https://travelsmarterapp.com/trip-brief.html">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="The Trip Brief">
+    <meta name="twitter:description" content="One trip in, one PDF out — 35 checks combined into a single personalized report.">
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-470B6E2DKF"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-470B6E2DKF');
+    </script>
+
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+            background:#f9fafb; color:#1f2937; line-height:1.6;
+        }
+        header {
+            background:linear-gradient(135deg,#1a2744 0%,#2d3f6b 100%);
+            color:white; padding:18px 0;
+        }
+        header .container { max-width:820px; margin:0 auto; padding:0 20px; }
+        header a { color:#ff6b4a; font-weight:800; font-size:1.2em; text-decoration:none; }
+        .hero { max-width:760px; margin:0 auto; padding:56px 20px 24px; text-align:center; }
+        .hero .eyebrow {
+            display:inline-block; background:#f0f4ff; color:#1a2744; font-weight:700;
+            font-size:13px; padding:6px 14px; border-radius:20px; margin-bottom:16px;
+        }
+        .hero h1 { font-size:2.1em; color:#1a2744; margin-bottom:16px; line-height:1.25; }
+        .hero p { color:#6b7280; font-size:1.08em; max-width:600px; margin:0 auto; }
+        .container { max-width:820px; margin:0 auto; padding:20px 20px 60px; }
+
+        .villain {
+            max-width:700px; margin:32px auto 40px; text-align:center;
+            padding:24px; background:#fff7ed; border-radius:12px; border:1px solid #fed7aa;
+        }
+        .villain p { color:#9a3412; font-size:15px; margin:0; }
+        .villain strong { color:#7c2d12; }
+
+        .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:28px; align-items:start; }
+        @media (max-width:760px) { .grid-2 { grid-template-columns:1fr; } }
+
+        .card {
+            background:white; border-radius:12px; padding:32px;
+            box-shadow:0 4px 20px rgba(0,0,0,0.06); margin-bottom:24px;
+        }
+
+        .included h2 { font-size:1.15em; color:#1a2744; margin-bottom:16px; }
+        .cat-group { margin-bottom:16px; }
+        .cat-title { font-weight:700; font-size:13px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
+        .tool-chips { display:flex; flex-wrap:wrap; gap:6px; }
+        .tool-chip {
+            display:inline-flex; align-items:center; gap:5px; background:#f0f4ff; color:#1a2744;
+            font-size:12.5px; padding:5px 10px; border-radius:14px; font-weight:600;
+        }
+
+        label { display:block; font-weight:600; font-size:14px; margin-bottom:6px; color:#374151; }
+        select, input[type="email"], input[type="text"], input[type="number"], input[type="date"] {
+            width:100%; padding:11px 14px; border:1px solid #e5e7eb; border-radius:8px;
+            font-size:15px; margin-bottom:16px;
+        }
+        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .optional-tag { color:#9ca3af; font-weight:400; font-size:12px; }
+
+        .plans { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+        @media (max-width:480px) { .plans { grid-template-columns:1fr; } }
+        .plan {
+            border:2px solid #e5e7eb; border-radius:10px; padding:16px; cursor:pointer;
+            transition:border-color 0.15s, background 0.15s;
+        }
+        .plan:hover { border-color:#c7d2fe; }
+        .plan.selected { border-color:#ff6b4a; background:#fff5f2; }
+        .plan .price { font-size:1.5em; font-weight:800; color:#1a2744; }
+        .plan .price span { font-size:0.5em; font-weight:600; color:#6b7280; }
+        .plan .plan-name { font-weight:700; color:#1a2744; margin:4px 0 2px; font-size:14px; }
+        .plan .plan-desc { font-size:12.5px; color:#6b7280; }
+        .plan .badge {
+            display:inline-block; background:#10b981; color:white; font-size:10.5px; font-weight:700;
+            padding:2px 8px; border-radius:10px; margin-bottom:6px;
+        }
+
+        .btn {
+            display:inline-block; background:#ff6b4a; color:white; border:none;
+            padding:14px 28px; border-radius:8px; font-weight:700; font-size:16px;
+            cursor:pointer; width:100%;
+        }
+        .btn:disabled { opacity:0.6; cursor:default; }
+        .alert { padding:12px 16px; border-radius:8px; font-size:14px; margin-bottom:14px; display:none; }
+        .alert-error { background:#fee2e2; color:#991b1b; }
+
+        .disclaimer { color:#9ca3af; font-size:12px; margin-top:12px; text-align:center; }
+        .guarantee {
+            margin-top:16px; text-align:center; font-size:13px; color:#065f46;
+            background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:10px 14px;
+        }
+
+        footer { text-align:center; padding:30px 20px; color:#9ca3af; font-size:13px; }
+        footer a { color:#667eea; text-decoration:none; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container"><a href="index.html">✈️ TravelSmarter</a></div>
+    </header>
+
+    <div class="hero">
+        <span class="eyebrow">The Trip Brief</span>
+        <h1>One trip in. One PDF out.</h1>
+        <p>Enter your destination once and get a personalized report covering entry rules, money, health, local laws, and more — 35 checks combined into a single PDF, instead of 35 separate searches.</p>
+    </div>
+
+    <div class="villain">
+        <p><strong>You don't have a planning problem. You have a verification problem.</strong><br>40 browser tabs, a 2019 blog post, and a Reddit thread where three people disagree — and you find out you were wrong at the check-in counter, where being wrong is expensive.</p>
+    </div>
+
+    <div class="container">
+        <div class="grid-2">
+            <div class="card included">
+                <h2>What's inside your Trip Brief</h2>
+                <div id="tools-list">Loading…</div>
+            </div>
+
+            <div class="card">
+                <div id="form-section">
+                    <label for="destination">Where are you going?</label>
+                    <select id="destination"></select>
+
+                    <div class="form-row">
+                        <div>
+                            <label for="firstName">First name</label>
+                            <input type="text" id="firstName" placeholder="Optional">
+                        </div>
+                        <div>
+                            <label for="email">Email address *</label>
+                            <input type="email" id="email" placeholder="you@example.com" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div>
+                            <label for="age">Your age <span class="optional-tag">(unlocks drinking age & rental age)</span></label>
+                            <input type="number" id="age" min="1" max="120" placeholder="Optional">
+                        </div>
+                        <div>
+                            <label for="passportExpiryDate">Passport expiry <span class="optional-tag">(unlocks passport check)</span></label>
+                            <input type="date" id="passportExpiryDate">
+                        </div>
+                    </div>
+
+                    <label>Choose your plan</label>
+                    <div class="plans">
+                        <div class="plan selected" id="plan-single" onclick="selectPlan('single')">
+                            <div class="price">$19</div>
+                            <div class="plan-name">This trip</div>
+                            <div class="plan-desc">One personalized brief</div>
+                        </div>
+                        <div class="plan" id="plan-lifetime" onclick="selectPlan('lifetime')">
+                            <span class="badge">BEST VALUE</span>
+                            <div class="price">$99</div>
+                            <div class="plan-name">Unlimited, forever</div>
+                            <div class="plan-desc">Every future trip, no extra charge</div>
+                        </div>
+                    </div>
+
+                    <div id="checkout-alert" class="alert alert-error"></div>
+                    <button class="btn" id="checkout-btn" onclick="startCheckout()">Get My Trip Brief →</button>
+
+                    <div class="guarantee">🛡️ Find one thing in your brief that saves you money or hassle, or full refund within 30 days.</div>
+                    <p class="disclaimer">Secure checkout via Stripe. You'll receive your PDF by email within minutes of payment.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Part of <a href="sales-page.html">TravelSmarter</a> — 87 verified travel hacks, price alerts, and more.<br>
+        <a href="free-travel-tools.html">Or check one thing for free →</a>
+    </footer>
+
+    <script>
+        let API_URL;
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            API_URL = 'http://localhost:5000';
+        } else {
+            API_URL = 'https://api.travelsmarterapp.com';
+        }
+
+        const COUNTRIES = [
+            ["china","China"],["united-arab-emirates","United Arab Emirates"],["saudi-arabia","Saudi Arabia"],
+            ["turkey","Turkey"],["vietnam","Vietnam"],["egypt","Egypt"],["morocco","Morocco"],
+            ["india","India"],["indonesia","Indonesia"],["thailand","Thailand"],["singapore","Singapore"],
+            ["united-states","United States"],["canada","Canada"],["mexico","Mexico"],["brazil","Brazil"],
+            ["argentina","Argentina"],["chile","Chile"],["colombia","Colombia"],["peru","Peru"],["costa-rica","Costa Rica"],
+            ["united-kingdom","United Kingdom"],["ireland","Ireland"],["france","France"],["germany","Germany"],
+            ["italy","Italy"],["spain","Spain"],["netherlands","Netherlands"],["portugal","Portugal"],["greece","Greece"],
+            ["austria","Austria"],["switzerland","Switzerland"],["poland","Poland"],["czech-republic","Czech Republic"],
+            ["norway","Norway"],["sweden","Sweden"],["denmark","Denmark"],["iceland","Iceland"],
+            ["japan","Japan"],["south-korea","South Korea"],["malaysia","Malaysia"],["philippines","Philippines"],
+            ["israel","Israel"],["jordan","Jordan"],["kenya","Kenya"],["south-africa","South Africa"],
+            ["australia","Australia"],["new-zealand","New Zealand"],
+        ];
+        const destinationSelect = document.getElementById('destination');
+        COUNTRIES.forEach(([slug, name]) => {
+            const opt = document.createElement('option');
+            opt.value = slug;
+            opt.textContent = name;
+            destinationSelect.appendChild(opt);
+        });
+
+        // Pre-select destination from ?destination=slug, so links from
+        // individual tool pages ("check all 35 things at once for Thailand")
+        // land here with the right country already chosen.
+        const urlParams = new URLSearchParams(window.location.search);
+        const preselectDestination = urlParams.get('destination');
+        if (preselectDestination) {
+            const match = COUNTRIES.find(([slug]) => slug === preselectDestination);
+            if (match) destinationSelect.value = preselectDestination;
+        }
+
+        let selectedPlan = 'single';
+        function selectPlan(plan) {
+            selectedPlan = plan;
+            document.getElementById('plan-single').classList.toggle('selected', plan === 'single');
+            document.getElementById('plan-lifetime').classList.toggle('selected', plan === 'lifetime');
+            document.getElementById('checkout-btn').textContent = plan === 'lifetime'
+                ? 'Get Unlimited Trip Briefs →'
+                : 'Get My Trip Brief →';
+        }
+
+        // Populate "what's included" from the live registry, so this list
+        // never drifts out of sync with the actual tools running server-side.
+        async function loadToolsList() {
+            try {
+                const res = await fetch(`${API_URL}/api/trip-brief/tools`);
+                const data = await res.json();
+                if (!data.success) throw new Error('failed');
+
+                const container = document.getElementById('tools-list');
+                container.innerHTML = data.categories.map(group => `
+                    <div class="cat-group">
+                        <div class="cat-title">${group.category}</div>
+                        <div class="tool-chips">
+                            ${group.tools.map(t => `<span class="tool-chip">${t.icon} ${t.name}</span>`).join('')}
+                        </div>
+                    </div>
+                `).join('') + `<p style="margin-top:14px;color:#6b7280;font-size:13px;">${data.totalTools} checks combined into one PDF.</p>`;
+            } catch (err) {
+                document.getElementById('tools-list').innerHTML = '<p style="color:#6b7280;font-size:14px;">35 checks across documents, money, health & safety, local rules, and more.</p>';
+            }
+        }
+        loadToolsList();
+
+        async function startCheckout() {
+            const destination = document.getElementById('destination').value;
+            const email = document.getElementById('email').value.trim();
+            const firstName = document.getElementById('firstName').value.trim();
+            const age = document.getElementById('age').value;
+            const passportExpiryDate = document.getElementById('passportExpiryDate').value;
+            const alertEl = document.getElementById('checkout-alert');
+            alertEl.style.display = 'none';
+
+            if (!email || !email.includes('@')) {
+                alertEl.textContent = 'Please enter a valid email address.';
+                alertEl.style.display = 'block';
+                return;
+            }
+
+            const btn = document.getElementById('checkout-btn');
+            btn.disabled = true;
+            btn.textContent = 'Redirecting to checkout...';
+
+            try {
+                gtag('event', 'begin_checkout', {
+                    value: selectedPlan === 'lifetime' ? 99 : 19,
+                    currency: 'USD',
+                    items: [{ item_id: 'trip_brief_' + selectedPlan, item_name: 'Trip Brief', price: selectedPlan === 'lifetime' ? 99 : 19 }],
+                });
+
+                const res = await fetch(`${API_URL}/api/trip-brief/checkout`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        destination, email, firstName,
+                        age: age || null,
+                        passportExpiryDate: passportExpiryDate || null,
+                        product: selectedPlan,
+                        sourcePage: window.location.pathname,
+                    }),
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error || 'Something went wrong');
+
+                if (data.freeViaLifetime) {
+                    document.getElementById('form-section').innerHTML = `
+                        <div style="text-align:center;padding:20px 0;">
+                            <div style="font-size:2.5em;margin-bottom:10px;">✓</div>
+                            <h3 style="color:#1a2744;margin-bottom:8px;">Your Trip Brief is on its way!</h3>
+                            <p style="color:#6b7280;font-size:14px;">You have unlimited access — check your inbox in a moment.</p>
+                        </div>`;
+                    return;
+                }
+
+                window.location.href = data.url;
+            } catch (err) {
+                alertEl.textContent = err.message;
+                alertEl.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = selectedPlan === 'lifetime' ? 'Get Unlimited Trip Briefs →' : 'Get My Trip Brief →';
+            }
+        }
+    </script>
+</body>
+</html>
