@@ -376,5 +376,11 @@ module.exports = [
     "name": "Brazil",
     "status": "easy",
     "note": "Register your drone via Brazil's SISANT platform before flying — generally accessible outside restricted zones."
+  },
+  {
+    "slug": "united-states",
+    "name": "United States",
+    "status": "restricted",
+    "note": "Drones over 250g must be registered with the FAA via the FAADroneZone before flying, and flying is banned entirely in all US National Parks — check airspace restrictions near airports and cities with the FAA's B4UFLY app."
   }
 ];

@@ -610,5 +610,14 @@ module.exports = [
       "Hepatitis A",
       "Typhoid"
     ]
+  },
+  {
+    "slug": "united-states",
+    "name": "United States",
+    "yellowFeverEntryRequirement": false,
+    "malariaRisk": "none",
+    "commonRecommended": [
+      "Routine vaccines up to date"
+    ]
   }
 ];

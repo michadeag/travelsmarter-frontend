@@ -376,5 +376,11 @@ module.exports = [
     "name": "Brazil",
     "status": "not_recommended",
     "note": "Stick to bottled or filtered water throughout Brazil — tap water quality varies significantly and isn't reliable for travelers."
+  },
+  {
+    "slug": "united-states",
+    "name": "United States",
+    "status": "safe",
+    "note": "Tap water is safe to drink nationwide and heavily regulated by the EPA, though taste and mineral content vary by city."
   }
 ];

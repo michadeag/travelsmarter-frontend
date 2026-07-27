@@ -439,5 +439,12 @@ module.exports = [
     "language": "Portuguese",
     "englishLevel": "moderate",
     "note": "Notably less common than in Spanish-speaking South American neighbors — tourist areas and upscale hotels are the exception, not the rule."
+  },
+  {
+    "slug": "united-states",
+    "name": "United States",
+    "language": "English",
+    "englishLevel": "very_high",
+    "note": "English is the primary language nationwide, though Spanish is also widely spoken in many regions — no language barrier for English speakers."
   }
 ];

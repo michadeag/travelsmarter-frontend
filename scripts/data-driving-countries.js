@@ -439,5 +439,12 @@ module.exports = [
     "side": "right",
     "idpStatus": "required",
     "note": "Brazil requires an International Driving Permit alongside your home license for foreign visitors to drive."
+  },
+  {
+    "slug": "united-states",
+    "name": "United States",
+    "side": "right",
+    "idpStatus": "not_required",
+    "note": "You're driving in your home country — just your regular US driver's license, no IDP needed."
   }
 ];

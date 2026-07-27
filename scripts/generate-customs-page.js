@@ -11,6 +11,9 @@ function headline(c) {
   if (c.slug === 'puerto-rico') {
     return `Returning from ${c.name}: no customs process at all — it's a US territory, same as flying home from any other state.`;
   }
+  if (c.slug === 'united-states') {
+    return "Staying within the US: no customs process — this checker applies when re-entering the US from abroad.";
+  }
   const alcoholLiters = c.cbiEligible ? 5 : 1;
   return `Returning from ${c.name}: $${EXEMPTION_USD} personal exemption, up to ${alcoholLiters} liter${alcoholLiters > 1 ? 's' : ''} of alcohol duty-free${c.cbiEligible ? ' (Caribbean Basin bonus)' : ''}.`;
 }
@@ -30,6 +33,8 @@ function faqJsonLd(faqs) {
 function render(c, allCountries) {
   const h = headline(c);
   const isPuertoRico = c.slug === 'puerto-rico';
+  const isUnitedStates = c.slug === 'united-states';
+  const isDomestic = isPuertoRico || isUnitedStates;
   const alcoholLiters = c.cbiEligible ? 5 : 1;
 
   const faqs = isPuertoRico ? [
@@ -37,6 +42,11 @@ function render(c, allCountries) {
     { q: `Is there a duty-free limit for ${c.name}?`, a: `There's no customs exemption to worry about at all, since no duty applies to begin with when flying between US territory and the mainland.` },
     { q: `What should I watch out for?`, a: c.watchItem },
     { q: `Do I still need ID to fly back to the mainland?`, a: `Yes — you'll still need a valid government-issued photo ID for the TSA checkpoint, exactly as you would for any other domestic flight.` },
+  ] : isUnitedStates ? [
+    { q: `Do I need to go through customs on a trip within the US?`, a: `No — this checker covers duty-free limits when re-entering the US from abroad. A trip that starts and ends within the US has no customs process at all.` },
+    { q: `Is there a duty-free limit for domestic US travel?`, a: `There's no customs exemption to worry about — duty-free limits only apply when bringing goods into the US from another country.` },
+    { q: `What should I watch out for?`, a: c.watchItem },
+    { q: `Do I need ID for a domestic flight within the US?`, a: `Yes — a valid REAL ID-compliant driver's license or passport is required at the TSA checkpoint for any US domestic flight.` },
   ] : [
     { q: `What's my duty-free allowance returning from ${c.name}?`, a: `You get an $${EXEMPTION_USD} personal exemption on goods for personal use, plus up to ${alcoholLiters} liter${alcoholLiters > 1 ? 's' : ''} of alcohol duty-free${c.cbiEligible ? ', boosted by the Caribbean Basin Initiative' : ''}.` },
     { q: `What happens if I go over the $${EXEMPTION_USD} exemption?`, a: `You simply pay duty on the amount over $${EXEMPTION_USD} — there's no penalty for exceeding it as long as you declare everything honestly.` },
@@ -156,7 +166,7 @@ function render(c, allCountries) {
     </header>
 
     <div class="hero">
-        <span class="route-badge">${c.name} · ${isPuertoRico ? 'No customs' : `$${EXEMPTION_USD} exemption`}</span>
+        <span class="route-badge">${c.name} · ${isDomestic ? 'No customs' : `$${EXEMPTION_USD} exemption`}</span>
         <h1>Duty-Free Allowance from ${c.name}</h1>
         <p>${h}</p>
     </div>

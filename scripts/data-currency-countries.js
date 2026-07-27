@@ -439,5 +439,12 @@ module.exports = [
     "currencyName": "Brazilian Real (BRL)",
     "cashCulture": "mixed",
     "note": "Cards (including the local Pix instant-payment system) work well in cities, but smaller vendors and beach areas often expect reais in cash."
+  },
+  {
+    "slug": "united-states",
+    "name": "United States",
+    "currencyName": "US Dollar (USD)",
+    "cashCulture": "card_friendly",
+    "note": "Cards and contactless/tap-to-pay are accepted almost everywhere, including small purchases — carrying much cash is rarely necessary, though some independent food trucks or rural spots may be cash-only."
   }
 ];

@@ -565,5 +565,14 @@ module.exports = [
     "fire": "193",
     "ambulance": "192",
     "note": "Brazil uses separate numbers by service — 190 for police, 192 for ambulance (SAMU), 193 for fire."
+  },
+  {
+    "slug": "united-states",
+    "name": "United States",
+    "unifiedNumber": "911",
+    "police": "911",
+    "fire": "911",
+    "ambulance": "911",
+    "note": "911 reaches all emergency services nationwide and works from any phone, including one without an active SIM card."
   }
 ];

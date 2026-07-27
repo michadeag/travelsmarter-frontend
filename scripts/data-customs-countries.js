@@ -376,5 +376,11 @@ module.exports = [
     "name": "Brazil",
     "cbiEligible": false,
     "watchItem": "Wildlife products and certain wood items are restricted under CITES rules; keep receipts for gemstones."
+  },
+  {
+    "slug": "united-states",
+    "name": "United States",
+    "cbiEligible": false,
+    "watchItem": "This checker covers duty-free limits when a US traveler re-enters the US from abroad — since your trip stays within the US, there's no customs process to check."
   }
 ];

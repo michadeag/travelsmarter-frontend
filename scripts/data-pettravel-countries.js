@@ -376,5 +376,11 @@ module.exports = [
     "name": "Brazil",
     "status": "moderate",
     "note": "Requires a health certificate, microchip, and rabies vaccination, arranged shortly before travel."
+  },
+  {
+    "slug": "united-states",
+    "name": "United States",
+    "status": "moderate",
+    "note": "Dogs need a microchip, proof of rabies vaccination, and (since 2024) a CDC Dog Import Form submitted online before arrival — dogs coming from a CDC-listed high-risk rabies country face extra requirements, including pre-arranged entry through a CDC-approved airport. No routine quarantine for pets from low-risk countries."
   }
 ];

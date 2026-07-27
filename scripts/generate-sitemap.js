@@ -10,7 +10,7 @@ const BASE_URL = 'https://travelsmarterapp.com';
 // Private/functional pages — not meant for search indexing.
 const EXCLUDE = new Set([
   'account.html', 'auth.html', 'checkout.html', 'reset-password.html',
-  'success.html', 'unsubscribe.html', 'welcome.html',
+  'success.html', 'unsubscribe.html', 'welcome.html', 'trip-brief-success.html',
 ]);
 
 const files = fs.readdirSync(ROOT)

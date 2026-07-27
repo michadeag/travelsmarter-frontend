@@ -376,5 +376,11 @@ module.exports = [
     "name": "Brazil",
     "tipPercent": 10,
     "note": "A 10% service charge is often already included by law; additional tipping isn't expected."
+  },
+  {
+    "slug": "united-states",
+    "name": "United States",
+    "tipPercent": 18,
+    "note": "Tipping 18-20% at restaurants is the norm, not optional — service staff are often paid a lower base wage on the assumption tips make up the difference. Also expected for bartenders, taxi/rideshare drivers, and hotel staff."
   }
 ];

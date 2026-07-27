@@ -691,5 +691,15 @@ module.exports = [
     "voltage": 127,
     "frequency": 60,
     "voltageNote": "Voltage varies by region in Brazil — some areas run 127V, others 220V. Check the specific city on your itinerary."
+  },
+  {
+    "slug": "united-states",
+    "name": "United States",
+    "plugTypes": [
+      "A",
+      "B"
+    ],
+    "voltage": 120,
+    "frequency": 60
   }
 ];

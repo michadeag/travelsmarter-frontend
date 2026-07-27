@@ -502,5 +502,13 @@ module.exports = [
     "primaryApp": "Uber",
     "localAlternative": "99",
     "note": "Uber operates widely across Brazil alongside 99 (owned by Didi), which is equally or more popular in many cities."
+  },
+  {
+    "slug": "united-states",
+    "name": "United States",
+    "status": "full",
+    "primaryApp": "Uber",
+    "localAlternative": "Lyft",
+    "note": "Uber and Lyft both operate nationwide in every major and mid-size city, though coverage and wait times thin out considerably in rural areas."
   }
 ];

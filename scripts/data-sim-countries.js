@@ -439,5 +439,12 @@ module.exports = [
     "bestOption": "physical_sim",
     "registrationRequired": true,
     "note": "Brazil requires a CPF (Brazilian tax ID) or passport registration for local SIMs, which can be a hassle for short trips — many travelers use an eSIM instead to skip the paperwork."
+  },
+  {
+    "slug": "united-states",
+    "name": "United States",
+    "bestOption": "esim",
+    "registrationRequired": false,
+    "note": "eSIM coverage from providers like Airalo, Google Fi, and major carriers is excellent nationwide, and no ID registration is required to activate a US SIM or eSIM."
   }
 ];
