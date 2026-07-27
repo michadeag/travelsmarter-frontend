@@ -199,37 +199,38 @@
             API_URL = 'https://api.travelsmarterapp.com';
         }
 
-        const COUNTRIES = [
-            ["china","China"],["united-arab-emirates","United Arab Emirates"],["saudi-arabia","Saudi Arabia"],
-            ["turkey","Turkey"],["vietnam","Vietnam"],["egypt","Egypt"],["morocco","Morocco"],
-            ["india","India"],["indonesia","Indonesia"],["thailand","Thailand"],["singapore","Singapore"],
-            ["united-states","United States"],["canada","Canada"],["mexico","Mexico"],["brazil","Brazil"],
-            ["argentina","Argentina"],["chile","Chile"],["colombia","Colombia"],["peru","Peru"],["costa-rica","Costa Rica"],
-            ["united-kingdom","United Kingdom"],["ireland","Ireland"],["france","France"],["germany","Germany"],
-            ["italy","Italy"],["spain","Spain"],["netherlands","Netherlands"],["portugal","Portugal"],["greece","Greece"],
-            ["austria","Austria"],["switzerland","Switzerland"],["poland","Poland"],["czech-republic","Czech Republic"],
-            ["norway","Norway"],["sweden","Sweden"],["denmark","Denmark"],["iceland","Iceland"],
-            ["japan","Japan"],["south-korea","South Korea"],["malaysia","Malaysia"],["philippines","Philippines"],
-            ["israel","Israel"],["jordan","Jordan"],["kenya","Kenya"],["south-africa","South Africa"],
-            ["australia","Australia"],["new-zealand","New Zealand"],
-        ];
         const destinationSelect = document.getElementById('destination');
-        COUNTRIES.forEach(([slug, name]) => {
-            const opt = document.createElement('option');
-            opt.value = slug;
-            opt.textContent = name;
-            destinationSelect.appendChild(opt);
-        });
 
-        // Pre-select destination from ?destination=slug, so links from
-        // individual tool pages ("check all 35 things at once for Thailand")
-        // land here with the right country already chosen.
-        const urlParams = new URLSearchParams(window.location.search);
-        const preselectDestination = urlParams.get('destination');
-        if (preselectDestination) {
-            const match = COUNTRIES.find(([slug]) => slug === preselectDestination);
-            if (match) destinationSelect.value = preselectDestination;
+        // Destinations are fetched from the backend instead of hardcoded here,
+        // so this dropdown can never drift out of sync with the set of
+        // countries that actually produce a complete brief (see
+        // SAFE_DESTINATIONS in tripBriefRegistry.js on the backend).
+        async function loadDestinations() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const preselectDestination = urlParams.get('destination');
+            try {
+                const res = await fetch(`${API_URL}/api/trip-brief/destinations`);
+                const data = await res.json();
+                if (!data.success) throw new Error('failed');
+
+                data.destinations.forEach(({ slug, name }) => {
+                    const opt = document.createElement('option');
+                    opt.value = slug;
+                    opt.textContent = name;
+                    destinationSelect.appendChild(opt);
+                });
+
+                // Pre-select destination from ?destination=slug, so links from
+                // individual tool pages ("check all 35 things at once for Thailand")
+                // land here with the right country already chosen.
+                if (preselectDestination && data.destinations.some(d => d.slug === preselectDestination)) {
+                    destinationSelect.value = preselectDestination;
+                }
+            } catch (err) {
+                destinationSelect.innerHTML = '<option value="">Could not load destinations — please reload</option>';
+            }
         }
+        loadDestinations();
 
         let selectedPlan = 'single';
         function selectPlan(plan) {
