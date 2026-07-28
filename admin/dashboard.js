@@ -596,6 +596,7 @@ function escapeHtml(str) {
 }
 
 function renderVideoScriptCard(idea) {
+    const toolUrl = `https://travelsmarterapp.com/${idea.tool_slug}.html`;
     return `
         <div class="card" style="text-align:left;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
@@ -605,7 +606,9 @@ function renderVideoScriptCard(idea) {
             <p style="font-weight:700; font-size:16px; margin-bottom:8px;">🎬 ${escapeHtml(idea.hook)}</p>
             <p style="color:#374151; font-size:14px; line-height:1.6; margin-bottom:12px;">${escapeHtml(idea.voiceover)}</p>
             <p style="font-size:13px; margin-bottom:4px;"><strong>▶️ YouTube CTA:</strong> ${escapeHtml(idea.cta_youtube)}</p>
-            <p style="font-size:13px; margin-bottom:10px;"><strong>📸 Reels/TikTok CTA:</strong> ${escapeHtml(idea.cta_reels_tiktok)}</p>
+            <p style="font-size:13px; margin-bottom:4px; padding:8px 10px; background:#f9fafb; border-radius:6px;"><strong>🔗 Link to pin (YouTube comment):</strong> <a href="${toolUrl}" target="_blank" rel="noopener">${toolUrl}</a></p>
+            <p style="font-size:13px; margin-bottom:4px; margin-top:10px;"><strong>📸 Reels/TikTok CTA:</strong> ${escapeHtml(idea.cta_reels_tiktok)}</p>
+            <p style="font-size:13px; margin-bottom:10px; padding:8px 10px; background:#f9fafb; border-radius:6px;"><strong>🔗 Bio link (fixed, same for every video):</strong> <a href="https://travelsmarterapp.com/free-travel-tools.html" target="_blank" rel="noopener">https://travelsmarterapp.com/free-travel-tools.html</a></p>
             <p style="font-size:13px; color:#6b7280;"><strong>Caption:</strong> ${escapeHtml(idea.caption)} ${escapeHtml(idea.hashtags)}</p>
         </div>
     `;
