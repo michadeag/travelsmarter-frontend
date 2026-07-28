@@ -159,6 +159,9 @@ async function loadFreeToolsAnalytics() {
     }
 
     loadFreeToolsTop();
+    loadLeadsSummary();
+    loadTopLeads();
+    loadRecentLeads();
     loadToolPromoTweets();
     loadToolPromoBlogPosts();
     loadToolPromoWordpressPosts();
@@ -201,6 +204,95 @@ async function loadFreeToolsTop() {
     } catch (error) {
         console.error('Error loading free tools top pages:', error);
         tbody.innerHTML = `<tr><td colspan="${colspan}" style="color:#ef4444;">Error loading top pages</td></tr>`;
+    }
+}
+
+async function loadLeadsSummary() {
+    try {
+        const res = await fetch(`${API_URL}/api/analytics/free-tools/leads-summary`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        if (res.ok) {
+            const { summary } = await res.json();
+            document.getElementById('ft-lead-today').innerHTML = `<h3>Today</h3><div class="number">${summary.today}</div>`;
+            document.getElementById('ft-lead-7d').innerHTML = `<h3>Last 7 Days</h3><div class="number">${summary.last_7_days}</div>`;
+            document.getElementById('ft-lead-30d').innerHTML = `<h3>Last 30 Days</h3><div class="number">${summary.last_30_days}</div>`;
+            document.getElementById('ft-lead-all-time').innerHTML = `<h3>All Time</h3><div class="number">${summary.all_time}</div>`;
+            const rate = summary.all_time > 0 ? Math.round((summary.converted_all_time / summary.all_time) * 100) : 0;
+            document.getElementById('ft-lead-converted').innerHTML = `<h3>Converted to Customer</h3><div class="number">${summary.converted_all_time}</div><div class="change">${rate}% of all leads</div>`;
+        }
+    } catch (error) {
+        console.error('Error loading leads summary:', error);
+    }
+}
+
+async function loadTopLeads() {
+    const tbody = document.getElementById('ft-lead-top-table');
+    if (!tbody) return;
+    const period = document.getElementById('ft-lead-top-period')?.value || 'all';
+    const groupBy = document.getElementById('ft-lead-top-groupby')?.value || 'tool';
+    const isTool = groupBy === 'tool';
+    document.getElementById('ft-lead-top-col-header').textContent = 'Tool';
+    const pageHeaderEl = document.getElementById('ft-lead-top-col-page-header');
+    if (pageHeaderEl) pageHeaderEl.style.display = isTool ? 'none' : '';
+    const colspan = isTool ? 4 : 5;
+
+    try {
+        const res = await fetch(`${API_URL}/api/analytics/free-tools/leads-top?period=${period}&groupBy=${groupBy}&limit=15`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        if (!res.ok) {
+            tbody.innerHTML = `<tr><td colspan="${colspan}" style="color:#ef4444;">Failed to load top leads</td></tr>`;
+            return;
+        }
+        const { data } = await res.json();
+        if (!data || data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="${colspan}" style="color:#9ca3af;">No leads recorded for this period.</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = data.map((row, i) => `
+            <tr>
+                <td>${i + 1}</td>
+                <td>${prettifySlug(row.tool_slug)}</td>
+                ${isTool ? '' : `<td>${escapeHtml(row.source_page || '—')}</td>`}
+                <td>${row.leads}</td>
+                <td>${row.converted}</td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading top leads:', error);
+        tbody.innerHTML = `<tr><td colspan="${colspan}" style="color:#ef4444;">Error loading top leads</td></tr>`;
+    }
+}
+
+async function loadRecentLeads() {
+    const tbody = document.getElementById('ft-lead-recent-table');
+    if (!tbody) return;
+    try {
+        const res = await fetch(`${API_URL}/api/analytics/free-tools/leads-recent?limit=25`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        if (!res.ok) {
+            tbody.innerHTML = '<tr><td colspan="5" style="color:#ef4444;">Failed to load recent leads</td></tr>';
+            return;
+        }
+        const { data } = await res.json();
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="color:#9ca3af;">No leads recorded yet.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = data.map(row => `
+            <tr>
+                <td>${new Date(row.created_at).toLocaleString()}</td>
+                <td>${escapeHtml(row.email)}</td>
+                <td>${prettifySlug(row.tool_slug)}</td>
+                <td>${escapeHtml(row.source_page || '—')}</td>
+                <td>${row.converted ? '✅' : '—'}</td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading recent leads:', error);
+        tbody.innerHTML = '<tr><td colspan="5" style="color:#ef4444;">Error loading recent leads</td></tr>';
     }
 }
 
