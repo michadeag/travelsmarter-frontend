@@ -297,6 +297,55 @@ async function loadRecentLeads() {
     }
 }
 
+async function cleanUpInvalidLeads() {
+    const btn = document.getElementById('ft-lead-cleanup-btn');
+    const statusEl = document.getElementById('ft-lead-cleanup-status');
+    const originalLabel = btn ? btn.textContent : null;
+    if (btn) { btn.disabled = true; btn.textContent = 'Checking…'; }
+    if (statusEl) statusEl.textContent = '';
+
+    try {
+        const previewRes = await fetch(`${API_URL}/api/analytics/free-tools/invalid-leads`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        if (!previewRes.ok) throw new Error('Failed to check for invalid leads');
+        const { count, data } = await previewRes.json();
+
+        if (count === 0) {
+            if (statusEl) statusEl.textContent = 'No invalid leads found.';
+            return;
+        }
+
+        const sample = data.slice(0, 8).map(r => `  ${r.email} (${prettifySlug(r.tool_slug)})`).join('\n');
+        const more = count > 8 ? `\n  …and ${count - 8} more` : '';
+        const confirmed = confirm(
+            `Permanently delete ${count} lead${count === 1 ? '' : 's'} with a malformed email? This also cancels their pending drip emails and cannot be undone.\n\nSample:\n${sample}${more}`
+        );
+        if (!confirmed) {
+            if (statusEl) statusEl.textContent = 'Cancelled.';
+            return;
+        }
+
+        if (btn) btn.textContent = 'Deleting…';
+        const deleteRes = await fetch(`${API_URL}/api/analytics/free-tools/invalid-leads`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        if (!deleteRes.ok) throw new Error('Failed to delete invalid leads');
+        const { deleted } = await deleteRes.json();
+        if (statusEl) statusEl.textContent = `Deleted ${deleted} invalid lead${deleted === 1 ? '' : 's'}.`;
+
+        loadLeadsSummary();
+        loadTopLeads();
+        loadRecentLeads();
+    } catch (error) {
+        console.error('Error cleaning up invalid leads:', error);
+        if (statusEl) statusEl.textContent = `Error: ${error.message}`;
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
+    }
+}
+
 async function loadToolPromoTweets() {
     try {
         const res = await fetch(`${API_URL}/api/analytics/free-tools/twitter-posts`, {
