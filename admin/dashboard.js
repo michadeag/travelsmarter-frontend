@@ -269,21 +269,22 @@ async function loadRecentLeads() {
     const tbody = document.getElementById('ft-lead-recent-table');
     if (!tbody) return;
     try {
-        const res = await fetch(`${API_URL}/api/analytics/free-tools/leads-recent?limit=25`, {
+        const res = await fetch(`${API_URL}/api/analytics/free-tools/leads-recent?limit=100`, {
             headers: { 'Authorization': `Bearer ${getAuthToken()}` }
         });
         if (!res.ok) {
-            tbody.innerHTML = '<tr><td colspan="5" style="color:#ef4444;">Failed to load recent leads</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="color:#ef4444;">Failed to load recent leads</td></tr>';
             return;
         }
         const { data } = await res.json();
         if (!data || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="color:#9ca3af;">No leads recorded yet.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="color:#9ca3af;">No leads recorded yet.</td></tr>';
             return;
         }
         tbody.innerHTML = data.map(row => `
             <tr>
                 <td>${new Date(row.created_at).toLocaleString()}</td>
+                <td>${escapeHtml(row.first_name || '—')}</td>
                 <td>${escapeHtml(row.email)}</td>
                 <td>${prettifySlug(row.tool_slug)}</td>
                 <td>${escapeHtml(row.source_page || '—')}</td>
@@ -292,7 +293,7 @@ async function loadRecentLeads() {
         `).join('');
     } catch (error) {
         console.error('Error loading recent leads:', error);
-        tbody.innerHTML = '<tr><td colspan="5" style="color:#ef4444;">Error loading recent leads</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="color:#ef4444;">Error loading recent leads</td></tr>';
     }
 }
 
