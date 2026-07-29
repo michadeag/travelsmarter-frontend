@@ -1,0 +1,343 @@
+// Generates lost-baggage-checker-{slug}.html pages, one per airline,
+// synthesizing FAQ text from the same regime/bagStatus logic the backend
+// calculator uses so content stays consistent with the live API. Each page
+// defaults to the "lost" bag status (the most commonly searched scenario)
+// but keeps the dropdown fully selectable.
+// Run: node scripts/generate-lostbaggage-page.js scripts/data-lostbaggage-airlines.js
+const fs = require('fs');
+const path = require('path');
+
+const REGIME_LABELS = { US_DOT: 'US DOT liability rules apply', MONTREAL: 'Montreal Convention liability limits apply' };
+
+const STATUS_LABELS = {
+  delayed: 'Bag delayed (arrived late)',
+  lost: 'Bag lost (never recovered)',
+  damaged: 'Bag or contents damaged',
+};
+
+const OUTCOMES = {
+  US_DOT: {
+    delayed: { amount: 'Reasonable reimbursement for essential items you had to buy (toiletries, a change of clothes)', note: "No fixed dollar amount is set by law for a delayed bag — airlines set their own delayed-bag policies, but you're generally entitled to reasonable reimbursement for essentials. Keep every receipt." },
+    lost: { amount: 'Up to $3,800 per passenger (the current US DOT-set liability cap for domestic itineraries)', note: "This is the maximum a US airline can limit its liability to — many pay less, based on your bag and contents' actual documented value. A bag is usually only officially declared \"lost\" after 5-14 days of not turning up, but file your claim as soon as you suspect it, don't wait for that declaration." },
+    damaged: { amount: 'Up to $3,800 per passenger (the same liability cap that covers loss)', note: "Airlines will often repair or replace the bag itself rather than pay cash. Report damage before you leave the airport if at all possible — most airlines require this within 24 hours, and some only accept claims filed at the airport counter." },
+  },
+  MONTREAL: {
+    delayed: { amount: 'Reasonable reimbursement for essential items you had to buy (toiletries, a change of clothes)', note: "No fixed amount is set for a delayed bag, but you're generally entitled to reasonable reimbursement for essentials under the Montreal Convention. Keep every receipt, and file your claim within 21 days of the bag being returned to you." },
+    lost: { amount: 'Up to about 1,288 SDR (roughly $1,700-$1,800, fluctuating with exchange rates)', note: "This is the Montreal Convention liability limit for international carriage, which applies to every carrier here. It's a cap, not a guarantee — the airline can pay less based on your bag and contents' documented value." },
+    damaged: { amount: 'Up to about 1,288 SDR (roughly $1,700-$1,800, fluctuating with exchange rates)', note: "Same Montreal Convention cap applies to damage as to loss. You must report damage within 7 days of receiving the bag to preserve your claim — this deadline is much stricter than for a delayed or lost bag." },
+  },
+};
+
+const DEFAULT_STATUS = 'lost';
+
+function headline(a, bagStatus) {
+  const outcome = OUTCOMES[a.regime][bagStatus];
+  const statusLabel = STATUS_LABELS[bagStatus];
+  return `${a.name}, ${statusLabel.toLowerCase()}: you may be owed ${outcome.amount.toLowerCase()}.`;
+}
+
+function faqJsonLd(faqs) {
+  return JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map(f => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  }, null, 2);
+}
+
+function render(a, allAirlines) {
+  const outcome = OUTCOMES[a.regime][DEFAULT_STATUS];
+  const h = headline(a, DEFAULT_STATUS);
+  const damagedOutcome = OUTCOMES[a.regime].damaged;
+
+  const faqs = [
+    { q: `What am I owed if ${a.name} loses my bag?`, a: `You may be owed ${outcome.amount.toLowerCase()}. ${outcome.note}` },
+    { q: `What if my bag arrives damaged on ${a.name}?`, a: `You may be owed ${damagedOutcome.amount.toLowerCase()}. ${damagedOutcome.note}` },
+    { q: `How does ${a.name} handle baggage claims?`, a: a.claimProcess },
+    { q: `Which rules apply to ${a.name}?`, a: a.regime === 'MONTREAL' ? `${a.name}'s international flights are covered by the Montreal Convention, the treaty that sets baggage liability limits worldwide.` : `${a.name} is a US carrier, so US DOT rules set the domestic liability cap — though the Montreal Convention still applies on ${a.name}'s international itineraries.` },
+  ];
+  const faqHtml = faqs.map(f => `            <div class="faq-item">
+                <h3>${f.q}</h3>
+                <p>${f.a}</p>
+            </div>`).join('\n');
+
+  const airlineOptions = allAirlines.map(aa =>
+    `                    <option value="${aa.slug}"${aa.slug === a.slug ? ' selected' : ''}>${aa.name}</option>`
+  ).join('\n');
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${a.name} Lost & Damaged Baggage Compensation Checker | TravelSmarter</title>
+    <meta name="description" content="What are you owed if ${a.name} loses, delays, or damages your checked bag? Free instant checker plus a PDF claim guide.">
+    <link rel="canonical" href="https://travelsmarterapp.com/lost-baggage-checker-${a.slug}.html">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="${a.name} Lost & Damaged Baggage Compensation Checker">
+    <meta property="og:description" content="Instant free checker: ${h}">
+    <meta property="og:url" content="https://travelsmarterapp.com/lost-baggage-checker-${a.slug}.html">
+    <meta property="og:image" content="https://travelsmarterapp.com/og-images/lost-baggage-checker.png">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/lost-baggage-checker.png">
+    <meta name="twitter:title" content="${a.name} Lost & Damaged Baggage Compensation Checker">
+    <meta name="twitter:description" content="Instant free checker: ${h}">
+
+    <script type="application/ld+json">
+    ${faqJsonLd(faqs)}
+    </script>
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-470B6E2DKF"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-470B6E2DKF');
+    </script>
+
+    <script>
+      (function () {
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') return;
+        fetch('https://api.travelsmarterapp.com/api/analytics/free-tools/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path: window.location.pathname }),
+          keepalive: true
+        }).catch(function () {});
+      })();
+    </script>
+
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+            background:#f9fafb; color:#1f2937; line-height:1.6;
+        }
+        header {
+            background:linear-gradient(135deg,#1a2744 0%,#2d3f6b 100%);
+            color:white; padding:18px 0;
+        }
+        header .container { max-width:760px; margin:0 auto; padding:0 20px; }
+        header a { color:#ff6b4a; font-weight:800; font-size:1.2em; text-decoration:none; }
+        .hero { max-width:760px; margin:0 auto; padding:50px 20px 20px; text-align:center; }
+        .hero h1 { font-size:1.9em; color:#1a2744; margin-bottom:14px; }
+        .hero p { color:#6b7280; font-size:1.05em; max-width:600px; margin:0 auto; }
+        .container { max-width:760px; margin:0 auto; padding:30px 20px 60px; }
+        .card {
+            background:white; border-radius:12px; padding:32px;
+            box-shadow:0 4px 20px rgba(0,0,0,0.06); margin-bottom:24px;
+        }
+        .route-badge {
+            display:inline-block; background:#f0f4ff; color:#1a2744; font-weight:700;
+            font-size:14px; padding:8px 16px; border-radius:20px; margin-bottom:20px;
+        }
+        label { display:block; font-weight:600; font-size:14px; margin-bottom:6px; color:#374151; }
+        select, input[type="email"], input[type="text"] {
+            width:100%; padding:11px 14px; border:1px solid #e5e7eb; border-radius:8px;
+            font-size:15px; margin-bottom:18px;
+        }
+        .btn {
+            display:inline-block; background:#ff6b4a; color:white; border:none;
+            padding:13px 28px; border-radius:8px; font-weight:700; font-size:15px;
+            cursor:pointer; width:100%;
+        }
+        .btn:disabled { opacity:0.6; cursor:default; }
+        .btn-secondary { background:#1a2744; }
+        #result { display:none; }
+        .result-headline {
+            background:#f0f4ff; border-radius:10px; padding:20px; font-weight:700;
+            color:#1a2744; margin-bottom:16px; font-size:1.05em;
+        }
+        .result-meta { color:#6b7280; font-size:14px; margin-bottom:20px; }
+        #pdf-section { display:none; border-top:1px solid #e5e7eb; margin-top:24px; padding-top:24px; }
+        #pdf-section p { color:#6b7280; font-size:14px; margin-bottom:14px; }
+        .alert { padding:12px 16px; border-radius:8px; font-size:14px; margin-bottom:14px; display:none; }
+        .alert-error { background:#fee2e2; color:#991b1b; }
+        .content-block h2 { font-size:1.3em; color:#1a2744; margin-bottom:12px; }
+        .content-block p { color:#4b5563; margin-bottom:14px; font-size:15px; }
+        .faq-item { margin-bottom:18px; }
+        .faq-item h3 { font-size:1.02em; color:#1a2744; margin-bottom:6px; }
+        .faq-item p { color:#4b5563; font-size:14.5px; }
+        footer { text-align:center; padding:30px 20px; color:#9ca3af; font-size:13px; }
+        footer a { color:#667eea; text-decoration:none; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container"><a href="index.html">✈️ TravelSmarter</a></div>
+    </header>
+
+    <div class="hero">
+        <span class="route-badge">${a.name} · ${REGIME_LABELS[a.regime]}</span>
+        <h1>${a.name} Lost & Damaged Baggage Compensation Checker</h1>
+        <p>${h}</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div id="form-section">
+                <label for="airline">Airline</label>
+                <select id="airline">
+${airlineOptions}
+                </select>
+
+                <label for="bagStatus">What happened</label>
+                <select id="bagStatus">
+                    <option value="delayed">Bag delayed (arrived late)</option>
+                    <option value="lost" selected>Bag lost (never recovered)</option>
+                    <option value="damaged">Bag or contents damaged</option>
+                </select>
+
+                <div id="calc-alert" class="alert alert-error"></div>
+                <button class="btn" id="calc-btn" onclick="calculate()">Check Compensation</button>
+            </div>
+
+            <div id="result">
+                <div class="result-headline" id="result-headline"></div>
+                <div class="result-meta" id="result-meta"></div>
+
+                <div id="pdf-section">
+                    <p><strong>Want the full guide?</strong> Get a PDF with the exact steps to file your ${a.name} claim — free.</p>
+                    <input type="text" id="firstName" placeholder="First name (optional)">
+                    <input type="email" id="email" placeholder="Email address" required>
+                    <div id="pdf-alert" class="alert alert-error"></div>
+                    <button class="btn btn-secondary" id="pdf-btn" onclick="downloadPdf()">Get Your Free PDF Guide</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card content-block">
+            <h2>Frequently asked questions</h2>
+${faqHtml}
+        </div>
+    </div>
+
+    <footer>
+        Part of <a href="sales-page.html">TravelSmarter</a> — 87 verified travel hacks, price alerts, and more.<br>
+        <a href="lost-baggage-checker.html">Check a different airline →</a>
+    </footer>
+
+    <script>
+        let API_URL;
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            API_URL = 'http://localhost:5000';
+        } else {
+            API_URL = 'https://api.travelsmarterapp.com';
+        }
+
+        let lastResult = null;
+
+        async function calculate() {
+            const airline = document.getElementById('airline').value;
+            const bagStatus = document.getElementById('bagStatus').value;
+            const alertEl = document.getElementById('calc-alert');
+            alertEl.style.display = 'none';
+
+            const btn = document.getElementById('calc-btn');
+            btn.disabled = true;
+            btn.textContent = 'Checking...';
+
+            try {
+                const res = await fetch(\`\${API_URL}/api/tools/lost-baggage-checker/calculate\`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ airline, bagStatus }),
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error || 'Something went wrong');
+
+                lastResult = data.result;
+                gtag('event', 'tool_calculate', { tool: 'lost_baggage_checker_${a.slug}' });
+
+                document.getElementById('result-headline').textContent = data.result.headline;
+                document.getElementById('result-meta').textContent = data.result.note;
+                document.getElementById('result').style.display = 'block';
+                document.getElementById('pdf-section').style.display = 'block';
+            } catch (err) {
+                alertEl.textContent = err.message;
+                alertEl.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Check Compensation';
+            }
+        }
+
+        async function downloadPdf() {
+            const email = document.getElementById('email').value.trim();
+            const firstName = document.getElementById('firstName').value.trim();
+            const alertEl = document.getElementById('pdf-alert');
+            alertEl.style.display = 'none';
+
+            if (!email || !email.includes('@')) {
+                alertEl.textContent = 'Please enter a valid email address.';
+                alertEl.style.display = 'block';
+                return;
+            }
+            if (!lastResult) return;
+
+            const btn = document.getElementById('pdf-btn');
+            btn.disabled = true;
+            btn.textContent = 'Generating your PDF...';
+
+            try {
+                const res = await fetch(\`\${API_URL}/api/tools/lost-baggage-checker/pdf\`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email, firstName,
+                        sourcePage: window.location.pathname,
+                        airline: lastResult.airline,
+                        bagStatus: lastResult.bagStatus,
+                    }),
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error || 'Failed to generate PDF');
+                }
+
+                gtag('event', 'generate_lead', { tool: 'lost_baggage_checker_${a.slug}' });
+
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a2 = document.createElement('a');
+                a2.href = url;
+                a2.download = 'lost-baggage-checker-${a.slug}.pdf';
+                document.body.appendChild(a2);
+                a2.click();
+                a2.remove();
+                window.URL.revokeObjectURL(url);
+
+                btn.textContent = '✓ Downloaded — check your email too!';
+            } catch (err) {
+                alertEl.textContent = err.message;
+                alertEl.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = 'Get Your Free PDF Guide';
+            }
+        }
+    </script>
+</body>
+</html>
+`;
+}
+
+const dataFile = process.argv[2];
+if (!dataFile) {
+  console.error('Usage: node generate-lostbaggage-page.js <data-file.js>');
+  process.exit(1);
+}
+const airlines = require(path.resolve(dataFile));
+const outDir = path.resolve(__dirname, '..');
+
+const allAirlines = airlines.map(a => ({ slug: a.slug, name: a.name }));
+
+airlines.forEach(a => {
+  const html = render(a, allAirlines);
+  const outPath = path.join(outDir, `lost-baggage-checker-${a.slug}.html`);
+  fs.writeFileSync(outPath, html);
+  console.log('Wrote', outPath);
+});
