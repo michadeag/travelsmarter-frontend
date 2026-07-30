@@ -52,10 +52,14 @@
 
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token');
-        // Leads captured by the free tools (PDF downloads) have no user
-        // account, so they unsubscribe via a separate endpoint keyed to
-        // tool_leads.unsubscribe_token instead of users.unsubscribe_token.
-        const unsubscribeEndpoint = params.get('type') === 'lead' ? 'unsubscribe-lead' : 'unsubscribe';
+        // Leads captured by the free tools (PDF downloads) and Trip Brief
+        // buyers both have no user account, so they unsubscribe via a
+        // separate endpoint keyed to their own table's unsubscribe_token
+        // instead of users.unsubscribe_token.
+        const typeParam = params.get('type');
+        const unsubscribeEndpoint = typeParam === 'lead' ? 'unsubscribe-lead'
+            : typeParam === 'trip-brief' ? 'unsubscribe-trip-brief'
+            : 'unsubscribe';
 
         async function doUnsubscribe() {
             if (!token) {
