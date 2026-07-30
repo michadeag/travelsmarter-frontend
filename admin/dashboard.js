@@ -167,6 +167,46 @@ async function loadFreeToolsAnalytics() {
     loadToolPromoWordpressPosts();
     loadToolOgImages();
     loadAllVideoScriptIdeas();
+    loadBundleConversion();
+}
+
+async function loadBundleConversion() {
+    try {
+        const res = await fetch(`${API_URL}/api/analytics/free-tools/bundle-conversion?days=60`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        if (!res.ok) return;
+        const { beforeAfter, perTool, daily } = await res.json();
+
+        const fmtRate = (r) => r === null ? '—' : `${r}%`;
+        const card = (b) => `<div class="number">${fmtRate(b.rate)}</div><div class="change">${b.leads} leads / ${b.views} views over ${b.days} day${b.days === 1 ? '' : 's'}</div>`;
+        document.getElementById('bc-before').innerHTML = `<h3>Before (single-tool PDF)</h3>${card(beforeAfter.before)}`;
+        document.getElementById('bc-after').innerHTML = `<h3>After (bundle PDF)</h3>${card(beforeAfter.after)}`;
+
+        const perToolEl = document.getElementById('bc-per-tool-table');
+        if (perToolEl) {
+            perToolEl.innerHTML = perTool.map(row => `
+                <tr>
+                    <td>${prettifySlug(row.tool_slug)}</td>
+                    <td>${row.before.views}</td><td>${row.before.leads}</td><td>${fmtRate(row.before.rate)}</td>
+                    <td>${row.after.views}</td><td>${row.after.leads}</td><td>${fmtRate(row.after.rate)}</td>
+                </tr>
+            `).join('');
+        }
+
+        const dailyEl = document.getElementById('bc-daily-table');
+        if (dailyEl) {
+            if (!daily || daily.length === 0) {
+                dailyEl.innerHTML = '<tr><td colspan="4" style="color:#9ca3af;">No data recorded yet.</td></tr>';
+            } else {
+                dailyEl.innerHTML = [...daily].reverse().map(d =>
+                    `<tr><td>${d.date}</td><td>${d.views}</td><td>${d.leads}</td><td>${fmtRate(d.rate)}</td></tr>`
+                ).join('');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading bundle conversion stats:', error);
+    }
 }
 
 async function loadFreeToolsTop() {
