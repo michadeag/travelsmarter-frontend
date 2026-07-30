@@ -229,11 +229,11 @@
                 <div class="disclaimer-box">This reflects the elevation of popular tourist destinations, not a medical assessment — individual susceptibility to altitude sickness varies a lot and isn't predicted by fitness level. If you're headed somewhere moderate or high risk, ascend gradually where possible, stay hydrated, avoid alcohol on arrival day, and talk to a travel clinic about preventive medication (like acetazolamide) if you have a history of altitude symptoms.</div>
 
                 <div id="pdf-section">
-                    <p><strong>Want the full guide?</strong> Get a PDF with altitude sickness tips for India — free.</p>
+                    <p><strong>Want more than this one check?</strong> Get the complete Health & Safety Bundle for India — every health & safety check combined into one PDF, free.</p>
                     <input type="text" id="firstName" placeholder="First name (optional)">
                     <input type="email" id="email" placeholder="Email address" required>
                     <div id="pdf-alert" class="alert alert-error"></div>
-                    <button class="btn btn-secondary" id="pdf-btn" onclick="downloadPdf()">Get Your Free PDF Guide</button>
+                    <button class="btn btn-secondary" id="pdf-btn" onclick="downloadPdf()">Get the Free Bundle PDF</button>
                 </div>
             </div>
         </div>
@@ -331,13 +331,14 @@
             btn.textContent = 'Generating your PDF...';
 
             try {
-                const res = await fetch(`${API_URL}/api/tools/altitude-sickness-checker/pdf`, {
+                const res = await fetch(`${API_URL}/api/tools/category-bundle/pdf`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         email, firstName,
                         sourcePage: window.location.pathname,
                         country: lastResult.country,
+                        category: 'Health & Safety',
                     }),
                 });
                 if (!res.ok) {
@@ -351,7 +352,7 @@
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'altitude-sickness-checker-india.pdf';
+                a.download = 'health-safety-bundle-india.pdf';
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
@@ -362,7 +363,7 @@
                 alertEl.textContent = err.message;
                 alertEl.style.display = 'block';
                 btn.disabled = false;
-                btn.textContent = 'Get Your Free PDF Guide';
+                btn.textContent = 'Get the Free Bundle PDF';
             }
         }
     </script>

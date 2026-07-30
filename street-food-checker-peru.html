@@ -229,11 +229,11 @@
                 <div class="disclaimer-box">This is general orientation, not a guarantee — individual stalls vary enormously, and even in low-risk destinations, unlucky exposure can happen. The busy-stall rule (eat where locals are lining up) is the single best predictor of safety almost everywhere, regardless of the country's overall risk level.</div>
 
                 <div id="pdf-section">
-                    <p><strong>Want the full guide?</strong> Get a PDF with street food safety tips for Peru — free.</p>
+                    <p><strong>Want more than this one check?</strong> Get the complete Health & Safety Bundle for Peru — every health & safety check combined into one PDF, free.</p>
                     <input type="text" id="firstName" placeholder="First name (optional)">
                     <input type="email" id="email" placeholder="Email address" required>
                     <div id="pdf-alert" class="alert alert-error"></div>
-                    <button class="btn btn-secondary" id="pdf-btn" onclick="downloadPdf()">Get Your Free PDF Guide</button>
+                    <button class="btn btn-secondary" id="pdf-btn" onclick="downloadPdf()">Get the Free Bundle PDF</button>
                 </div>
             </div>
         </div>
@@ -331,13 +331,14 @@
             btn.textContent = 'Generating your PDF...';
 
             try {
-                const res = await fetch(`${API_URL}/api/tools/street-food-checker/pdf`, {
+                const res = await fetch(`${API_URL}/api/tools/category-bundle/pdf`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         email, firstName,
                         sourcePage: window.location.pathname,
                         country: lastResult.country,
+                        category: 'Health & Safety',
                     }),
                 });
                 if (!res.ok) {
@@ -351,7 +352,7 @@
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'street-food-checker-peru.pdf';
+                a.download = 'health-safety-bundle-peru.pdf';
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
@@ -362,7 +363,7 @@
                 alertEl.textContent = err.message;
                 alertEl.style.display = 'block';
                 btn.disabled = false;
-                btn.textContent = 'Get Your Free PDF Guide';
+                btn.textContent = 'Get the Free Bundle PDF';
             }
         }
     </script>

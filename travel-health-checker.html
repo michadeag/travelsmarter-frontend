@@ -115,7 +115,7 @@
                 <ul class="result-list" id="result-list"></ul>
 
                 <div id="pdf-section">
-                    <p><strong>Want the full report?</strong> Get a PDF with pre-trip health prep steps — free.</p>
+                    <p><strong>Want more than this one check?</strong> Get the complete Health & Safety Bundle for your destination — every health & safety check combined into one PDF, free.</p>
                     <input type="text" id="firstName" placeholder="First name (optional)">
                     <input type="email" id="email" placeholder="Email address" required>
                     <div id="pdf-alert" class="alert alert-error"></div>
@@ -226,13 +226,14 @@
             btn.textContent = 'Generating your PDF...';
 
             try {
-                const res = await fetch(`${API_URL}/api/tools/health-checker/pdf`, {
+                const res = await fetch(`${API_URL}/api/tools/category-bundle/pdf`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         email, firstName,
                         sourcePage: window.location.pathname,
                         country: lastResult.country,
+                        category: 'Health & Safety',
                     }),
                 });
                 if (!res.ok) {
@@ -246,7 +247,7 @@
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'travel-health-checker.pdf';
+                a.download = 'health-safety-bundle.pdf';
                 document.body.appendChild(a);
                 a.click();
                 a.remove();

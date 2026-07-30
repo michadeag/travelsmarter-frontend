@@ -170,11 +170,11 @@ ${countryOptions}
                 <div class="result-meta" id="result-meta"></div>
 
                 <div id="pdf-section">
-                    <p><strong>Want the full guide?</strong> Get a PDF with tips for ${c.name} — free.</p>
+                    <p><strong>Want more than this one check?</strong> Get the complete Health & Safety Bundle for ${c.name} — every health & safety check combined into one PDF, free.</p>
                     <input type="text" id="firstName" placeholder="First name (optional)">
                     <input type="email" id="email" placeholder="Email address" required>
                     <div id="pdf-alert" class="alert alert-error"></div>
-                    <button class="btn btn-secondary" id="pdf-btn" onclick="downloadPdf()">Get Your Free PDF Guide</button>
+                    <button class="btn btn-secondary" id="pdf-btn" onclick="downloadPdf()">Get the Free Bundle PDF</button>
                 </div>
             </div>
         </div>
@@ -254,13 +254,14 @@ ${faqHtml}
             btn.textContent = 'Generating your PDF...';
 
             try {
-                const res = await fetch(\`\${API_URL}/api/tools/natural-disaster-checker/pdf\`, {
+                const res = await fetch(\`\${API_URL}/api/tools/category-bundle/pdf\`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         email, firstName,
                         sourcePage: window.location.pathname,
                         country: lastResult.country,
+                        category: 'Health & Safety',
                     }),
                 });
                 if (!res.ok) {
@@ -274,7 +275,7 @@ ${faqHtml}
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'natural-disaster-checker-${c.slug}.pdf';
+                a.download = 'health-safety-bundle-${c.slug}.pdf';
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
@@ -285,7 +286,7 @@ ${faqHtml}
                 alertEl.textContent = err.message;
                 alertEl.style.display = 'block';
                 btn.disabled = false;
-                btn.textContent = 'Get Your Free PDF Guide';
+                btn.textContent = 'Get the Free Bundle PDF';
             }
         }
     </script>

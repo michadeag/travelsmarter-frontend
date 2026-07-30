@@ -229,11 +229,11 @@
                 <div class="disclaimer-box">This is general orientation, not real-time data — conditions vary enormously by specific beach, season, tide, and even time of day. Always check local flag warnings and lifeguard advice on the day, and never swim beyond your ability or alone at an unfamiliar beach.</div>
 
                 <div id="pdf-section">
-                    <p><strong>Want the full guide?</strong> Get a PDF with beach safety tips for Austria — free.</p>
+                    <p><strong>Want more than this one check?</strong> Get the complete Health & Safety Bundle for Austria — every health & safety check combined into one PDF, free.</p>
                     <input type="text" id="firstName" placeholder="First name (optional)">
                     <input type="email" id="email" placeholder="Email address" required>
                     <div id="pdf-alert" class="alert alert-error"></div>
-                    <button class="btn btn-secondary" id="pdf-btn" onclick="downloadPdf()">Get Your Free PDF Guide</button>
+                    <button class="btn btn-secondary" id="pdf-btn" onclick="downloadPdf()">Get the Free Bundle PDF</button>
                 </div>
             </div>
         </div>
@@ -331,13 +331,14 @@
             btn.textContent = 'Generating your PDF...';
 
             try {
-                const res = await fetch(`${API_URL}/api/tools/beach-safety-checker/pdf`, {
+                const res = await fetch(`${API_URL}/api/tools/category-bundle/pdf`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         email, firstName,
                         sourcePage: window.location.pathname,
                         country: lastResult.country,
+                        category: 'Health & Safety',
                     }),
                 });
                 if (!res.ok) {
@@ -351,7 +352,7 @@
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'beach-safety-checker-austria.pdf';
+                a.download = 'health-safety-bundle-austria.pdf';
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
@@ -362,7 +363,7 @@
                 alertEl.textContent = err.message;
                 alertEl.style.display = 'block';
                 btn.disabled = false;
-                btn.textContent = 'Get Your Free PDF Guide';
+                btn.textContent = 'Get the Free Bundle PDF';
             }
         }
     </script>

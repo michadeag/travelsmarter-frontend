@@ -279,13 +279,14 @@ ${faqHtml}
             btn.textContent = 'Generating your PDF...';
 
             try {
-                const res = await fetch(\`\${API_URL}/api/tools/health-checker/pdf\`, {
+                const res = await fetch(\`\${API_URL}/api/tools/category-bundle/pdf\`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         email, firstName,
                         sourcePage: window.location.pathname,
                         country: lastResult.country,
+                        category: 'Health & Safety',
                     }),
                 });
                 if (!res.ok) {
@@ -299,7 +300,7 @@ ${faqHtml}
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'travel-health-checker-${c.slug}.pdf';
+                a.download = 'health-safety-bundle-${c.slug}.pdf';
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
