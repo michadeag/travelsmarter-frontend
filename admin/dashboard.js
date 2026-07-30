@@ -565,7 +565,7 @@ async function loadToolOgImages() {
 async function generateToolOgImages(force) {
     const btn = document.getElementById(force ? 'ft-img-regenerate-btn' : 'ft-img-generate-btn');
     const originalLabel = btn ? btn.textContent : null;
-    if (force && !confirm('Regenerate ALL 30 tool images? This uses Ideogram credits even for images that already exist.')) return;
+    if (force && !confirm('Regenerate ALL tool images? This uses Ideogram credits even for images that already exist.')) return;
     if (btn) { btn.disabled = true; btn.textContent = 'Starting…'; }
     try {
         const res = await fetch(`${API_URL}/api/tool-images/generate`, {
