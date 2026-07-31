@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Guide Is On Its Way | TravelSmarter</title>
+    <meta name="robots" content="noindex">
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-470B6E2DKF"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-470B6E2DKF');
+    </script>
+
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+            background:linear-gradient(135deg,#1a2744 0%,#2d3f6b 100%);
+            min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;
+        }
+        .container {
+            background:white; border-radius:12px; box-shadow:0 10px 40px rgba(0,0,0,0.25);
+            max-width:520px; width:100%; padding:56px 40px; text-align:center;
+        }
+        .icon { font-size:64px; margin-bottom:24px; }
+        h1 { font-size:1.8em; color:#1a2744; margin-bottom:12px; }
+        .subtitle { color:#6b7280; font-size:1.02em; margin-bottom:28px; }
+        .message {
+            background:#f0fdf4; border-left:4px solid #10b981; padding:18px 20px;
+            border-radius:8px; margin-bottom:28px; color:#047857; font-size:14.5px; line-height:1.6; text-align:left;
+        }
+        .next-steps { text-align:left; background:#f9fafb; border-radius:8px; padding:18px 20px; margin-bottom:28px; }
+        .next-steps h3 { font-size:14px; color:#1a2744; margin-bottom:10px; }
+        .next-steps ul { margin:0; padding-left:20px; color:#4b5563; font-size:13.5px; line-height:1.9; }
+        .actions { display:flex; gap:12px; margin-bottom:24px; }
+        .btn {
+            flex:1; padding:13px 20px; border-radius:8px; font-weight:700; font-size:14.5px;
+            text-decoration:none; display:inline-block; text-align:center;
+        }
+        .btn-primary { background:#ff6b4a; color:white; }
+        .btn-secondary { background:#f3f4f6; color:#1a2744; border:1px solid #e5e7eb; }
+        .footer { color:#9ca3af; font-size:12.5px; }
+        .footer a { color:#667eea; text-decoration:none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">📄</div>
+        <h1>Your guide is on its way</h1>
+        <p class="subtitle">Payment confirmed — your PDF is being sent now.</p>
+
+        <div class="message">
+            📧 Check your inbox in the next few minutes. Your guide (or every guide in the bundle) will arrive as a PDF attachment — no login required.
+        </div>
+
+        <div class="next-steps">
+            <h3>While you wait</h3>
+            <ul>
+                <li>Add <strong>michael@reesin.com</strong> to your contacts so the email doesn't land in spam</li>
+                <li>The PDF is yours to keep — save it or print it for offline use</li>
+                <li>Planning the rest of this trip too? <a href="trip-brief.html">Get a Trip Brief</a> for visa, money, health, and local-law checks</li>
+            </ul>
+        </div>
+
+        <div class="actions">
+            <a href="free-travel-tools.html" class="btn btn-secondary">Browse Free Tools</a>
+            <a href="index.html" class="btn btn-primary">Back to TravelSmarter</a>
+        </div>
+
+        <div class="footer">
+            Questions about your order? <a href="mailto:michael@reesin.com">Contact support</a>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session_id');
+        if (sessionId) {
+            gtag('event', 'purchase', {
+                transaction_id: sessionId,
+                currency: 'USD',
+            });
+        }
+    </script>
+</body>
+</html>
