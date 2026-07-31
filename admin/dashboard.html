@@ -1618,7 +1618,7 @@
                 </div>
 
                 <h3 style="margin-top: 30px; margin-bottom: 8px;">🖼️ Link Preview Images (og:image)</h3>
-                <p style="color:#6b7280; margin-bottom:20px;">One branded thumbnail per tool category, generated via Ideogram, used so Twitter/iMessage/Slack link previews show a real image instead of a blank placeholder. Uses Ideogram credits — generation is manual-trigger only.</p>
+                <p style="color:#6b7280; margin-bottom:20px;">One branded thumbnail per tool category, generated via OpenAI, used so Twitter/iMessage/Slack link previews show a real image instead of a blank placeholder. Uses OpenAI credits — generation is manual-trigger only.</p>
                 <div class="cards-grid">
                     <div class="card" id="ft-img-generated">
                         <h3>Generated</h3>
@@ -1646,6 +1646,21 @@
                             <tr><td colspan="3" style="color:#9ca3af;">Loading...</td></tr>
                         </tbody>
                     </table>
+                </div>
+
+                <div id="ft-img-failed-section" style="display:none; margin-top:20px;">
+                    <h4 style="margin-bottom:8px; color:#991b1b;">Failed</h4>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Tool</th>
+                                    <th>Last Error</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ft-img-failed-table"></tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <h3 style="margin-top: 30px; margin-bottom: 8px;">🎬 Video Script Ideas</h3>
