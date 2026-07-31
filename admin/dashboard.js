@@ -86,7 +86,7 @@ function switchTab(tabName) {
         deals: 'Deals Management', hacks: 'Hacks & Modules', promos: 'Promo Codes',
         affiliates: 'Affiliate Links',
         'email-templates': 'Email Templates', broadcast: '📣 Broadcast Email', analytics: 'Analytics',
-        'free-tools-analytics': '🧰 Free Tools Analytics', settings: 'Settings',
+        'free-tools-analytics': '🧰 Free Tools Analytics', guides: '📕 PDF Guides', settings: 'Settings',
         reddit: '🤖 Reddit', linkedin: '💼 LinkedIn', pinterest: '📌 Pinterest',
         instagram: '📸 Instagram', wordpress: '📝 WordPress', quora: '❓ Quora', blogger: '📰 Blogger', slideshare: '📊 SlideShare',
         outreach: '📮 Outreach', 'social-media': '📱 Social Media', 'local-seo': '🎯 Local SEO', twitter: '🐦 Twitter', youtube: '▶️ YouTube',
@@ -97,6 +97,7 @@ function switchTab(tabName) {
     // Auto-load data when switching to platform tabs
     if (tabName === 'analytics') { loadAnalytics(); loadPageviews(); loadPinterestPageviews(); }
     if (tabName === 'free-tools-analytics') { loadFreeToolsAnalytics(); }
+    if (tabName === 'guides') { initGuidesTab(); }
     if (tabName === 'twitter') { loadTwitterStatus(); loadTwitterRecentPosts(); }
     if (tabName === 'reddit') { initRedditTab(); }
     if (tabName === 'linkedin') { initLinkedInTab(); }
@@ -715,6 +716,232 @@ async function loadAllVideoScriptIdeas() {
         `).join('');
     } catch (error) {
         console.error('Error loading video script ideas:', error);
+    }
+}
+
+// ─── PDF GUIDES ───────────────────────────────────────────────────────────────
+
+const GUIDE_COUNTRIES = [
+    ["france","France"],["austria","Austria"],["czech-republic","Czech Republic"],["denmark","Denmark"],
+    ["germany","Germany"],["greece","Greece"],["hungary","Hungary"],["iceland","Iceland"],
+    ["italy","Italy"],["netherlands","Netherlands"],["portugal","Portugal"],["spain","Spain"],
+    ["sweden","Sweden"],["switzerland","Switzerland"],["ireland","Ireland"],["united-kingdom","United Kingdom"],
+    ["turkey","Turkey"],["japan","Japan"],["thailand","Thailand"],["indonesia","Indonesia"],
+    ["singapore","Singapore"],["south-korea","South Korea"],["hong-kong","Hong Kong"],["vietnam","Vietnam"],
+    ["philippines","Philippines"],["malaysia","Malaysia"],["china","China"],["india","India"],
+    ["maldives","Maldives"],["taiwan","Taiwan"],["sri-lanka","Sri Lanka"],["cambodia","Cambodia"],
+    ["australia","Australia"],["new-zealand","New Zealand"],["fiji","Fiji"],["french-polynesia","French Polynesia"],
+    ["mexico","Mexico"],["dominican-republic","Dominican Republic"],["puerto-rico","Puerto Rico"],["bahamas","Bahamas"],
+    ["jamaica","Jamaica"],["aruba","Aruba"],["turks-and-caicos","Turks and Caicos"],["st-lucia","St. Lucia"],
+    ["costa-rica","Costa Rica"],["panama","Panama"],["belize","Belize"],["cayman-islands","Cayman Islands"],
+    ["antigua-and-barbuda","Antigua and Barbuda"],["curacao","Curaçao"],["canada","Canada"],["united-arab-emirates","United Arab Emirates"],
+    ["morocco","Morocco"],["south-africa","South Africa"],["qatar","Qatar"],["israel","Israel"],
+    ["tanzania","Tanzania"],["kenya","Kenya"],["argentina","Argentina"],["peru","Peru"],
+    ["chile","Chile"],["colombia","Colombia"],["brazil","Brazil"],["united-states","United States"],
+];
+
+let gdEditingId = null;
+
+function initGuidesTab() {
+    const countrySelect = document.getElementById('gd-country');
+    if (countrySelect && countrySelect.options.length === 0) {
+        GUIDE_COUNTRIES.forEach(([slug, name]) => {
+            const opt = document.createElement('option');
+            opt.value = slug;
+            opt.textContent = name;
+            opt.dataset.name = name;
+            countrySelect.appendChild(opt);
+        });
+    }
+
+    const titleInput = document.getElementById('gd-title');
+    const slugInput = document.getElementById('gd-slug');
+    if (titleInput && !titleInput.dataset.wired) {
+        titleInput.dataset.wired = '1';
+        titleInput.addEventListener('input', () => {
+            if (gdEditingId) return; // don't auto-overwrite slug while editing
+            slugInput.value = titleInput.value.toLowerCase().trim()
+                .replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
+        });
+    }
+
+    const freeItemsContainer = document.getElementById('gd-free-items');
+    if (freeItemsContainer && freeItemsContainer.children.length === 0) {
+        addGuideFreeItemRow();
+        addGuideFreeItemRow();
+        addGuideFreeItemRow();
+    }
+
+    const form = document.getElementById('gd-create-form');
+    if (form && !form.dataset.wired) {
+        form.dataset.wired = '1';
+        form.addEventListener('submit', submitGuideForm);
+    }
+
+    loadGuidesAdmin();
+}
+
+function addGuideFreeItemRow(name, blurb) {
+    const container = document.getElementById('gd-free-items');
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex; gap:8px;';
+    row.innerHTML = `
+        <input type="text" class="gd-item-name" placeholder="Item name" value="${escapeHtml(name || '')}" style="flex:1; padding:8px 12px; border-radius:6px; border:1px solid #e5e7eb;">
+        <input type="text" class="gd-item-blurb" placeholder="One-line description" value="${escapeHtml(blurb || '')}" style="flex:2; padding:8px 12px; border-radius:6px; border:1px solid #e5e7eb;">
+        <button type="button" class="btn" onclick="this.parentElement.remove()">✕</button>
+    `;
+    container.appendChild(row);
+}
+
+function collectGuideFreeItems() {
+    return Array.from(document.querySelectorAll('#gd-free-items > div')).map(row => ({
+        name: row.querySelector('.gd-item-name').value.trim(),
+        blurb: row.querySelector('.gd-item-blurb').value.trim(),
+    })).filter(item => item.name);
+}
+
+function resetGuideForm() {
+    gdEditingId = null;
+    document.getElementById('gd-create-form').reset();
+    document.getElementById('gd-free-items').innerHTML = '';
+    addGuideFreeItemRow();
+    addGuideFreeItemRow();
+    addGuideFreeItemRow();
+    document.getElementById('gd-create-btn').textContent = 'Create Guide';
+}
+
+function editGuide(id, guide) {
+    gdEditingId = id;
+    document.getElementById('gd-title').value = guide.title;
+    document.getElementById('gd-slug').value = guide.slug;
+    document.getElementById('gd-subtitle').value = guide.subtitle || '';
+    document.getElementById('gd-country').value = guide.country_slug;
+    document.getElementById('gd-category').value = guide.category;
+    document.getElementById('gd-price').value = (guide.price_cents / 100).toFixed(2);
+    document.getElementById('gd-free-items').innerHTML = '';
+    (guide.free_items || []).forEach(item => addGuideFreeItemRow(item.name, item.blurb));
+    if ((guide.free_items || []).length === 0) addGuideFreeItemRow();
+    document.getElementById('gd-create-btn').textContent = 'Update Guide';
+    document.getElementById('gd-create-form').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function submitGuideForm(e) {
+    e.preventDefault();
+    const alertEl = document.getElementById('gd-create-alert');
+    alertEl.style.display = 'none';
+    const btn = document.getElementById('gd-create-btn');
+    const originalLabel = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = gdEditingId ? 'Updating...' : 'Creating...';
+
+    try {
+        const countrySelect = document.getElementById('gd-country');
+        const countryName = countrySelect.options[countrySelect.selectedIndex]?.dataset.name || countrySelect.value;
+        const priceCents = Math.round(parseFloat(document.getElementById('gd-price').value || '4.99') * 100);
+
+        const formData = new FormData();
+        formData.append('title', document.getElementById('gd-title').value.trim());
+        formData.append('slug', document.getElementById('gd-slug').value.trim());
+        formData.append('subtitle', document.getElementById('gd-subtitle').value.trim());
+        formData.append('country_slug', countrySelect.value);
+        formData.append('country_name', countryName);
+        formData.append('category', document.getElementById('gd-category').value);
+        formData.append('price_cents', String(priceCents));
+        formData.append('free_items', JSON.stringify(collectGuideFreeItems()));
+        const pdfFile = document.getElementById('gd-pdf').files[0];
+        if (pdfFile) formData.append('pdf', pdfFile);
+
+        const url = gdEditingId ? `${API_URL}/api/guides/admin/${gdEditingId}` : `${API_URL}/api/guides/admin`;
+        const method = gdEditingId ? 'PUT' : 'POST';
+        const res = await fetch(url, {
+            method,
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` },
+            body: formData,
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Failed to save guide');
+
+        resetGuideForm();
+        loadGuidesAdmin();
+    } catch (error) {
+        alertEl.textContent = error.message;
+        alertEl.style.display = 'block';
+    } finally {
+        btn.disabled = false;
+        btn.textContent = originalLabel;
+    }
+}
+
+async function loadGuidesAdmin() {
+    try {
+        const res = await fetch(`${API_URL}/api/guides/admin`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` },
+        });
+        if (!res.ok) return;
+        const { guides } = await res.json();
+
+        document.getElementById('gd-total').innerHTML = `<h3>Total Guides</h3><div class="number">${guides.length}</div>`;
+        const publishedCount = guides.filter(g => g.published).length;
+        document.getElementById('gd-published').innerHTML = `<h3>Published</h3><div class="number">${publishedCount}</div>`;
+        const countryCount = new Set(guides.map(g => g.country_slug)).size;
+        document.getElementById('gd-countries').innerHTML = `<h3>Countries Covered</h3><div class="number">${countryCount}</div>`;
+
+        const tbody = document.getElementById('gd-table');
+        if (!tbody) return;
+        if (guides.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="color:#9ca3af;">No guides yet — create one above.</td></tr>';
+            return;
+        }
+        window._gdGuides = {};
+        guides.forEach(g => { window._gdGuides[g.id] = g; });
+
+        tbody.innerHTML = guides.map(g => `
+            <tr>
+                <td>${escapeHtml(g.title)}</td>
+                <td>${escapeHtml(g.country_name)}</td>
+                <td>${escapeHtml(g.category)}</td>
+                <td>$${(g.price_cents / 100).toFixed(2)}</td>
+                <td>${g.pdf_filename ? '✅' : '❌'}</td>
+                <td>${g.published ? '✅' : '—'}</td>
+                <td style="white-space:nowrap;">
+                    <button class="btn" onclick='editGuide(${JSON.stringify(g.id)}, window._gdGuides[${JSON.stringify(g.id)}])'>Edit</button>
+                    <button class="btn" onclick="toggleGuidePublish(${JSON.stringify(g.id)}, ${!g.published})">${g.published ? 'Unpublish' : 'Publish'}</button>
+                    <button class="btn" style="color:#991b1b;" onclick="deleteGuideRow(${JSON.stringify(g.id)}, ${JSON.stringify(g.title)})">Delete</button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading guides:', error);
+    }
+}
+
+async function toggleGuidePublish(id, publish) {
+    try {
+        const res = await fetch(`${API_URL}/api/guides/admin/${id}/publish`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ published: publish }),
+        });
+        const data = await res.json();
+        if (!data.success) { alert(`Failed: ${data.error}`); return; }
+        loadGuidesAdmin();
+    } catch (error) {
+        alert(`Error: ${error.message}`);
+    }
+}
+
+async function deleteGuideRow(id, title) {
+    if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
+    try {
+        const res = await fetch(`${API_URL}/api/guides/admin/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` },
+        });
+        const data = await res.json();
+        if (!data.success) { alert(`Failed: ${data.error}`); return; }
+        loadGuidesAdmin();
+    } catch (error) {
+        alert(`Error: ${error.message}`);
     }
 }
 

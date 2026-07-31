@@ -624,6 +624,7 @@
                 <a class="nav-link" data-tab="hidden-gem">🗺️ Hidden Gem</a>
                 <a class="nav-link" data-tab="analytics">📈 Analytics</a>
                 <a class="nav-link" data-tab="free-tools-analytics">🧰 Free Tools</a>
+                <a class="nav-link" data-tab="guides">📕 PDF Guides</a>
                 <a class="nav-link" data-tab="twitter">🐦 Twitter</a>
                 <a class="nav-link" data-tab="reddit">🤖 Reddit</a>
                 <a class="nav-link" data-tab="linkedin">💼 LinkedIn</a>
@@ -1684,6 +1685,102 @@
                         </thead>
                         <tbody id="vs-all-table">
                             <tr><td colspan="4" style="color:#9ca3af;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- GUIDES TAB -->
+            <div id="guides" class="tab-content">
+                <h3 style="margin-bottom: 8px;">📕 PDF Travel Guides</h3>
+                <p style="color:#6b7280; margin-bottom:20px;">Manually-researched PDF guides ("100 Best Restaurants in Germany" etc.), sold individually ($4.99) or bundled per country ($29 — automatically covers every published guide for that country). Upload the finished PDF here; the landing page is generated separately once a guide is published.</p>
+
+                <div class="cards-grid">
+                    <div class="card" id="gd-total">
+                        <h3>Total Guides</h3>
+                        <div class="number" style="opacity:0.5;">Loading...</div>
+                    </div>
+                    <div class="card" id="gd-published">
+                        <h3>Published</h3>
+                        <div class="number" style="opacity:0.5;">Loading...</div>
+                    </div>
+                    <div class="card" id="gd-countries">
+                        <h3>Countries Covered</h3>
+                        <div class="number" style="opacity:0.5;">Loading...</div>
+                    </div>
+                </div>
+
+                <h4 style="margin:24px 0 12px;">Create New Guide</h4>
+                <form id="gd-create-form" style="background:white; border-radius:8px; padding:20px; margin-bottom:24px; display:grid; gap:14px; max-width:700px;">
+                    <div>
+                        <label style="display:block; font-weight:600; font-size:13px; margin-bottom:4px;">Title</label>
+                        <input type="text" id="gd-title" placeholder="100 Best Restaurants in Germany" style="width:100%; padding:8px 12px; border-radius:6px; border:1px solid #e5e7eb;" required>
+                    </div>
+                    <div>
+                        <label style="display:block; font-weight:600; font-size:13px; margin-bottom:4px;">Slug (URL, auto-filled — edit if needed)</label>
+                        <input type="text" id="gd-slug" placeholder="100-best-restaurants-germany" style="width:100%; padding:8px 12px; border-radius:6px; border:1px solid #e5e7eb;" required>
+                    </div>
+                    <div>
+                        <label style="display:block; font-weight:600; font-size:13px; margin-bottom:4px;">Subtitle (optional, shown under the title)</label>
+                        <input type="text" id="gd-subtitle" placeholder="From Michelin-starred to hole-in-the-wall — curated and verified." style="width:100%; padding:8px 12px; border-radius:6px; border:1px solid #e5e7eb;">
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+                        <div>
+                            <label style="display:block; font-weight:600; font-size:13px; margin-bottom:4px;">Country</label>
+                            <select id="gd-country" style="width:100%; padding:8px 12px; border-radius:6px; border:1px solid #e5e7eb;" required></select>
+                        </div>
+                        <div>
+                            <label style="display:block; font-weight:600; font-size:13px; margin-bottom:4px;">Category</label>
+                            <select id="gd-category" style="width:100%; padding:8px 12px; border-radius:6px; border:1px solid #e5e7eb;" required>
+                                <option value="Save Money">Save Money</option>
+                                <option value="Attractions">Attractions</option>
+                                <option value="Food & Drink">Food & Drink</option>
+                                <option value="Nightlife">Nightlife</option>
+                                <option value="Family">Family</option>
+                                <option value="Nature">Nature</option>
+                                <option value="Shopping">Shopping</option>
+                                <option value="Safety">Safety</option>
+                                <option value="Trip Planning">Trip Planning</option>
+                                <option value="Insider Tips">Insider Tips</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label style="display:block; font-weight:600; font-size:13px; margin-bottom:4px;">Price (USD)</label>
+                        <input type="number" id="gd-price" value="4.99" step="0.01" min="0.5" style="width:140px; padding:8px 12px; border-radius:6px; border:1px solid #e5e7eb;">
+                    </div>
+
+                    <div>
+                        <label style="display:block; font-weight:600; font-size:13px; margin-bottom:4px;">Free preview items (shown publicly before the paywall)</label>
+                        <div id="gd-free-items" style="display:grid; gap:8px;"></div>
+                        <button type="button" class="btn" style="margin-top:8px;" onclick="addGuideFreeItemRow()">+ Add item</button>
+                    </div>
+
+                    <div>
+                        <label style="display:block; font-weight:600; font-size:13px; margin-bottom:4px;">PDF file</label>
+                        <input type="file" id="gd-pdf" accept="application/pdf">
+                    </div>
+
+                    <div id="gd-create-alert" style="display:none; padding:10px 14px; border-radius:6px; font-size:14px; background:#fee2e2; color:#991b1b;"></div>
+                    <button type="submit" class="btn btn-primary" id="gd-create-btn" style="width:fit-content;">Create Guide</button>
+                </form>
+
+                <h4 style="margin:24px 0 12px;">All Guides</h4>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Country</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>PDF</th>
+                                <th>Published</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gd-table">
+                            <tr><td colspan="7" style="color:#9ca3af;">Loading...</td></tr>
                         </tbody>
                     </table>
                 </div>
