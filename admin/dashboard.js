@@ -593,21 +593,16 @@ async function loadToolPromoLinkedinPosts() {
         const tbody = document.getElementById('ft-li-recent-table');
         if (!tbody) return;
         if (!recent || recent.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" style="color:#9ca3af;">No tool-promo LinkedIn posts published yet.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="3" style="color:#9ca3af;">No tool-promo LinkedIn drafts yet.</td></tr>';
             return;
         }
-        tbody.innerHTML = recent.map(row => {
-            const postUrl = row.linkedin_post_id && row.linkedin_post_id.startsWith('urn:li:')
-                ? `https://www.linkedin.com/feed/update/${row.linkedin_post_id}/`
-                : null;
-            return `
+        tbody.innerHTML = recent.map(row => `
             <tr>
                 <td>${new Date(row.posted_at).toLocaleString()}</td>
                 <td>${prettifySlug(row.tool_slug)}</td>
-                <td>${postUrl ? `<a href="${postUrl}" target="_blank" rel="noopener">View post</a>` : '—'}</td>
+                <td>${row.status === 'posted' ? '✅ Posted' : '📋 Draft — see LinkedIn tab'}</td>
             </tr>
-        `;
-        }).join('');
+        `).join('');
     } catch (error) {
         console.error('Error loading tool-promo LinkedIn posts:', error);
     }
@@ -616,7 +611,7 @@ async function loadToolPromoLinkedinPosts() {
 async function postToolPromoLinkedinNow() {
     const btn = document.getElementById('ft-li-post-now-btn');
     const originalLabel = btn ? btn.textContent : null;
-    if (btn) { btn.disabled = true; btn.textContent = 'Generating post… (10-20s)'; }
+    if (btn) { btn.disabled = true; btn.textContent = 'Generating draft… (10-20s)'; }
     try {
         const res = await fetch(`${API_URL}/api/linkedin/post-tool-promo`, {
             method: 'POST',
@@ -632,7 +627,7 @@ async function postToolPromoLinkedinNow() {
         }
         console.log('postToolPromoLinkedinNow response:', res.status, data);
         if (data.success) {
-            alert(`Published! ${data.url}`);
+            alert(`Draft saved! Check the LinkedIn tab's "Generierte Posts" list to copy and post it.`);
             loadToolPromoLinkedinPosts();
         } else {
             alert(`Failed: ${data.message || 'unknown error'}${data.error ? ' — ' + data.error : ''}`);
