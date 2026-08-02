@@ -596,16 +596,25 @@ async function loadToolPromoLinkedinPosts() {
             tbody.innerHTML = '<tr><td colspan="3" style="color:#9ca3af;">No tool-promo LinkedIn drafts yet.</td></tr>';
             return;
         }
-        tbody.innerHTML = recent.map(row => `
+        ftLiRecentCache = recent;
+        tbody.innerHTML = recent.map((row, i) => `
             <tr>
                 <td>${new Date(row.posted_at).toLocaleString()}</td>
                 <td>${prettifySlug(row.tool_slug)}</td>
-                <td>${row.status === 'posted' ? '✅ Posted' : '📋 Draft — see LinkedIn tab'}</td>
+                <td>${row.status === 'posted' ? '✅ Posted' : `<button onclick="copyFtLiDraft(${i})" style="font-size:12px;padding:3px 12px;border:1px solid #ddd;border-radius:4px;cursor:pointer;background:#fff;color:#0077b5;">📋 Kopieren</button>`}</td>
             </tr>
         `).join('');
     } catch (error) {
         console.error('Error loading tool-promo LinkedIn posts:', error);
     }
+}
+
+let ftLiRecentCache = [];
+
+function copyFtLiDraft(index) {
+    const row = ftLiRecentCache[index];
+    if (!row) return;
+    navigator.clipboard.writeText(row.body || '').then(() => alert('📋 Kopiert!'));
 }
 
 async function postToolPromoLinkedinNow() {
