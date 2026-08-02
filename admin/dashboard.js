@@ -181,8 +181,8 @@ async function loadBundleConversion() {
 
         const fmtRate = (r) => r === null ? '—' : `${r}%`;
         const card = (b) => `<div class="number">${fmtRate(b.rate)}</div><div class="change">${b.leads} leads / ${b.views} views over ${b.days} day${b.days === 1 ? '' : 's'}</div>`;
-        document.getElementById('bc-before').innerHTML = `<h3>Before (single-tool PDF)</h3>${card(beforeAfter.before)}`;
-        document.getElementById('bc-after').innerHTML = `<h3>After (bundle PDF)</h3>${card(beforeAfter.after)}`;
+        document.getElementById('bc-conv-before').innerHTML = `<h3>Before (single-tool PDF)</h3>${card(beforeAfter.before)}`;
+        document.getElementById('bc-conv-after').innerHTML = `<h3>After (bundle PDF)</h3>${card(beforeAfter.after)}`;
 
         const perToolEl = document.getElementById('bc-per-tool-table');
         if (perToolEl) {
