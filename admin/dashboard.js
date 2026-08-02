@@ -166,6 +166,7 @@ async function loadFreeToolsAnalytics() {
     loadToolPromoTweets();
     loadToolPromoBlogPosts();
     loadToolPromoWordpressPosts();
+    loadToolPromoLinkedinPosts();
     loadToolOgImages();
     loadAllVideoScriptIdeas();
     loadBundleConversion();
@@ -570,6 +571,74 @@ async function postToolPromoWordpressNow() {
         }
     } catch (error) {
         console.error('postToolPromoWordpressNow error:', error);
+        alert(`Error: ${error.message}`);
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
+    }
+}
+
+async function loadToolPromoLinkedinPosts() {
+    try {
+        const res = await fetch(`${API_URL}/api/analytics/free-tools/linkedin-posts`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        if (!res.ok) return;
+        const { summary, recent } = await res.json();
+
+        document.getElementById('ft-li-today').innerHTML = `<h3>Today</h3><div class="number">${summary.today}</div>`;
+        document.getElementById('ft-li-7d').innerHTML = `<h3>Last 7 Days</h3><div class="number">${summary.last_7_days}</div>`;
+        document.getElementById('ft-li-30d').innerHTML = `<h3>Last 30 Days</h3><div class="number">${summary.last_30_days}</div>`;
+        document.getElementById('ft-li-all-time').innerHTML = `<h3>All Time</h3><div class="number">${summary.all_time}</div>`;
+
+        const tbody = document.getElementById('ft-li-recent-table');
+        if (!tbody) return;
+        if (!recent || recent.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="color:#9ca3af;">No tool-promo LinkedIn posts published yet.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = recent.map(row => {
+            const postUrl = row.linkedin_post_id && row.linkedin_post_id.startsWith('urn:li:')
+                ? `https://www.linkedin.com/feed/update/${row.linkedin_post_id}/`
+                : null;
+            return `
+            <tr>
+                <td>${new Date(row.posted_at).toLocaleString()}</td>
+                <td>${prettifySlug(row.tool_slug)}</td>
+                <td>${postUrl ? `<a href="${postUrl}" target="_blank" rel="noopener">View post</a>` : '—'}</td>
+            </tr>
+        `;
+        }).join('');
+    } catch (error) {
+        console.error('Error loading tool-promo LinkedIn posts:', error);
+    }
+}
+
+async function postToolPromoLinkedinNow() {
+    const btn = document.getElementById('ft-li-post-now-btn');
+    const originalLabel = btn ? btn.textContent : null;
+    if (btn) { btn.disabled = true; btn.textContent = 'Generating post… (10-20s)'; }
+    try {
+        const res = await fetch(`${API_URL}/api/linkedin/post-tool-promo`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        let data;
+        try {
+            data = await res.json();
+        } catch (parseErr) {
+            console.error('postToolPromoLinkedinNow: non-JSON response', res.status, await res.text().catch(() => ''));
+            alert(`Error: server returned ${res.status} (not JSON) — check backend logs.`);
+            return;
+        }
+        console.log('postToolPromoLinkedinNow response:', res.status, data);
+        if (data.success) {
+            alert(`Published! ${data.url}`);
+            loadToolPromoLinkedinPosts();
+        } else {
+            alert(`Failed: ${data.message || 'unknown error'}${data.error ? ' — ' + data.error : ''}`);
+        }
+    } catch (error) {
+        console.error('postToolPromoLinkedinNow error:', error);
         alert(`Error: ${error.message}`);
     } finally {
         if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
