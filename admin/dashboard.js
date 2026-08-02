@@ -4935,6 +4935,8 @@ async function markLinkedInAsPosted() {
     } catch (e) { alert('Fehler: ' + e.message); }
 }
 
+let linkedinRecentPostsCache = [];
+
 async function loadLinkedInRecentPostsNew() {
     const el = document.getElementById('linkedin-recent-posts');
     if (!el) return;
@@ -4942,14 +4944,22 @@ async function loadLinkedInRecentPostsNew() {
         const res = await fetch(`${API_URL}/api/linkedin/recent-posts`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
         const data = await res.json();
         if (!data.success || !data.posts.length) { el.innerHTML = '<p>Noch keine Posts gepostet.</p>'; return; }
-        el.innerHTML = data.posts.map(p => `
+        linkedinRecentPostsCache = data.posts;
+        el.innerHTML = data.posts.map((p, i) => `
             <div style="padding:10px 0;border-bottom:1px solid #f0f0f0;">
                 <div style="font-size:13px;color:#374151;">${(p.body||'').substring(0,120)}…</div>
                 <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${p.status==='posted'?'#dcfce7':'#fef9c3'};color:${p.status==='posted'?'#166534':'#854d0e'};">${p.status}</span>
                 <span style="font-size:12px;color:#9ca3af;margin-left:8px;">${new Date(p.posted_at).toLocaleString('en-US')} · ${p.category||''}</span>
+                ${p.status !== 'posted' ? `<button onclick="copyLinkedinRecentPost(${i})" style="margin-left:8px;font-size:12px;padding:2px 10px;border:1px solid #ddd;border-radius:4px;cursor:pointer;background:#fff;color:#0077b5;">📋 Kopieren</button>` : ''}
                 ${p.linkedin_post_id ? `<a href="${p.linkedin_post_id}" target="_blank" style="margin-left:8px;font-size:12px;color:#0077b5;">Ansehen ↗</a>` : ''}
             </div>`).join('');
     } catch (e) { el.innerHTML = '<p>Fehler beim Laden.</p>'; }
+}
+
+function copyLinkedinRecentPost(index) {
+    const post = linkedinRecentPostsCache[index];
+    if (!post) return;
+    navigator.clipboard.writeText(post.body || '').then(() => showAlert('📋 Kopiert!', 'success'));
 }
 
 function copyLinkedInField(id) {
