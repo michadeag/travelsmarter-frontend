@@ -978,8 +978,8 @@ async function loadGuidesAdmin() {
                 <td>${g.published ? '✅' : '—'}</td>
                 <td style="white-space:nowrap;">
                     <button class="btn" onclick='editGuide(${JSON.stringify(g.id)}, window._gdGuides[${JSON.stringify(g.id)}])'>Edit</button>
-                    <button class="btn" onclick="toggleGuidePublish(${JSON.stringify(g.id)}, ${!g.published})">${g.published ? 'Unpublish' : 'Publish'}</button>
-                    <button class="btn" style="color:#991b1b;" onclick="deleteGuideRow(${JSON.stringify(g.id)}, ${JSON.stringify(g.title)})">Delete</button>
+                    <button class="btn" onclick='toggleGuidePublish(${JSON.stringify(g.id)}, ${!g.published})'>${g.published ? 'Unpublish' : 'Publish'}</button>
+                    <button class="btn" style="color:#991b1b;" onclick='deleteGuideRow(${JSON.stringify(g.id)})'>Delete</button>
                 </td>
             </tr>
         `).join('');
@@ -1003,7 +1003,8 @@ async function toggleGuidePublish(id, publish) {
     }
 }
 
-async function deleteGuideRow(id, title) {
+async function deleteGuideRow(id) {
+    const title = window._gdGuides?.[id]?.title || 'this guide';
     if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
     try {
         const res = await fetch(`${API_URL}/api/guides/admin/${id}`, {
