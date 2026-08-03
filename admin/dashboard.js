@@ -970,7 +970,7 @@ async function loadGuidesAdmin() {
 
         tbody.innerHTML = guides.map(g => `
             <tr>
-                <td>${escapeHtml(g.title)}</td>
+                <td>${escapeHtml(g.title)}${g.published ? `<br><a href="https://travelsmarterapp.com/guide-${g.slug}.html" target="_blank" rel="noopener" style="font-size:12px;color:#9ca3af;">guide-${escapeHtml(g.slug)}.html</a>` : ''}</td>
                 <td>${escapeHtml(g.country_name)}</td>
                 <td>${escapeHtml(g.category)}</td>
                 <td>$${(g.price_cents / 100).toFixed(2)}</td>
