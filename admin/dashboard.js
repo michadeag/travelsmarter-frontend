@@ -852,6 +852,36 @@ function initGuidesTab() {
     }
 
     loadGuidesAdmin();
+    loadGuidePublishingSettings();
+}
+
+async function loadGuidePublishingSettings() {
+    try {
+        const res = await fetch(`${API_URL}/api/admin/settings`, { headers: { 'Authorization': `Bearer ${getAuthToken()}` } });
+        if (!res.ok) return;
+        const data = await res.json();
+        const s = data.data || {};
+        const tokenEl = document.getElementById('gd-github-token');
+        const repoEl = document.getElementById('gd-github-repo');
+        if (tokenEl && s.github_token?.value) tokenEl.value = s.github_token.value;
+        if (repoEl) repoEl.value = s.github_repo?.value || 'michadeag/travelsmarter-frontend';
+    } catch (err) { console.warn('Could not load GitHub publishing settings:', err.message); }
+}
+
+async function saveGuidePublishingSettings() {
+    try {
+        await fetch(`${API_URL}/api/admin/settings/batch/update`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                github_token: document.getElementById('gd-github-token')?.value?.trim() || '',
+                github_repo: document.getElementById('gd-github-repo')?.value?.trim() || 'michadeag/travelsmarter-frontend',
+            }),
+        });
+        showAlert('✅ Saved!', 'success');
+    } catch (err) {
+        alert(`Error: ${err.message}`);
+    }
 }
 
 function addGuideFreeItemRow(name, blurb) {
@@ -997,6 +1027,15 @@ async function toggleGuidePublish(id, publish) {
         });
         const data = await res.json();
         if (!data.success) { alert(`Failed: ${data.error}`); return; }
+        if (publish && data.pages) {
+            if (data.pages.guidePageCommitted) {
+                let msg = '✅ Published and page deployed!';
+                if (data.pages.warnings?.length) msg += '\n\nNote: ' + data.pages.warnings.join('\n');
+                alert(msg);
+            } else if (data.pages.warnings?.length) {
+                alert(`Published, but the page couldn't be auto-deployed:\n\n${data.pages.warnings.join('\n')}`);
+            }
+        }
         loadGuidesAdmin();
     } catch (error) {
         alert(`Error: ${error.message}`);

@@ -1731,7 +1731,23 @@
             <!-- GUIDES TAB -->
             <div id="guides" class="tab-content">
                 <h3 style="margin-bottom: 8px;">📕 PDF Travel Guides</h3>
-                <p style="color:#6b7280; margin-bottom:20px;">Manually-researched PDF guides ("100 Best Restaurants in Germany" etc.), sold individually ($4.99) or bundled per country ($29 — automatically covers every published guide for that country). Upload the finished PDF here; the landing page is generated separately once a guide is published.</p>
+                <p style="color:#6b7280; margin-bottom:20px;">Manually-researched PDF guides ("100 Best Restaurants in Germany" etc.), sold individually ($4.99) or bundled per country ($29 — automatically covers every published guide for that country). Upload the finished PDF here — publishing automatically generates and deploys its landing page too.</p>
+
+                <details style="background:white; border-radius:8px; padding:16px 20px; margin-bottom:20px; max-width:700px;">
+                    <summary style="cursor:pointer; font-weight:600; font-size:14px;">⚙️ Publishing settings (GitHub)</summary>
+                    <p style="color:#6b7280; font-size:13px; margin:10px 0;">Needed so publishing a guide can commit its landing page directly to the frontend repo. Use a fine-grained GitHub token scoped to just this repo, with "Contents: Read and write" permission.</p>
+                    <div style="display:grid; gap:10px; margin-top:10px;">
+                        <div>
+                            <label style="display:block; font-weight:600; font-size:13px; margin-bottom:4px;">GitHub Token</label>
+                            <input type="password" id="gd-github-token" placeholder="github_pat_..." style="width:100%; padding:8px 12px; border-radius:6px; border:1px solid #e5e7eb;">
+                        </div>
+                        <div>
+                            <label style="display:block; font-weight:600; font-size:13px; margin-bottom:4px;">GitHub Repo</label>
+                            <input type="text" id="gd-github-repo" placeholder="michadeag/travelsmarter-frontend" style="width:100%; padding:8px 12px; border-radius:6px; border:1px solid #e5e7eb;">
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="saveGuidePublishingSettings()" style="width:fit-content;">Save</button>
+                    </div>
+                </details>
 
                 <div class="cards-grid">
                     <div class="card" id="gd-total">
@@ -3551,6 +3567,6 @@
         </div>
     </div>
 
-    <script src="dashboard.js?v=20260802d"></script>
+    <script src="dashboard.js?v=20260802e"></script>
 </body>
 </html>
