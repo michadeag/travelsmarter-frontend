@@ -49,9 +49,9 @@ function render(c, allCountries) {
     <meta property="og:title" content="ATM Fee Checker for ${c.name}">
     <meta property="og:description" content="Instant free checker: typical ATM fees are $${c.atmFeeLow}-${c.atmFeeHigh} per withdrawal in ${c.name}, DCC risk is ${dccLabel}.">
     <meta property="og:url" content="https://travelsmarterapp.com/atm-fee-checker-${c.slug}.html">
-    <meta property="og:image" content="https://travelsmarterapp.com/og-images/atm-fee-checker.png">
+    <meta property="og:image" content="https://api.travelsmarterapp.com/og-images/atm-fee-checker.png">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/atm-fee-checker.png">
+    <meta name="twitter:image" content="https://api.travelsmarterapp.com/og-images/atm-fee-checker.png">
     <meta name="twitter:title" content="ATM Fee Checker for ${c.name}">
     <meta name="twitter:description" content="Instant free checker: typical ATM fees are $${c.atmFeeLow}-${c.atmFeeHigh} per withdrawal in ${c.name}, DCC risk is ${dccLabel}.">
 

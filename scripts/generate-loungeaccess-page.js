@@ -59,9 +59,9 @@ function render(a, allAirports) {
     <meta property="og:title" content="${a.name} Priority Pass Lounge Access">
     <meta property="og:description" content="Instant free checker: ${h}">
     <meta property="og:url" content="https://travelsmarterapp.com/lounge-access-checker-${a.slug}.html">
-    <meta property="og:image" content="https://travelsmarterapp.com/og-images/lounge-access-checker.png">
+    <meta property="og:image" content="https://api.travelsmarterapp.com/og-images/lounge-access-checker.png">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/lounge-access-checker.png">
+    <meta name="twitter:image" content="https://api.travelsmarterapp.com/og-images/lounge-access-checker.png">
     <meta name="twitter:title" content="${a.name} Priority Pass Lounge Access">
     <meta name="twitter:description" content="Instant free checker: ${h}">
 

@@ -61,9 +61,9 @@ function render(c, allCountries) {
     <meta property="og:title" content="UV Index & Sun Safety Checker for ${c.name}">
     <meta property="og:description" content="Instant free checker: ${c.name} has ${label}.">
     <meta property="og:url" content="https://travelsmarterapp.com/uv-index-checker-${c.slug}.html">
-    <meta property="og:image" content="https://travelsmarterapp.com/og-images/uv-index-checker.png">
+    <meta property="og:image" content="https://api.travelsmarterapp.com/og-images/uv-index-checker.png">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/uv-index-checker.png">
+    <meta name="twitter:image" content="https://api.travelsmarterapp.com/og-images/uv-index-checker.png">
     <meta name="twitter:title" content="UV Index & Sun Safety Checker for ${c.name}">
     <meta name="twitter:description" content="Instant free checker: ${c.name} has ${label}.">
 

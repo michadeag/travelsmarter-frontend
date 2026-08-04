@@ -46,9 +46,9 @@ function render(a, allAirports) {
     <meta property="og:title" content="${a.name} Layover Checker">
     <meta property="og:description" content="Instant free checker: is your layover time enough at ${a.name}?">
     <meta property="og:url" content="https://travelsmarterapp.com/layover-checker-${a.slug}.html">
-    <meta property="og:image" content="https://travelsmarterapp.com/og-images/layover-checker.png">
+    <meta property="og:image" content="https://api.travelsmarterapp.com/og-images/layover-checker.png">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/layover-checker.png">
+    <meta name="twitter:image" content="https://api.travelsmarterapp.com/og-images/layover-checker.png">
     <meta name="twitter:title" content="${a.name} Layover Checker">
     <meta name="twitter:description" content="Instant free checker: is your layover time enough at ${a.name}?">
 

@@ -48,9 +48,9 @@ function render(c, allCountries) {
     <meta property="og:title" content="Legal Drinking Age Checker for ${c.name}">
     <meta property="og:description" content="Instant free checker: the legal drinking age in ${c.name} is ${ageLabel}.">
     <meta property="og:url" content="https://travelsmarterapp.com/drinking-age-checker-${c.slug}.html">
-    <meta property="og:image" content="https://travelsmarterapp.com/og-images/drinking-age-checker.png">
+    <meta property="og:image" content="https://api.travelsmarterapp.com/og-images/drinking-age-checker.png">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/drinking-age-checker.png">
+    <meta name="twitter:image" content="https://api.travelsmarterapp.com/og-images/drinking-age-checker.png">
     <meta name="twitter:title" content="Legal Drinking Age Checker for ${c.name}">
     <meta name="twitter:description" content="Instant free checker: the legal drinking age in ${c.name} is ${ageLabel}.">
 

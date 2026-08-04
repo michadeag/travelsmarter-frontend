@@ -65,9 +65,9 @@ function render(c, allCountries) {
     <meta property="og:title" content="Which Side of the Road in ${c.name}?">
     <meta property="og:description" content="Instant free checker: ${h}">
     <meta property="og:url" content="https://travelsmarterapp.com/driving-checker-${c.slug}.html">
-    <meta property="og:image" content="https://travelsmarterapp.com/og-images/driving-checker.png">
+    <meta property="og:image" content="https://api.travelsmarterapp.com/og-images/driving-checker.png">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/driving-checker.png">
+    <meta name="twitter:image" content="https://api.travelsmarterapp.com/og-images/driving-checker.png">
     <meta name="twitter:title" content="Which Side of the Road in ${c.name}?">
     <meta name="twitter:description" content="Instant free checker: ${h}">
 

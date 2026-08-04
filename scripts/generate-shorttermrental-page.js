@@ -53,9 +53,9 @@ function render(c, allCountries) {
     <meta property="og:title" content="Short-Term Rental Regulations Checker for ${c.name}">
     <meta property="og:description" content="Instant free checker: ${c.name} is ${label}.">
     <meta property="og:url" content="https://travelsmarterapp.com/short-term-rental-checker-${c.slug}.html">
-    <meta property="og:image" content="https://travelsmarterapp.com/og-images/short-term-rental-checker.png">
+    <meta property="og:image" content="https://api.travelsmarterapp.com/og-images/short-term-rental-checker.png">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/short-term-rental-checker.png">
+    <meta name="twitter:image" content="https://api.travelsmarterapp.com/og-images/short-term-rental-checker.png">
     <meta name="twitter:title" content="Short-Term Rental Regulations Checker for ${c.name}">
     <meta name="twitter:description" content="Instant free checker: ${c.name} is ${label}.">
 

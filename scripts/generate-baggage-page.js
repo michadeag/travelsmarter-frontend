@@ -50,9 +50,9 @@ function render(a, allAirlines) {
     <meta property="og:title" content="${a.name} Checked Baggage Fee Calculator">
     <meta property="og:description" content="Instant free calculator: ${headline}">
     <meta property="og:url" content="https://travelsmarterapp.com/baggage-fee-calculator-${a.slug}.html">
-    <meta property="og:image" content="https://travelsmarterapp.com/og-images/baggage-fee-calculator.png">
+    <meta property="og:image" content="https://api.travelsmarterapp.com/og-images/baggage-fee-calculator.png">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/baggage-fee-calculator.png">
+    <meta name="twitter:image" content="https://api.travelsmarterapp.com/og-images/baggage-fee-calculator.png">
     <meta name="twitter:title" content="${a.name} Checked Baggage Fee Calculator">
     <meta name="twitter:description" content="Instant free calculator: ${headline}">
 

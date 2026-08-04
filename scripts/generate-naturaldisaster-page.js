@@ -55,9 +55,9 @@ function render(c, allCountries) {
     <meta property="og:title" content="Natural Disaster & Severe Weather Checker for ${c.name}">
     <meta property="og:description" content="Instant free checker: ${headline}">
     <meta property="og:url" content="https://travelsmarterapp.com/natural-disaster-checker-${c.slug}.html">
-    <meta property="og:image" content="https://travelsmarterapp.com/og-images/natural-disaster-checker.png">
+    <meta property="og:image" content="https://api.travelsmarterapp.com/og-images/natural-disaster-checker.png">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/natural-disaster-checker.png">
+    <meta name="twitter:image" content="https://api.travelsmarterapp.com/og-images/natural-disaster-checker.png">
     <meta name="twitter:title" content="Natural Disaster & Severe Weather Checker for ${c.name}">
     <meta name="twitter:description" content="Instant free checker: ${headline}">
 

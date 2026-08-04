@@ -62,9 +62,9 @@ function render(c, allCountries) {
     <meta property="og:title" content="Is ${c.name} Safe to Travel To?">
     <meta property="og:description" content="Instant free checker: ${h}">
     <meta property="og:url" content="https://travelsmarterapp.com/travel-advisory-checker-${c.slug}.html">
-    <meta property="og:image" content="https://travelsmarterapp.com/og-images/travel-advisory-checker.png">
+    <meta property="og:image" content="https://api.travelsmarterapp.com/og-images/travel-advisory-checker.png">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/travel-advisory-checker.png">
+    <meta name="twitter:image" content="https://api.travelsmarterapp.com/og-images/travel-advisory-checker.png">
     <meta name="twitter:title" content="Is ${c.name} Safe to Travel To?">
     <meta name="twitter:description" content="Instant free checker: ${h}">
 

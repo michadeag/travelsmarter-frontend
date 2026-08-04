@@ -59,9 +59,9 @@ function render(c, allCountries) {
     <meta property="og:title" content="Public Holiday Checker for ${c.name}">
     <meta property="og:description" content="Instant free checker: ${summary}">
     <meta property="og:url" content="https://travelsmarterapp.com/public-holiday-checker-${c.slug}.html">
-    <meta property="og:image" content="https://travelsmarterapp.com/og-images/public-holiday-checker.png">
+    <meta property="og:image" content="https://api.travelsmarterapp.com/og-images/public-holiday-checker.png">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/public-holiday-checker.png">
+    <meta name="twitter:image" content="https://api.travelsmarterapp.com/og-images/public-holiday-checker.png">
     <meta name="twitter:title" content="Public Holiday Checker for ${c.name}">
     <meta name="twitter:description" content="Instant free checker: ${summary}">
 

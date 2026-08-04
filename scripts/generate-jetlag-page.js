@@ -78,9 +78,9 @@ function render(d) {
     <meta property="og:title" content="Jet Lag Calculator for Flights to ${d.name}">
     <meta property="og:description" content="Free calculator: how many time zones you're crossing to ${d.name} and how long jet lag will take to fade.">
     <meta property="og:url" content="https://travelsmarterapp.com/jet-lag-calculator-to-${d.slug}.html">
-    <meta property="og:image" content="https://travelsmarterapp.com/og-images/jet-lag-calculator.png">
+    <meta property="og:image" content="https://api.travelsmarterapp.com/og-images/jet-lag-calculator.png">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/jet-lag-calculator.png">
+    <meta name="twitter:image" content="https://api.travelsmarterapp.com/og-images/jet-lag-calculator.png">
     <meta name="twitter:title" content="Jet Lag Calculator for Flights to ${d.name}">
     <meta name="twitter:description" content="Free calculator: how many time zones you're crossing to ${d.name} and how long jet lag will take to fade.">
 

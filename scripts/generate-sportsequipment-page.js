@@ -69,9 +69,9 @@ function render(a, allAirlines) {
     <meta property="og:title" content="${a.name} Sports Equipment Baggage Fees">
     <meta property="og:description" content="Instant free checker: ${h}">
     <meta property="og:url" content="https://travelsmarterapp.com/sports-equipment-checker-${a.slug}.html">
-    <meta property="og:image" content="https://travelsmarterapp.com/og-images/sports-equipment-checker.png">
+    <meta property="og:image" content="https://api.travelsmarterapp.com/og-images/sports-equipment-checker.png">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/sports-equipment-checker.png">
+    <meta name="twitter:image" content="https://api.travelsmarterapp.com/og-images/sports-equipment-checker.png">
     <meta name="twitter:title" content="${a.name} Sports Equipment Baggage Fees">
     <meta name="twitter:description" content="Instant free checker: ${h}">
 

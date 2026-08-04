@@ -50,9 +50,9 @@ function render(c, allCountries) {
     <meta property="og:title" content="How Much to Tip in ${c.name}">
     <meta property="og:description" content="Instant free calculator: ${headline}">
     <meta property="og:url" content="https://travelsmarterapp.com/tipping-calculator-${c.slug}.html">
-    <meta property="og:image" content="https://travelsmarterapp.com/og-images/tipping-calculator.png">
+    <meta property="og:image" content="https://api.travelsmarterapp.com/og-images/tipping-calculator.png">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/tipping-calculator.png">
+    <meta name="twitter:image" content="https://api.travelsmarterapp.com/og-images/tipping-calculator.png">
     <meta name="twitter:title" content="How Much to Tip in ${c.name}">
     <meta name="twitter:description" content="Instant free calculator: ${headline}">
 

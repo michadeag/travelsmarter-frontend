@@ -2,7 +2,7 @@
 // self-hosted copies (https://api.travelsmarterapp.com/og-images/*.png,
 // written by toolOgImageService.js) into this repo's own og-images/
 // folder, so the actual live pages (which reference
-// https://travelsmarterapp.com/og-images/{slug}.png) have a real file.
+// https://api.travelsmarterapp.com/og-images/{slug}.png) have a real file.
 //
 // The backend's copy is the freshest source of truth right after a
 // "Generate Missing" / "Regenerate All" run in the admin dashboard, but

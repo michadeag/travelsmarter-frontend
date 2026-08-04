@@ -62,9 +62,9 @@ function render(c, allCountries) {
     <meta property="og:title" content="${c.name} Solo Female Travel Safety">
     <meta property="og:description" content="Instant free checker: ${h}">
     <meta property="og:url" content="https://travelsmarterapp.com/solo-female-travel-checker-${c.slug}.html">
-    <meta property="og:image" content="https://travelsmarterapp.com/og-images/solo-female-travel-checker.png">
+    <meta property="og:image" content="https://api.travelsmarterapp.com/og-images/solo-female-travel-checker.png">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/solo-female-travel-checker.png">
+    <meta name="twitter:image" content="https://api.travelsmarterapp.com/og-images/solo-female-travel-checker.png">
     <meta name="twitter:title" content="${c.name} Solo Female Travel Safety">
     <meta name="twitter:description" content="Instant free checker: ${h}">
 

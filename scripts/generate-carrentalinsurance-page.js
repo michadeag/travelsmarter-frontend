@@ -60,9 +60,9 @@ function render(c, allCountries) {
     <meta property="og:title" content="${c.name} Car Rental Deposit & Insurance">
     <meta property="og:description" content="Instant free checker: ${h}">
     <meta property="og:url" content="https://travelsmarterapp.com/car-rental-insurance-checker-${c.slug}.html">
-    <meta property="og:image" content="https://travelsmarterapp.com/og-images/car-rental-insurance-checker.png">
+    <meta property="og:image" content="https://api.travelsmarterapp.com/og-images/car-rental-insurance-checker.png">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/car-rental-insurance-checker.png">
+    <meta name="twitter:image" content="https://api.travelsmarterapp.com/og-images/car-rental-insurance-checker.png">
     <meta name="twitter:title" content="${c.name} Car Rental Deposit & Insurance">
     <meta name="twitter:description" content="Instant free checker: ${h}">
 

@@ -88,9 +88,9 @@ function render(c, allCountries) {
     <meta property="og:title" content="${c.name} Power Plug & Voltage Guide">
     <meta property="og:description" content="Instant free checker: ${h}">
     <meta property="og:url" content="https://travelsmarterapp.com/power-plug-checker-${c.slug}.html">
-    <meta property="og:image" content="https://travelsmarterapp.com/og-images/power-plug-checker.png">
+    <meta property="og:image" content="https://api.travelsmarterapp.com/og-images/power-plug-checker.png">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/power-plug-checker.png">
+    <meta name="twitter:image" content="https://api.travelsmarterapp.com/og-images/power-plug-checker.png">
     <meta name="twitter:title" content="${c.name} Power Plug & Voltage Guide">
     <meta name="twitter:description" content="Instant free checker: ${h}">
 

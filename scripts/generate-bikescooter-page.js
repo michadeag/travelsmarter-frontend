@@ -63,9 +63,9 @@ function render(c, allCountries) {
     <meta property="og:title" content="${c.name} Bike & E-Scooter Rental Checker">
     <meta property="og:description" content="Instant free checker: ${h}">
     <meta property="og:url" content="https://travelsmarterapp.com/bike-scooter-checker-${c.slug}.html">
-    <meta property="og:image" content="https://travelsmarterapp.com/og-images/bike-scooter-checker.png">
+    <meta property="og:image" content="https://api.travelsmarterapp.com/og-images/bike-scooter-checker.png">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/bike-scooter-checker.png">
+    <meta name="twitter:image" content="https://api.travelsmarterapp.com/og-images/bike-scooter-checker.png">
     <meta name="twitter:title" content="${c.name} Bike & E-Scooter Rental Checker">
     <meta name="twitter:description" content="Instant free checker: ${h}">
 

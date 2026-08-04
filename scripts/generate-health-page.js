@@ -64,9 +64,9 @@ function render(c, allCountries) {
     <meta property="og:title" content="${c.name} Travel Health Guide">
     <meta property="og:description" content="Instant free orientation: ${h}">
     <meta property="og:url" content="https://travelsmarterapp.com/travel-health-checker-${c.slug}.html">
-    <meta property="og:image" content="https://travelsmarterapp.com/og-images/travel-health-checker.png">
+    <meta property="og:image" content="https://api.travelsmarterapp.com/og-images/travel-health-checker.png">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/travel-health-checker.png">
+    <meta name="twitter:image" content="https://api.travelsmarterapp.com/og-images/travel-health-checker.png">
     <meta name="twitter:title" content="${c.name} Travel Health Guide">
     <meta name="twitter:description" content="Instant free orientation: ${h}">
 

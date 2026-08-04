@@ -46,9 +46,9 @@ function render(c, allCountries) {
     <meta property="og:title" content="Car Rental Age Checker for ${c.name}">
     <meta property="og:description" content="Instant free checker: minimum rental age is ${c.minAge}, young-driver fee applies under ${c.youngThreshold} in ${c.name}.">
     <meta property="og:url" content="https://travelsmarterapp.com/rental-age-checker-${c.slug}.html">
-    <meta property="og:image" content="https://travelsmarterapp.com/og-images/rental-age-checker.png">
+    <meta property="og:image" content="https://api.travelsmarterapp.com/og-images/rental-age-checker.png">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/rental-age-checker.png">
+    <meta name="twitter:image" content="https://api.travelsmarterapp.com/og-images/rental-age-checker.png">
     <meta name="twitter:title" content="Car Rental Age Checker for ${c.name}">
     <meta name="twitter:description" content="Instant free checker: minimum rental age is ${c.minAge}, young-driver fee applies under ${c.youngThreshold} in ${c.name}.">
 

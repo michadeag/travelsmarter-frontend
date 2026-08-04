@@ -60,9 +60,9 @@ function render(d, allDestinations) {
     <meta property="og:title" content="${d.name} Travel Budget Calculator">
     <meta property="og:description" content="Free calculator: how much does a trip to ${d.name} cost per day?">
     <meta property="og:url" content="https://travelsmarterapp.com/travel-budget-calculator-to-${d.slug}.html">
-    <meta property="og:image" content="https://travelsmarterapp.com/og-images/travel-budget-calculator.png">
+    <meta property="og:image" content="https://api.travelsmarterapp.com/og-images/travel-budget-calculator.png">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/travel-budget-calculator.png">
+    <meta name="twitter:image" content="https://api.travelsmarterapp.com/og-images/travel-budget-calculator.png">
     <meta name="twitter:title" content="${d.name} Travel Budget Calculator">
     <meta name="twitter:description" content="Free calculator: how much does a trip to ${d.name} cost per day?">
 

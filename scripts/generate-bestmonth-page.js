@@ -51,9 +51,9 @@ function render(d, allDestinations) {
     <meta property="og:title" content="Best Time to Visit ${d.name}">
     <meta property="og:description" content="Instant free checker: ${h}">
     <meta property="og:url" content="https://travelsmarterapp.com/best-month-checker-${d.slug}.html">
-    <meta property="og:image" content="https://travelsmarterapp.com/og-images/best-month-checker.png">
+    <meta property="og:image" content="https://api.travelsmarterapp.com/og-images/best-month-checker.png">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/best-month-checker.png">
+    <meta name="twitter:image" content="https://api.travelsmarterapp.com/og-images/best-month-checker.png">
     <meta name="twitter:title" content="Best Time to Visit ${d.name}">
     <meta name="twitter:description" content="Instant free checker: ${h}">
 

@@ -62,9 +62,9 @@ function render(c, allCountries) {
     <meta property="og:title" content="${c.name} Pregnancy Travel Risk">
     <meta property="og:description" content="Instant free checker: ${h}">
     <meta property="og:url" content="https://travelsmarterapp.com/pregnancy-travel-checker-${c.slug}.html">
-    <meta property="og:image" content="https://travelsmarterapp.com/og-images/pregnancy-travel-checker.png">
+    <meta property="og:image" content="https://api.travelsmarterapp.com/og-images/pregnancy-travel-checker.png">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/pregnancy-travel-checker.png">
+    <meta name="twitter:image" content="https://api.travelsmarterapp.com/og-images/pregnancy-travel-checker.png">
     <meta name="twitter:title" content="${c.name} Pregnancy Travel Risk">
     <meta name="twitter:description" content="Instant free checker: ${h}">
 

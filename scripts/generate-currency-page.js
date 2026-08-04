@@ -53,9 +53,9 @@ function render(c, allCountries) {
     <meta property="og:title" content="Currency & Cash Culture in ${c.name}">
     <meta property="og:description" content="Instant free checker: ${h}">
     <meta property="og:url" content="https://travelsmarterapp.com/currency-checker-${c.slug}.html">
-    <meta property="og:image" content="https://travelsmarterapp.com/og-images/currency-checker.png">
+    <meta property="og:image" content="https://api.travelsmarterapp.com/og-images/currency-checker.png">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/currency-checker.png">
+    <meta name="twitter:image" content="https://api.travelsmarterapp.com/og-images/currency-checker.png">
     <meta name="twitter:title" content="Currency & Cash Culture in ${c.name}">
     <meta name="twitter:description" content="Instant free checker: ${h}">
 

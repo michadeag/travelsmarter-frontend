@@ -60,9 +60,9 @@ function render(c, allCountries) {
     <meta property="og:title" content="${c.name} Cash Declaration Limit">
     <meta property="og:description" content="Instant free checker: ${h}">
     <meta property="og:url" content="https://travelsmarterapp.com/cash-declaration-checker-${c.slug}.html">
-    <meta property="og:image" content="https://travelsmarterapp.com/og-images/cash-declaration-checker.png">
+    <meta property="og:image" content="https://api.travelsmarterapp.com/og-images/cash-declaration-checker.png">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:image" content="https://travelsmarterapp.com/og-images/cash-declaration-checker.png">
+    <meta name="twitter:image" content="https://api.travelsmarterapp.com/og-images/cash-declaration-checker.png">
     <meta name="twitter:title" content="${c.name} Cash Declaration Limit">
     <meta name="twitter:description" content="Instant free checker: ${h}">
 
