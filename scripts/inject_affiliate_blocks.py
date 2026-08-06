@@ -66,6 +66,19 @@ PARTNERS = {
         ),
         "cta": "See how Wise works &#8594;",
     },
+    # Connectivity tools -> Saily eSIM.
+    "saily": {
+        "tools": ["sim-checker", "internet-speed-checker"],
+        "title": "&#128241; Skip roaming fees in {place}",
+        "body": (
+            "Airport SIM booths and roaming plans are the expensive way to get online. "
+            "A <strong>Saily eSIM</strong> (by the team behind NordVPN) installs on your "
+            "phone before you fly, activates automatically when you land in {place}, "
+            "and gives you prepaid data at local prices in 190+ countries — no physical "
+            "SIM, no contract, no surprise bill."
+        ),
+        "cta": "See Saily data plans for {place} &#8594;",
+    },
     # Accommodation-fit tools: rental legality + resort-fee pages.
     "airbnb": {
         "tools": ["short-term-rental-checker", "resort-fee-checker"],
