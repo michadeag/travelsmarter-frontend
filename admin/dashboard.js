@@ -315,12 +315,12 @@ async function loadRecentLeads() {
             headers: { 'Authorization': `Bearer ${getAuthToken()}` }
         });
         if (!res.ok) {
-            tbody.innerHTML = '<tr><td colspan="6" style="color:#ef4444;">Failed to load recent leads</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="color:#ef4444;">Failed to load recent leads</td></tr>';
             return;
         }
         const { data } = await res.json();
         if (!data || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="color:#9ca3af;">No leads recorded yet.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="color:#9ca3af;">No leads recorded yet.</td></tr>';
             return;
         }
         tbody.innerHTML = data.map(row => `
@@ -331,11 +331,30 @@ async function loadRecentLeads() {
                 <td>${prettifySlug(row.tool_slug)}</td>
                 <td>${escapeHtml(row.source_page || '—')}</td>
                 <td>${row.converted ? '✅' : '—'}</td>
+                <td><button class="btn-icon" title="Delete this lead (e.g. own test signup)"
+                    onclick="deleteLead(${row.id}, '${escapeHtml(row.email).replace(/'/g, "\\'")}')"
+                    style="background:none;border:none;cursor:pointer;font-size:15px;">🗑️</button></td>
             </tr>
         `).join('');
     } catch (error) {
         console.error('Error loading recent leads:', error);
-        tbody.innerHTML = '<tr><td colspan="6" style="color:#ef4444;">Error loading recent leads</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="color:#ef4444;">Error loading recent leads</td></tr>';
+    }
+}
+
+async function deleteLead(id, email) {
+    if (!confirm(`Delete this lead?\n\n${email}\n\nThis also cancels its scheduled drip emails. This cannot be undone.`)) return;
+    try {
+        const res = await fetch(`${API_URL}/api/analytics/free-tools/leads/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok || !body.success) throw new Error(body.error || 'Delete failed');
+        loadRecentLeads();      // refresh the table
+        loadLeadsSummary?.();   // refresh the counters if present
+    } catch (error) {
+        alert('Could not delete lead: ' + error.message);
     }
 }
 
