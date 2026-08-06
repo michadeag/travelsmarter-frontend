@@ -332,7 +332,8 @@ async function loadRecentLeads() {
                 <td>${escapeHtml(row.source_page || '—')}</td>
                 <td>${row.converted ? '✅' : '—'}</td>
                 <td><button class="btn-icon" title="Delete this lead (e.g. own test signup)"
-                    onclick="deleteLead(${row.id}, '${escapeHtml(row.email).replace(/'/g, "\\'")}')"
+                    data-lead-id="${row.id ?? ''}" data-lead-email="${escapeHtml(row.email)}"
+                    onclick="deleteLeadBtn(this)"
                     style="background:none;border:none;cursor:pointer;font-size:15px;">🗑️</button></td>
             </tr>
         `).join('');
@@ -342,7 +343,15 @@ async function loadRecentLeads() {
     }
 }
 
+function deleteLeadBtn(btn) {
+    deleteLead(btn.dataset.leadId, btn.dataset.leadEmail);
+}
+
 async function deleteLead(id, email) {
+    if (!id) {
+        alert('This lead has no ID yet — the backend update is probably still deploying. Try again in a few minutes.');
+        return;
+    }
     if (!confirm(`Delete this lead?\n\n${email}\n\nThis also cancels its scheduled drip emails. This cannot be undone.`)) return;
     try {
         const res = await fetch(`${API_URL}/api/analytics/free-tools/leads/${id}`, {
