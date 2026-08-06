@@ -132,6 +132,22 @@
         footer { text-align:center; padding:30px 20px; color:#9ca3af; font-size:13px; }
         footer a { color:#667eea; text-decoration:none; }
     </style>
+    <!-- Pinterest Tag -->
+    <script>
+    !function(e){if(!window.pintrk){window.pintrk = function () {
+    window.pintrk.queue.push(Array.prototype.slice.call(arguments))};var
+      n=window.pintrk;n.queue=[],n.version="3.0";var
+      t=document.createElement("script");t.async=!0,t.src=e;var
+      r=document.getElementsByTagName("script")[0];
+      r.parentNode.insertBefore(t,r)}}("https://s.pinimg.com/ct/core.js");
+    pintrk('load', '2613473797081');
+    pintrk('page');
+    </script>
+    <noscript>
+    <img height="1" width="1" style="display:none;" alt=""
+      src="https://ct.pinterest.com/v3/?event=init&tid=2613473797081&noscript=1" />
+    </noscript>
+    <!-- end Pinterest Tag -->
 </head>
 <body>
     <header>
@@ -336,6 +352,7 @@
                 }
 
                 gtag('event', 'generate_lead', { tool: 'language_checker_denmark' });
+                if (window.pintrk) pintrk('track', 'lead', { em: (typeof email === 'string' ? email : undefined) });
 
                 const blob = await res.blob();
                 const url = window.URL.createObjectURL(blob);
