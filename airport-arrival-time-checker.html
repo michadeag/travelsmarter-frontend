@@ -230,7 +230,14 @@
                 alertEl.style.display = 'block';
                 return;
             }
-            if (!lastResult) return;
+            if (!lastResult && typeof calculate === 'function') {
+                try { await calculate(); } catch (e) { /* calculate shows its own alert */ }
+            }
+            if (!lastResult) {
+                alertEl.textContent = 'Please run the free check above first — then your PDF is one click away.';
+                alertEl.style.display = 'block';
+                return;
+            }
 
             const btn = document.getElementById('pdf-btn');
             btn.disabled = true;
@@ -273,6 +280,29 @@
                 btn.textContent = 'Get Your Free PDF Guide';
             }
         }
+    </script>
+    <script>
+    // Surface the free-PDF signup without requiring a calculation first
+    (function () {
+        var p = document.getElementById('pdf-section');
+        var r = document.getElementById('result');
+        if (!p || !r || document.getElementById('pdf-standalone')) return;
+        var host = document.createElement('div');
+        host.className = 'card content-block';
+        host.id = 'pdf-standalone';
+        var anchor = r.closest('.card') || document.querySelector('.container .card');
+        if (!anchor) return;
+        anchor.insertAdjacentElement('afterend', host);
+        host.appendChild(p);
+        p.style.display = 'block';
+        p.style.borderTop = 'none';
+        p.style.marginTop = '0';
+        p.style.paddingTop = '0';
+        var trust = document.createElement('p');
+        trust.style.cssText = 'font-size:0.78rem;opacity:0.6;margin-top:10px;';
+        trust.textContent = 'Instant download. No spam — unsubscribe anytime.';
+        host.appendChild(trust);
+    })();
     </script>
 </body>
 </html>
