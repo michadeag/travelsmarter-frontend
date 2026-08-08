@@ -315,6 +315,7 @@
 
                 lastResult = data.result;
                 gtag('event', 'tool_calculate', { tool: 'queue_culture_checker_greece' });
+                try { fetch(API_URL + '/api/analytics/free-tools/track-calc', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: window.location.pathname }), keepalive: true }).catch(function () {}); } catch (e) {}
 
                 document.getElementById('result-headline').textContent = data.result.headline;
                 document.getElementById('result-meta').textContent = data.result.note;

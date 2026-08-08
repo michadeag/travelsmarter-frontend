@@ -332,6 +332,7 @@
 
                 lastResult = data.result;
                 gtag('event', 'tool_calculate', { tool: 'travel_health_checker_colombia' });
+                try { fetch(API_URL + '/api/analytics/free-tools/track-calc', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: window.location.pathname }), keepalive: true }).catch(function () {}); } catch (e) {}
 
                 document.getElementById('result-headline').textContent = data.result.headline;
                 document.getElementById('result-meta').textContent = `${data.result.countryName}: ${data.result.malariaRiskLabel}${data.result.yellowFeverEntryRequirement ? ' · Yellow fever proof commonly required' : ''}`;

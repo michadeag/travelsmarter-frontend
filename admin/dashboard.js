@@ -163,6 +163,7 @@ async function loadFreeToolsAnalytics() {
     loadLeadsSummary();
     loadTopLeads();
     loadRecentLeads();
+    loadFunnelStats();
     loadToolPromoTweets();
     loadToolPromoBlogPosts();
     loadToolPromoWordpressPosts();
@@ -304,6 +305,50 @@ async function loadTopLeads() {
     } catch (error) {
         console.error('Error loading top leads:', error);
         tbody.innerHTML = `<tr><td colspan="${colspan}" style="color:#ef4444;">Error loading top leads</td></tr>`;
+    }
+}
+
+async function loadFunnelStats() {
+    const tbody = document.getElementById('ft-funnel-table');
+    if (!tbody) return;
+    const days = document.getElementById('ft-funnel-days')?.value || 30;
+    const pct = (a, b) => b > 0 ? ((100 * a / b).toFixed(1) + '%') : '—';
+    try {
+        const res = await fetch(`${API_URL}/api/analytics/free-tools/funnel?days=${days}`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        if (!res.ok) {
+            tbody.innerHTML = '<tr><td colspan="7" style="color:#ef4444;">Failed to load funnel</td></tr>';
+            return;
+        }
+        const { total, tools } = await res.json();
+        if (!tools || tools.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="color:#9ca3af;">No data yet.</td></tr>';
+            return;
+        }
+        const rows = tools.slice(0, 25).map(t => `
+            <tr>
+                <td>${prettifySlug(t.tool_slug)}</td>
+                <td>${t.views}</td>
+                <td>${t.calcs}</td>
+                <td>${t.leads}</td>
+                <td>${pct(t.calcs, t.views)}</td>
+                <td>${pct(t.leads, t.calcs)}</td>
+                <td>${pct(t.leads, t.views)}</td>
+            </tr>`).join('');
+        tbody.innerHTML = `
+            <tr style="font-weight:bold; background:#f3f4f6;">
+                <td>ALL TOOLS</td>
+                <td>${total.views}</td>
+                <td>${total.calcs}</td>
+                <td>${total.leads}</td>
+                <td>${pct(total.calcs, total.views)}</td>
+                <td>${pct(total.leads, total.calcs)}</td>
+                <td>${pct(total.leads, total.views)}</td>
+            </tr>` + rows;
+    } catch (error) {
+        console.error('Error loading funnel:', error);
+        tbody.innerHTML = '<tr><td colspan="7" style="color:#ef4444;">Error loading funnel</td></tr>';
     }
 }
 

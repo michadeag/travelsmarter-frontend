@@ -1376,6 +1376,34 @@
                     </table>
                 </div>
 
+                <h3 style="margin-top: 30px; margin-bottom: 8px;">🔻 Funnel: Views → Checks → Leads</h3>
+                <p style="color:#6b7280; margin-bottom:12px;">Per tool over the selected period: how many visitors saw a page, actually ran the check, and left their email. Shows exactly which funnel step loses people. (Check tracking started 2026-08-08.)</p>
+                <div style="margin-bottom:12px;">
+                    <select id="ft-funnel-days" onchange="loadFunnelStats()" style="padding:8px 12px; border-radius:6px; border:1px solid #e5e7eb;">
+                        <option value="7">Last 7 Days</option>
+                        <option value="30" selected>Last 30 Days</option>
+                        <option value="90">Last 90 Days</option>
+                    </select>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tool</th>
+                                <th>Views</th>
+                                <th>Checks</th>
+                                <th>Leads</th>
+                                <th>View→Check</th>
+                                <th>Check→Lead</th>
+                                <th>View→Lead</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ft-funnel-table">
+                            <tr><td colspan="7" style="color:#9ca3af;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <h3 style="margin-top: 30px; margin-bottom: 8px;">📥 Leads by Source/Tool</h3>
                 <p style="color:#6b7280; margin-bottom:20px;">Actual email captures (PDF downloads) across all free-tool pages, with a link to whether that lead later became a real account (converted_to_user_id, set automatically on signup by matching email).</p>
                 <div class="cards-grid">
@@ -3568,6 +3596,6 @@
         </div>
     </div>
 
-    <script src="dashboard.js?v=20260806b"></script>
+    <script src="dashboard.js?v=20260808a"></script>
 </body>
 </html>

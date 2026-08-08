@@ -290,6 +290,7 @@
 
                 lastResult = data.result;
                 gtag('event', 'tool_calculate', { tool: 'etiquette_checker_canada' });
+                try { fetch(API_URL + '/api/analytics/free-tools/track-calc', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: window.location.pathname }), keepalive: true }).catch(function () {}); } catch (e) {}
 
                 const headlineEl = document.getElementById('result-headline');
                 headlineEl.textContent = data.result.headline;

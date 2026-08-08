@@ -366,6 +366,7 @@
 
                 lastResult = data.result;
                 gtag('event', 'tool_calculate', { tool: 'travel_budget_calculator_st-lucia' });
+                try { fetch(API_URL + '/api/analytics/free-tools/track-calc', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: window.location.pathname }), keepalive: true }).catch(function () {}); } catch (e) {}
 
                 document.getElementById('result-headline').textContent = data.result.headline;
                 renderBreakdown(data.result.breakdown);

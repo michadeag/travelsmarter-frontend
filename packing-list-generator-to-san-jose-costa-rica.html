@@ -371,6 +371,7 @@
 
                 lastResult = data.result;
                 gtag('event', 'tool_calculate', { tool: 'packing_list_generator_san-jose-costa-rica' });
+                try { fetch(API_URL + '/api/analytics/free-tools/track-calc', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: window.location.pathname }), keepalive: true }).catch(function () {}); } catch (e) {}
 
                 document.getElementById('result-headline').textContent = data.result.headline;
                 renderChecklist(data.result.categories);
