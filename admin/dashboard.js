@@ -401,7 +401,9 @@ async function requeueFailedLeadEmails() {
         });
         const body = await res.json();
         if (!res.ok || !body.success) throw new Error(body.error || 'Request failed');
-        if (statusEl) statusEl.textContent = `${body.requeued} failed emails requeued — they'll send on the next scheduler run (within the hour).`;
+        if (statusEl) statusEl.textContent = body.requeued > 0
+            ? `${body.requeued} requeued, ${body.sent} sent right away.`
+            : 'No failed emails found — anything queued sends on the next scheduler run.';
     } catch (error) {
         if (statusEl) statusEl.textContent = 'Requeue failed: ' + error.message;
     }
