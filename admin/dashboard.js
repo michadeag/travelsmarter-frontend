@@ -392,6 +392,21 @@ function deleteLeadBtn(btn) {
     deleteLead(btn.dataset.leadId, btn.dataset.leadEmail);
 }
 
+async function requeueFailedLeadEmails() {
+    const statusEl = document.getElementById('ft-lead-cleanup-status');
+    try {
+        const res = await fetch(`${API_URL}/api/analytics/free-tools/requeue-failed-lead-emails`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const body = await res.json();
+        if (!res.ok || !body.success) throw new Error(body.error || 'Request failed');
+        if (statusEl) statusEl.textContent = `${body.requeued} failed emails requeued — they'll send on the next scheduler run (within the hour).`;
+    } catch (error) {
+        if (statusEl) statusEl.textContent = 'Requeue failed: ' + error.message;
+    }
+}
+
 async function deleteLead(id, email) {
     if (!id) {
         alert('This lead has no ID yet — the backend update is probably still deploying. Try again in a few minutes.');
