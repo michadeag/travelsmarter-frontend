@@ -3637,7 +3637,9 @@ async function ytSearch() {
                     <div style="font-size:0.8em; color:#9ca3af; margin-top:2px;">${new Date(v.publishedAt).toLocaleDateString('en-US')}</div>
                 </td>
                 <td style="color:#6b7280; font-size:0.9em;">${v.channel}</td>
-                <td style="text-align:right; font-weight:600;">${v.views.toLocaleString('en-US')}</td>
+                <td style="text-align:right; font-weight:600;">${v.views.toLocaleString('en-US')}
+                    ${v.viewsPerDay ? `<div style="font-size:0.8em; color:#059669;">🔥 ${v.viewsPerDay.toLocaleString('en-US')}/Tag</div>` : ''}
+                </td>
                 <td style="text-align:right;">${v.comments.toLocaleString('en-US')}</td>
                 <td>
                     <button class="btn btn-sm btn-primary" onclick="openYtCommentModal(${JSON.stringify(v).replace(/"/g, '&quot;')})">
