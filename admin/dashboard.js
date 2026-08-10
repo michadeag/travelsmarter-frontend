@@ -164,6 +164,7 @@ async function loadFreeToolsAnalytics() {
     loadTopLeads();
     loadRecentLeads();
     loadFunnelStats();
+    loadYtDailyTopic();
     loadToolPromoTweets();
     loadToolPromoBlogPosts();
     loadToolPromoWordpressPosts();
@@ -390,6 +391,25 @@ async function loadRecentLeads() {
 
 function deleteLeadBtn(btn) {
     deleteLead(btn.dataset.leadId, btn.dataset.leadEmail);
+}
+
+async function loadYtDailyTopic() {
+    const nameEl = document.getElementById('yt-daily-topic-name');
+    const queriesEl = document.getElementById('yt-daily-topic-queries');
+    if (!nameEl) return;
+    try {
+        const res = await fetch(`${API_URL}/api/youtube/daily-topic`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const { data } = await res.json();
+        nameEl.textContent = `${data.tool} — „${data.hook}"`;
+        queriesEl.innerHTML = data.queries.map(q =>
+            `<button class="btn btn-sm" style="margin-right:8px; margin-top:4px; background:#dcfce7; border:1px solid #86efac; border-radius:16px; padding:4px 12px; cursor:pointer;"
+                onclick="document.getElementById('yt-search-input').value='${q.replace(/'/g, "\\'")}'; ytSearch();">🔍 ${q}</button>`
+        ).join('');
+    } catch (e) {
+        nameEl.textContent = 'Konnte Tagesthema nicht laden.';
+    }
 }
 
 async function requeueFailedLeadEmails() {
