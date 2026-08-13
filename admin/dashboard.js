@@ -97,6 +97,7 @@ function switchTab(tabName) {
     // Auto-load data when switching to platform tabs
     if (tabName === 'analytics') { loadAnalytics(); loadPageviews(); loadPinterestPageviews(); }
     if (tabName === 'free-tools-analytics') { loadFreeToolsAnalytics(); }
+    if (tabName === 'youtube') { loadYtDailyTopic(); }
     if (tabName === 'guides') { initGuidesTab(); }
     if (tabName === 'twitter') { loadTwitterStatus(); loadTwitterRecentPosts(); }
     if (tabName === 'reddit') { initRedditTab(); }
