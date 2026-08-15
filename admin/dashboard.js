@@ -1074,6 +1074,18 @@ async function submitGuideForm(e) {
         const data = await res.json();
         if (!data.success) throw new Error(data.error || 'Failed to save guide');
 
+        // When editing a published guide, the backend regenerates its live
+        // page (+ bundle + sibling cross-links) immediately — surface that.
+        if (gdEditingId && data.pages) {
+            if (data.pages.guidePageCommitted) {
+                let msg = '✅ Saved and live page updated!';
+                if (data.pages.warnings?.length) msg += '\n\nNote: ' + data.pages.warnings.join('\n');
+                alert(msg);
+            } else if (data.pages.warnings?.length) {
+                alert(`Saved, but the live page couldn't be auto-updated:\n\n${data.pages.warnings.join('\n')}`);
+            }
+        }
+
         resetGuideForm();
         loadGuidesAdmin();
     } catch (error) {
