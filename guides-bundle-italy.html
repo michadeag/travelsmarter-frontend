@@ -60,6 +60,11 @@
         .guide-row strong { color:#1a2744; }
         .guide-row p { color:#6b7280; font-size:13.5px; margin-top:2px; }
         .guide-price { flex-shrink:0; color:#9ca3af; font-weight:700; text-decoration:line-through; }
+        .included-sub { color:#6b7280; font-size:13.5px; margin-bottom:14px; }
+        .also-included { margin-top:18px; padding-top:16px; border-top:1px solid #f3f4f6; }
+        .also-included-label { font-weight:700; color:#1a2744; font-size:14px; margin-bottom:10px; }
+        .also-list { list-style:none; display:flex; flex-wrap:wrap; gap:8px; }
+        .also-list li { background:#f0f4ff; color:#1a2744; font-size:13px; padding:5px 12px; border-radius:14px; }
         .paywall-card { background:linear-gradient(135deg,#1a2744 0%,#2d3f6b 100%); color:white; text-align:center; }
         .paywall-card h2 { font-size:1.3em; margin-bottom:8px; }
         .paywall-card p { color:#c7d2fe; margin-bottom:20px; font-size:14px; }
@@ -83,22 +88,6 @@
         footer { text-align:center; padding:30px 20px; color:#9ca3af; font-size:13px; }
         footer a { color:#667eea; text-decoration:none; }
     </style>
-    <!-- Pinterest Tag -->
-    <script>
-    !function(e){if(!window.pintrk){window.pintrk = function () {
-    window.pintrk.queue.push(Array.prototype.slice.call(arguments))};var
-      n=window.pintrk;n.queue=[],n.version="3.0";var
-      t=document.createElement("script");t.async=!0,t.src=e;var
-      r=document.getElementsByTagName("script")[0];
-      r.parentNode.insertBefore(t,r)}}("https://s.pinimg.com/ct/core.js");
-    pintrk('load', '2613473797081');
-    pintrk('page');
-    </script>
-    <noscript>
-    <img height="1" width="1" style="display:none;" alt=""
-      src="https://ct.pinterest.com/v3/?event=init&tid=2613473797081&noscript=1" />
-    </noscript>
-    <!-- end Pinterest Tag -->
 </head>
 <body>
     <header>
@@ -112,60 +101,13 @@
 
     <div class="container">
         <div class="card">
-            <h2 style="font-size:1.15em; color:#1a2744; margin-bottom:8px;">What's included (10 guides)</h2>
-
-                <div class="guide-row">
-                    <div>
-                        <strong>Italy's 30 Most Beautiful Beaches</strong>
-                        <p>Your complete guide to Italy's most spectacular coastlines — from the turquoise coves of Sardinia to the dramatic sea stacks of Puglia. Practical info, insider tips, and everything you need to plan your visit.</p>
-                    </div>
-                    <span class="guide-price">$4.99</span>
-                </div>
-
-                <div class="guide-row">
-                    <div>
-                        <strong>Italy's 30 Most Beautiful Camping Spots</strong>
-                        <p>Your complete guide to Italy's most spectacular campgrounds — from the granite peaks of the Dolomites to the turquoise coastline of Sardinia. Practical info, insider tips, and everything you need to plan your stay.</p>
-                    </div>
-                    <span class="guide-price">$4.99</span>
-                </div>
-
-                <div class="guide-row">
-                    <div>
-                        <strong>Italy's 30 Most Beautiful Hiking Trails</strong>
-                        <p>From the glaciers of the Alps to the volcanic shores of Sicily — a curated guide to the finest walks in the peninsula</p>
-                    </div>
-                    <span class="guide-price">$4.99</span>
-                </div>
+            <h2 style="font-size:1.15em; color:#1a2744; margin-bottom:4px;">What's included (10 guides)</h2>
+            <p class="included-sub">All 10 guides are in the bundle — highlights first, the rest listed below.</p>
 
                 <div class="guide-row">
                     <div>
                         <strong>Italy's 30 Most Beautiful Islands</strong>
                         <p>Your complete guide to Italy's most spectacular islands — from the volcanic drama of Stromboli to the glamour of Capri and the  wild remoteness of Pantelleria. Practical info, insider tips, and everything you need to plan your visit.</p>
-                    </div>
-                    <span class="guide-price">$4.99</span>
-                </div>
-
-                <div class="guide-row">
-                    <div>
-                        <strong>Italy's 30 Most Beautiful Lakes</strong>
-                        <p>From the Alps to volcanic craters — the ultimate travel guide to Italy's most fascinating bodies of water</p>
-                    </div>
-                    <span class="guide-price">$4.99</span>
-                </div>
-
-                <div class="guide-row">
-                    <div>
-                        <strong>Italy's 30 Most Beautiful Mountains</strong>
-                        <p>Your complete guide to Italy's most spectacular peaks — from the glaciated giants of the Alps to the volcanic crown of Sicily.  Practical info, insider tips, and everything you need to plan your visit.</p>
-                    </div>
-                    <span class="guide-price">$4.99</span>
-                </div>
-
-                <div class="guide-row">
-                    <div>
-                        <strong>Italy's 30 Most Beautiful National Parks</strong>
-                        <p>Your complete guide to Italy's most spectacular protected landscapes — from the glaciers of Gran Paradiso to the volcanic shores of Vesuvius and the coastal cliffs of Cinque Terre. Practical info, insider tips, and everything you need to plan your visit.</p>
                     </div>
                     <span class="guide-price">$4.99</span>
                 </div>
@@ -180,19 +122,37 @@
 
                 <div class="guide-row">
                     <div>
-                        <strong>Italy's 30 Most Beautiful Sunset Locations</strong>
-                        <p>Your complete guide to Italy's most spectacular golden hours — from Positano's cliff-top glow to Stromboli's volcanic silhouette. Practical info, photographer's tips, and everything you need to plan your visit.</p>
+                        <strong>Italy's 30 Most Beautiful Beaches</strong>
+                        <p>Your complete guide to Italy's most spectacular coastlines — from the turquoise coves of Sardinia to the dramatic sea stacks of Puglia. Practical info, insider tips, and everything you need to plan your visit.</p>
                     </div>
                     <span class="guide-price">$4.99</span>
                 </div>
 
                 <div class="guide-row">
                     <div>
-                        <strong>Italy's 30 Most Beautiful Waterfalls</strong>
-                        <p>Your complete travel guide — from the Roman-engineered Marmore Falls to hidden alpine gems in the Dolomites. One waterfall,  one page, everything you need.</p>
+                        <strong>Italy's 30 Most Beautiful Hiking Trails</strong>
+                        <p>From the glaciers of the Alps to the volcanic shores of Sicily — a curated guide to the finest walks in the peninsula</p>
                     </div>
                     <span class="guide-price">$4.99</span>
                 </div>
+
+                <div class="guide-row">
+                    <div>
+                        <strong>Italy's 30 Most Beautiful National Parks</strong>
+                        <p>Your complete guide to Italy's most spectacular protected landscapes — from the glaciers of Gran Paradiso to the volcanic shores of Vesuvius and the coastal cliffs of Cinque Terre. Practical info, insider tips, and everything you need to plan your visit.</p>
+                    </div>
+                    <span class="guide-price">$4.99</span>
+                </div>
+            <div class="also-included">
+                <p class="also-included-label">Also included</p>
+                <ul class="also-list">
+                    <li>Italy's 30 Most Beautiful Camping Spots</li>
+                    <li>Italy's 30 Most Beautiful Lakes</li>
+                    <li>Italy's 30 Most Beautiful Mountains</li>
+                    <li>Italy's 30 Most Beautiful Sunset Locations</li>
+                    <li>Italy's 30 Most Beautiful Waterfalls</li>
+                </ul>
+            </div>
         </div>
 
         <div class="card paywall-card">
