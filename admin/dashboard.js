@@ -3637,6 +3637,8 @@ async function ytSearch() {
     const tbody = document.getElementById('yt-table-body');
 
     statusEl.style.display = 'block';
+    statusEl.style.background = '#dbeafe';
+    statusEl.style.color = '#1e40af';
     statusEl.textContent = '🔍 Suche läuft...';
     resultsEl.style.display = 'none';
 
@@ -3658,7 +3660,16 @@ async function ytSearch() {
             return;
         }
 
-        statusEl.style.display = 'none';
+        // The backend widens the freshness window (7 → 30 → 90 → all-time)
+        // when nothing fresh matches. Note it so an older result set isn't
+        // mistaken for a fresh-momentum one.
+        if (data.windowDays === 7 || data.windowDays === undefined) {
+            statusEl.style.display = 'none';
+        } else {
+            const label = data.windowDays ? `der letzten ${data.windowDays} Tage` : 'ältere (kein Datumsfilter)';
+            statusEl.style.display = 'block';
+            statusEl.textContent = `ℹ️ Keine frischen Videos (7 Tage) — zeige die besten Ergebnisse ${label}.`;
+        }
         resultsEl.style.display = 'block';
 
         tbody.innerHTML = data.data.map(v => `
