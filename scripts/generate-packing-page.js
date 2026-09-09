@@ -212,6 +212,7 @@ ${destOptions}
 
                 <div id="pdf-section">
                     <p><strong>Want a printable version?</strong> Get this full checklist as a PDF — free.</p>
+                    <p style="font-size:13px;color:#6b7280;margin-top:-6px;margin-bottom:14px;">✓ Save it for offline use, and see what else is worth checking before this trip.</p>
                     <input type="text" id="firstName" placeholder="First name (optional)">
                     <input type="email" id="email" placeholder="Email address" required>
                     <div id="pdf-alert" class="alert alert-error"></div>
