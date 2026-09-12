@@ -810,10 +810,14 @@ async function publishLongtailNow() {
         }
         console.log('publishLongtailNow response:', res.status, data);
         if (data.success && data.published?.length > 0) {
-            alert(`Published: ${data.published.join(', ')}`);
+            let msg = `Published: ${data.published.join(', ')}`;
+            if (data.errors?.length) msg += `\n\nSome also failed:\n` + data.errors.map(e => `${e.candidate}: ${e.error}`).join('\n');
+            alert(msg);
             loadLongtailStats();
+        } else if (data.success && data.errors?.length) {
+            alert(`Nothing published — error:\n\n` + data.errors.map(e => `${e.candidate}: ${e.error}`).join('\n'));
         } else if (data.success) {
-            alert('Nothing published — catalog may be exhausted, or check backend logs for a per-page error.');
+            alert('Nothing published — catalog is fully exhausted (all 1,280 combinations already published).');
         } else {
             alert(`Failed: ${data.error || 'unknown error'}`);
         }
