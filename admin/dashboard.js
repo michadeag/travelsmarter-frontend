@@ -170,6 +170,7 @@ async function loadFreeToolsAnalytics() {
     loadToolPromoBlogPosts();
     loadToolPromoWordpressPosts();
     loadToolPromoLinkedinPosts();
+    loadLongtailStats();
     loadToolOgImages();
     loadAllVideoScriptIdeas();
     loadBundleConversion();
@@ -753,6 +754,71 @@ async function postToolPromoLinkedinNow() {
         }
     } catch (error) {
         console.error('postToolPromoLinkedinNow error:', error);
+        alert(`Error: ${error.message}`);
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
+    }
+}
+
+async function loadLongtailStats() {
+    try {
+        const res = await fetch(`${API_URL}/api/longtail/admin/stats`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        if (!res.ok) return;
+        const { summary, recent } = await res.json();
+
+        document.getElementById('lt-today').innerHTML = `<h3>Today</h3><div class="number">${summary.today}</div>`;
+        document.getElementById('lt-7d').innerHTML = `<h3>Last 7 Days</h3><div class="number">${summary.last_7_days}</div>`;
+        document.getElementById('lt-all-time').innerHTML = `<h3>All Time</h3><div class="number">${summary.all_time}</div>`;
+        document.getElementById('lt-remaining').innerHTML = `<h3>Catalog Remaining</h3><div class="number">${summary.remaining}</div>`;
+
+        const tbody = document.getElementById('lt-recent-table');
+        if (!tbody) return;
+        if (!recent || recent.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="color:#9ca3af;">No long-tail pages published yet.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = recent.map(row => `
+            <tr>
+                <td>${new Date(row.published_at).toLocaleString()}</td>
+                <td>${escapeHtml(row.title)} (${escapeHtml(row.country_name)})</td>
+                <td><a href="https://travelsmarterapp.com/${row.slug}.html" target="_blank" rel="noopener">View →</a></td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading long-tail stats:', error);
+    }
+}
+
+async function publishLongtailNow() {
+    const btn = document.getElementById('lt-publish-now-btn');
+    const originalLabel = btn ? btn.textContent : null;
+    if (btn) { btn.disabled = true; btn.textContent = 'Generating page… (10-20s)'; }
+    try {
+        const res = await fetch(`${API_URL}/api/longtail/admin/publish-now`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        let data;
+        try {
+            data = await res.json();
+        } catch (parseErr) {
+            console.error('publishLongtailNow: non-JSON response', res.status, await res.text().catch(() => ''));
+            alert(`Error: server returned ${res.status} (not JSON) — check backend logs.`);
+            return;
+        }
+        console.log('publishLongtailNow response:', res.status, data);
+        if (data.success && data.published?.length > 0) {
+            alert(`Published: ${data.published.join(', ')}`);
+            loadLongtailStats();
+        } else if (data.success) {
+            alert('Nothing published — catalog may be exhausted, or check backend logs for a per-page error.');
+        } else {
+            alert(`Failed: ${data.error || 'unknown error'}`);
+        }
+    } catch (error) {
+        console.error('publishLongtailNow error:', error);
         alert(`Error: ${error.message}`);
     } finally {
         if (btn) { btn.disabled = false; btn.textContent = originalLabel; }

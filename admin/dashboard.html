@@ -1686,6 +1686,44 @@
                     </table>
                 </div>
 
+                <h3 style="margin-top: 30px; margin-bottom: 8px;">📄 Long-tail Q&A Pages</h3>
+                <p style="color:#6b7280; margin-bottom:20px;">Auto-published 1x/day at 11:20 AM ET, one pure-content Q&A page per stable cultural/practical topic + country (e.g. "Does nodding mean yes in Bulgaria?") — no interactive tool, built for AI-answer-engine and long-tail search pickup. Fully automatic; this is oversight only.</p>
+                <div class="cards-grid">
+                    <div class="card" id="lt-today">
+                        <h3>Today</h3>
+                        <div class="number" style="opacity: 0.5;">Loading...</div>
+                    </div>
+                    <div class="card" id="lt-7d">
+                        <h3>Last 7 Days</h3>
+                        <div class="number" style="opacity: 0.5;">Loading...</div>
+                    </div>
+                    <div class="card" id="lt-all-time">
+                        <h3>All Time</h3>
+                        <div class="number" style="opacity: 0.5;">Loading...</div>
+                    </div>
+                    <div class="card" id="lt-remaining">
+                        <h3>Catalog Remaining</h3>
+                        <div class="number" style="opacity: 0.5;">Loading...</div>
+                    </div>
+                </div>
+                <div style="margin:16px 0;">
+                    <button class="btn btn-primary" id="lt-publish-now-btn" onclick="publishLongtailNow()">Publish One Now</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Published</th>
+                                <th>Title</th>
+                                <th>Page</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lt-recent-table">
+                            <tr><td colspan="3" style="color:#9ca3af;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <h3 style="margin-top: 30px; margin-bottom: 8px;">🖼️ Link Preview Images (og:image)</h3>
                 <p style="color:#6b7280; margin-bottom:20px;">One branded thumbnail per tool category, generated via OpenAI, used so Twitter/iMessage/Slack link previews show a real image instead of a blank placeholder. Uses OpenAI credits — generation is manual-trigger only.</p>
                 <div class="cards-grid">
@@ -3602,6 +3640,6 @@
         </div>
     </div>
 
-    <script src="dashboard.js?v=20260810b"></script>
+    <script src="dashboard.js?v=20260912a"></script>
 </body>
 </html>
