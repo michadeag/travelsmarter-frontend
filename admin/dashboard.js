@@ -829,6 +829,33 @@ async function publishLongtailNow() {
     }
 }
 
+async function republishAllLongtail() {
+    if (!confirm('Re-render every already-published long-tail page and re-commit it? Only pages whose rendered HTML actually changed will get a new commit.')) return;
+    const btn = document.getElementById('lt-republish-btn');
+    const originalLabel = btn ? btn.textContent : null;
+    if (btn) { btn.disabled = true; btn.textContent = 'Re-rendering…'; }
+    try {
+        const res = await fetch(`${API_URL}/api/longtail/admin/republish-all`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+            let msg = `Re-rendered and updated ${data.updated.length} page(s).`;
+            if (data.errors?.length) msg += `\n\nSome failed:\n` + data.errors.map(e => `${e.candidate}: ${e.error}`).join('\n');
+            alert(msg);
+            loadLongtailStats();
+        } else {
+            alert(`Failed: ${data.error || 'unknown error'}`);
+        }
+    } catch (error) {
+        console.error('republishAllLongtail error:', error);
+        alert(`Error: ${error.message}`);
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
+    }
+}
+
 async function loadToolOgImages() {
     try {
         const res = await fetch(`${API_URL}/api/tool-images`);
