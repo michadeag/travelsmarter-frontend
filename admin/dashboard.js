@@ -864,19 +864,59 @@ async function loadTripBriefEtsyTable() {
         const res = await fetch(`${API_URL}/api/trip-brief/destinations`);
         const data = await res.json();
         if (!data.success || !data.destinations?.length) {
-            tbody.innerHTML = '<tr><td colspan="2" style="color:#9ca3af;">No destinations found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="3" style="color:#9ca3af;">No destinations found.</td></tr>';
             return;
         }
-        tbody.innerHTML = data.destinations.map(d => `
+        tbody.innerHTML = data.destinations.map(d => {
+            const slug = d.slug;
+            const nameEsc = escapeHtml(d.name).replace(/'/g, "\\'");
+            return `
             <tr>
                 <td>${escapeHtml(d.name)}</td>
-                <td><button class="btn" onclick="downloadTripBriefEtsyPdf('${d.slug}', '${escapeHtml(d.name).replace(/'/g, "\\'")}')">Download PDF</button></td>
-            </tr>
-        `).join('');
+                <td><button class="btn" onclick="downloadTripBriefEtsyPdf('${slug}', '${nameEsc}')">Download PDF</button></td>
+                <td><button class="btn" id="tb-etsy-listing-btn-${slug}" onclick="generateTripBriefEtsyListing('${slug}', '${nameEsc}')">Etsy-Text generieren</button></td>
+            </tr>`;
+        }).join('');
     } catch (error) {
         console.error('loadTripBriefEtsyTable error:', error);
-        tbody.innerHTML = '<tr><td colspan="2" style="color:#ef4444;">Failed to load.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" style="color:#ef4444;">Failed to load.</td></tr>';
     }
+}
+
+async function generateTripBriefEtsyListing(slug, name) {
+    const btn = document.getElementById(`tb-etsy-listing-btn-${slug}`);
+    const originalLabel = btn ? btn.textContent : null;
+    if (btn) { btn.disabled = true; btn.textContent = 'Generiere… (5-10s)'; }
+    try {
+        const res = await fetch(`${API_URL}/api/trip-brief/admin/etsy-listing?destination=${encodeURIComponent(slug)}`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        const data = await res.json();
+        if (!data.success) {
+            alert(`Failed: ${data.error || 'unknown error'}`);
+            return;
+        }
+        document.getElementById('tb-etsy-listing-heading').textContent = `Etsy-Listing-Text — ${name}`;
+        document.getElementById('tb-etsy-title-field').value = data.title;
+        document.getElementById('tb-etsy-description-field').value = data.description;
+        document.getElementById('tb-etsy-tags-field').value = data.tags.join(', ');
+        const card = document.getElementById('tb-etsy-listing-card');
+        card.style.display = 'block';
+        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (error) {
+        console.error('generateTripBriefEtsyListing error:', error);
+        alert(`Error: ${error.message}`);
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
+    }
+}
+
+function copyTripBriefEtsyField(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    navigator.clipboard.writeText(el.value)
+        .then(() => showAlert('📋 Kopiert!', 'success'))
+        .catch(() => { el.select(); document.execCommand('copy'); showAlert('📋 Kopiert!', 'success'); });
 }
 
 async function downloadTripBriefEtsyPdf(slug, name) {
