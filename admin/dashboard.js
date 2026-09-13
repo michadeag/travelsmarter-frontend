@@ -171,6 +171,7 @@ async function loadFreeToolsAnalytics() {
     loadToolPromoWordpressPosts();
     loadToolPromoLinkedinPosts();
     loadLongtailStats();
+    loadTripBriefEtsyTable();
     loadToolOgImages();
     loadAllVideoScriptIdeas();
     loadBundleConversion();
@@ -853,6 +854,53 @@ async function republishAllLongtail() {
         alert(`Error: ${error.message}`);
     } finally {
         if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
+    }
+}
+
+async function loadTripBriefEtsyTable() {
+    const tbody = document.getElementById('tb-etsy-table');
+    if (!tbody) return;
+    try {
+        const res = await fetch(`${API_URL}/api/trip-brief/destinations`);
+        const data = await res.json();
+        if (!data.success || !data.destinations?.length) {
+            tbody.innerHTML = '<tr><td colspan="2" style="color:#9ca3af;">No destinations found.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = data.destinations.map(d => `
+            <tr>
+                <td>${escapeHtml(d.name)}</td>
+                <td><button class="btn" onclick="downloadTripBriefEtsyPdf('${d.slug}', '${escapeHtml(d.name).replace(/'/g, "\\'")}')">Download PDF</button></td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('loadTripBriefEtsyTable error:', error);
+        tbody.innerHTML = '<tr><td colspan="2" style="color:#ef4444;">Failed to load.</td></tr>';
+    }
+}
+
+async function downloadTripBriefEtsyPdf(slug, name) {
+    try {
+        const res = await fetch(`${API_URL}/api/trip-brief/admin/batch-pdf?destination=${encodeURIComponent(slug)}`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            alert(`Failed: ${data.error || res.status}`);
+            return;
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `travelsmarter-trip-brief-${slug}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('downloadTripBriefEtsyPdf error:', error);
+        alert(`Error: ${error.message}`);
     }
 }
 
