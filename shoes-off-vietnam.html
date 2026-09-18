@@ -129,6 +129,15 @@
             <a class="pitch-cta" href="etiquette-checker.html">Try the Local Etiquette & Taboos Checker →</a>
         </div>
 
+        <div class="card">
+            <label for="country-switch">Ask about a different country</label>
+            <select id="country-switch" onchange="if(this.value) window.location.href = this.value + '.html';">
+                <option value="">— Choose a country —</option>
+                    <option value="shoes-off-israel">Israel</option>
+                    <option value="shoes-off-vietnam" selected>Vietnam</option>
+            </select>
+        </div>
+
         <div class="card content-block">
             <h2>Frequently asked questions</h2>
             <div class="faq-item">
