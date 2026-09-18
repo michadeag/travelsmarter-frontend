@@ -91,6 +91,11 @@
         .card p { color:#4b5563; font-size:15px; margin-bottom:14px; }
         .card p:last-child { margin-bottom:0; }
         .tip-box { background:#fff7ed; border-left:4px solid #ff6b4a; padding:14px 18px; border-radius:6px; font-size:14px; color:#7c2d12; }
+        .pitch-card { background:#f0f4ff; border:1px solid #dbe4ff; }
+        .pitch-eyebrow { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:#667eea; margin-bottom:8px; }
+        .pitch-card p:not(.pitch-eyebrow) { color:#1f2937; }
+        .pitch-cta { display:inline-block; margin-top:6px; color:#ff6b4a; font-weight:700; text-decoration:none; }
+        .pitch-cta:hover { text-decoration:underline; }
         label { display:block; font-weight:600; font-size:13px; margin-bottom:6px; color:#374151; }
         select { width:100%; padding:10px 14px; border:1px solid #e5e7eb; border-radius:8px; font-size:14px; }
         .content-block h2 { font-size:1.25em; color:#1a2744; margin-bottom:12px; }
@@ -118,12 +123,10 @@
             <div class="tip-box">💡 A simple 'Grüß Gott' (or 'Hallo' in Vienna) when entering a shop and 'Auf Wiedersehen' when leaving is the expected ritual — doing this will read as polite and culturally aware, and is genuinely appreciated.</div>
         </div>
 
-        <div class="card">
-            <label for="country-switch">Ask about a different country</label>
-            <select id="country-switch" onchange="if(this.value) window.location.href = this.value + '.html';">
-                <option value="">— Choose a country —</option>
-                    <option value="small-talk-austria" selected>Austria</option>
-            </select>
+        <div class="card pitch-card">
+            <p class="pitch-eyebrow">Planning this trip?</p>
+            <p>🤝 Check our free <strong>Local Etiquette & Taboos Checker</strong> before you go.</p>
+            <a class="pitch-cta" href="etiquette-checker.html">Try the Local Etiquette & Taboos Checker →</a>
         </div>
 
         <div class="card content-block">
